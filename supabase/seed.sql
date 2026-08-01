@@ -1,1 +1,1 @@
--- Tournament fixtures are introduced by MGO-004.
+select private.seed_2026_tournament();
