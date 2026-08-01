@@ -144,7 +144,7 @@ select lives_ok(
       team2_id
     )
     values (
-      'GA-01',
+      'TEST-GA-01',
       'group',
       'A',
       '11111111-1111-1111-1111-111111111111',
@@ -164,7 +164,7 @@ select throws_ok(
       team2_id
     )
     values (
-      'GA-02',
+      'TEST-GA-02',
       'group',
       'A',
       '22222222-2222-2222-2222-222222222222',
@@ -258,7 +258,7 @@ select lives_ok(
       completed_at
     )
     values (
-      'QF1',
+      'TEST-QF1',
       'quarterfinal',
       '33333333-3333-3333-3333-333333333333',
       '44444444-4444-4444-4444-444444444444',
@@ -279,7 +279,7 @@ select ok(
     select 1
     from public.audit_log
     where entity_type = 'matches'
-      and entity_key = 'QF1'
+      and entity_key = 'TEST-QF1'
       and action = 'insert'
       and before_data is null
       and after_data is not null
@@ -288,7 +288,11 @@ select ok(
 );
 
 select lives_ok(
-  $$update public.matches set label = 'Opening match' where code = 'GA-01'$$,
+  $$
+    update public.matches
+    set label = 'Opening match'
+    where code = 'TEST-GA-01'
+  $$,
   'matches can be updated'
 );
 
@@ -296,7 +300,7 @@ select ok(
   (
     select updated_at > created_at
     from public.matches
-    where code = 'GA-01'
+    where code = 'TEST-GA-01'
   ),
   'match updates advance updated_at'
 );
@@ -306,7 +310,7 @@ select ok(
     select 1
     from public.audit_log
     where entity_type = 'matches'
-      and entity_key = 'GA-01'
+      and entity_key = 'TEST-GA-01'
       and action = 'update'
       and before_data is not null
       and after_data is not null
@@ -339,7 +343,7 @@ select throws_ok(
       team2_id
     )
     values (
-      'GA-03',
+      'TEST-GA-03',
       'group',
       'A',
       '11111111-1111-1111-1111-111111111111',
@@ -366,7 +370,7 @@ select throws_ok(
       completed_at
     )
     values (
-      'QF2',
+      'TEST-QF2',
       'quarterfinal',
       '11111111-1111-1111-1111-111111111111',
       '33333333-3333-3333-3333-333333333333',
@@ -388,7 +392,7 @@ select is(
     select count(*)
     from public.audit_log
     where entity_type = 'matches'
-      and entity_key = 'QF2'
+      and entity_key = 'TEST-QF2'
   ),
   0::bigint,
   'failed mutations do not leave audit records'
@@ -408,7 +412,7 @@ select lives_ok(
       completed_at
     )
     values (
-      'QF3',
+      'TEST-QF3',
       'quarterfinal',
       '22222222-2222-2222-2222-222222222222',
       '44444444-4444-4444-4444-444444444444',
@@ -437,7 +441,7 @@ select lives_ok(
       completed_at
     )
     values (
-      'SF1',
+      'TEST-SF1',
       'semifinal',
       '11111111-1111-1111-1111-111111111111',
       '44444444-4444-4444-4444-444444444444',
@@ -468,7 +472,7 @@ select throws_ok(
       completed_at
     )
     values (
-      'Final',
+      'TEST-FINAL',
       'final',
       '22222222-2222-2222-2222-222222222222',
       '33333333-3333-3333-3333-333333333333',
