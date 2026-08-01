@@ -22,7 +22,7 @@ This is the authoritative implementation tracker. Product rules live in
 | ID | Work item | Status | Depends on |
 |---|---|---|---|
 | MGO-001 | Scaffold the application | Done | - |
-| MGO-002 | Establish baseline deployment | Not started | MGO-001 |
+| MGO-002 | Establish baseline deployment | Done | MGO-001 |
 | MGO-003 | Create the database schema | Not started | MGO-001 |
 | MGO-004 | Seed teams and tournament matches | Not started | MGO-003 |
 | MGO-005 | Build the typed server data layer | Not started | MGO-003, MGO-004 |
