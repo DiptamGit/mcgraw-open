@@ -46,7 +46,7 @@ export default async function ResultMatchPage({
   return (
     <>
       <PageIntro
-        eyebrow={`${match.code} · Normal result`}
+        eyebrow={`${match.code} · Match result`}
         title={match.status === "completed" ? "Edit result" : "Record result"}
         description={`${team1Name} versus ${team2Name}.`}
       />
@@ -85,8 +85,7 @@ export default async function ResultMatchPage({
                 : "Enter the match result"}
             </h2>
             <p className="supporting-copy">
-              Record a normally completed match. Retirements and walkovers are
-              handled in a later organizer flow.
+              Record a normal result, retirement, or walkover.
             </p>
             <ResultForm
               initialState={createResultFormState(match)}

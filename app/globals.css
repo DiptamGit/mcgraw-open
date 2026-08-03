@@ -1041,6 +1041,24 @@ textarea:focus-visible {
   min-width: 0;
 }
 
+.score-display__context {
+  width: fit-content;
+  margin: 0 0 0.375rem;
+  border-left: 0.25rem solid var(--warning);
+  padding: 0.25rem 0.5rem;
+  background: var(--warning-surface);
+  color: var(--warning);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.score-display--partial table {
+  border-left: 0.25rem solid var(--warning);
+  background: var(--warning-surface);
+}
+
 .score-display table {
   width: 100%;
   border-collapse: collapse;
@@ -1295,6 +1313,10 @@ textarea:focus-visible {
   gap: 0.5rem;
 }
 
+.result-choice__options--outcome {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .result-choice__options label {
   display: flex;
   min-height: 3rem;
@@ -1368,6 +1390,24 @@ textarea:focus-visible {
 .score-entry__input input[aria-invalid="true"] {
   border: 2px solid var(--danger);
   background: var(--danger-surface);
+}
+
+.result-outcome-note {
+  border: 1px solid var(--warning);
+  border-left-width: 0.25rem;
+  border-radius: var(--radius-control);
+  padding: 0.875rem 1rem;
+  background: var(--warning-surface);
+  color: var(--score-ink);
+}
+
+.result-outcome-note strong {
+  color: var(--warning);
+}
+
+.result-outcome-note p {
+  margin: 0.25rem 0 0;
+  color: var(--muted-ink);
 }
 
 .result-form__actions {
@@ -1611,6 +1651,10 @@ textarea:focus-visible {
 
   .result-choice__options {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .result-choice__options--outcome {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .result-form__actions .result-button {

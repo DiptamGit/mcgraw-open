@@ -35,7 +35,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-009 | Add the shared PIN gate | Done | MGO-005, MGO-006 |
 | MGO-010 | Schedule and reschedule matches | Done | MGO-008, MGO-009 |
 | MGO-011 | Enter and edit normal scores | Done | MGO-008, MGO-009 |
-| MGO-012 | Record retirements and walkovers | Not started | MGO-011 |
+| MGO-012 | Record retirements and walkovers | Done | MGO-011 |
 | MGO-013 | Implement the standings engine | Not started | MGO-005, MGO-012 |
 | MGO-014 | Build the groups standings page | Not started | MGO-006, MGO-013 |
 | MGO-015 | Finalize and reopen group standings | Not started | MGO-009, MGO-014 |

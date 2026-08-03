@@ -40,41 +40,64 @@ const scoreFields = {
   set3Team2: scoreInputSchema,
 };
 const uncheckedScoreFields = {
-  set1Team1: z.string(),
-  set1Team2: z.string(),
-  set2Team1: z.string(),
-  set2Team2: z.string(),
-  set3Team1: z.string(),
-  set3Team2: z.string(),
+  set1Team1: z.unknown(),
+  set1Team2: z.unknown(),
+  set2Team1: z.unknown(),
+  set2Team2: z.unknown(),
+  set3Team1: z.unknown(),
+  set3Team2: z.unknown(),
 };
 
-export const resultSubmissionSchema = z.discriminatedUnion("intent", [
+const scoredResultFields = {
+  matchId: matchIdSchema,
+  expectedUpdatedAt: versionSchema,
+  winnerId: z.uuid("Choose the winning team."),
+  decidingSetFormat: z.enum(["full_set", "match_tiebreak"], {
+    message: "Choose the deciding set format.",
+  }),
+  playedDate: dateSchema,
+  playedTime: timeSchema,
+  ...scoreFields,
+};
+
+export const resultSubmissionSchema = z.union([
   z.object({
     intent: z.literal("save"),
+    outcomeType: z.literal("normal"),
+    ...scoredResultFields,
+  }),
+  z.object({
+    intent: z.literal("save"),
+    outcomeType: z.literal("retirement"),
+    ...scoredResultFields,
+  }),
+  z.object({
+    intent: z.literal("save"),
+    outcomeType: z.literal("walkover"),
     matchId: matchIdSchema,
     expectedUpdatedAt: versionSchema,
     winnerId: z.uuid("Choose the winning team."),
-    decidingSetFormat: z.enum(["full_set", "match_tiebreak"], {
-      message: "Choose the deciding set format.",
-    }),
+    decidingSetFormat: z.unknown(),
     playedDate: dateSchema,
     playedTime: timeSchema,
-    ...scoreFields,
+    ...uncheckedScoreFields,
   }),
   z.object({
     intent: z.literal("clear"),
     matchId: matchIdSchema,
     expectedUpdatedAt: versionSchema,
-    winnerId: z.string(),
-    decidingSetFormat: z.string(),
-    playedDate: z.string(),
-    playedTime: z.string(),
+    outcomeType: z.unknown(),
+    winnerId: z.unknown(),
+    decidingSetFormat: z.unknown(),
+    playedDate: z.unknown(),
+    playedTime: z.unknown(),
     ...uncheckedScoreFields,
   }),
 ]);
 
 export type ResultSubmission = z.infer<typeof resultSubmissionSchema>;
 export type ResultField =
+  | "outcomeType"
   | "winnerId"
   | "decidingSetFormat"
   | "playedDate"
@@ -82,6 +105,7 @@ export type ResultField =
   | keyof typeof scoreFields;
 
 export type ResultFormValues = {
+  outcomeType: string;
   winnerId: string;
   decidingSetFormat: string;
   playedDate: string;
@@ -115,6 +139,18 @@ export type NormalScoreValidationResult =
       winnerError?: boolean;
     };
 
+export type RetirementScoreParseResult =
+  | { success: true; sets: ScorePair[] | null }
+  | {
+      success: false;
+      message: string;
+      fieldErrors: Partial<Record<ResultField, string>>;
+    };
+
+export type RetirementScoreValidationResult =
+  | { success: true }
+  | { success: false; message: string; setIndex: number };
+
 export type ResultEditability =
   | { editable: true }
   | { editable: false; reason: string };
@@ -144,6 +180,27 @@ function isValidMatchTiebreak([team1Score, team2Score]: ScorePair): boolean {
   return (
     (winnerScore === 10 && loserScore <= 8) ||
     (loserScore >= 9 && winnerScore - loserScore === 2)
+  );
+}
+
+function isPossibleFullSetInProgress(
+  [team1Score, team2Score]: ScorePair,
+): boolean {
+  const leaderScore = Math.max(team1Score, team2Score);
+  const trailingScore = Math.min(team1Score, team2Score);
+
+  return (
+    leaderScore < 6 ||
+    (leaderScore === 6 && trailingScore >= 5)
+  );
+}
+
+function isPossibleMatchTiebreakInProgress(
+  [team1Score, team2Score]: ScorePair,
+): boolean {
+  return (
+    Math.max(team1Score, team2Score) < 10 ||
+    Math.abs(team1Score - team2Score) <= 1
   );
 }
 
@@ -293,6 +350,140 @@ export function parseSubmittedSets(
   return { success: true, sets };
 }
 
+export function parseRetirementSets(
+  values: Pick<
+    ResultFormValues,
+    | "set1Team1"
+    | "set1Team2"
+    | "set2Team1"
+    | "set2Team2"
+    | "set3Team1"
+    | "set3Team2"
+  >,
+): RetirementScoreParseResult {
+  const rows = [
+    [values.set1Team1, values.set1Team2],
+    [values.set2Team1, values.set2Team2],
+    [values.set3Team1, values.set3Team2],
+  ] as const;
+  const lastEnteredIndex = rows.findLastIndex(
+    ([team1Score, team2Score]) =>
+      team1Score !== "" || team2Score !== "",
+  );
+
+  if (lastEnteredIndex === -1) {
+    return { success: true, sets: null };
+  }
+
+  const sets: ScorePair[] = [];
+  for (let index = 0; index <= lastEnteredIndex; index += 1) {
+    const [team1Score, team2Score] = rows[index];
+    const team1Field = `set${index + 1}Team1` as ResultField;
+    const team2Field = `set${index + 1}Team2` as ResultField;
+
+    if (team1Score === "" || team2Score === "") {
+      const message = `Enter both scores for set ${index + 1}, or clear the later set scores.`;
+      return {
+        success: false,
+        message,
+        fieldErrors: {
+          [team1Field]: message,
+          [team2Field]: message,
+        },
+      };
+    }
+
+    const scores: ScorePair = [
+      Number(team1Score),
+      Number(team2Score),
+    ];
+    if (
+      scores.some(
+        (score) =>
+          !Number.isSafeInteger(score) || score < 0,
+      )
+    ) {
+      const message = "Enter whole-number scores of zero or more.";
+      return {
+        success: false,
+        message,
+        fieldErrors: {
+          [team1Field]: message,
+          [team2Field]: message,
+        },
+      };
+    }
+
+    sets.push(scores);
+  }
+
+  return { success: true, sets };
+}
+
+export function validateRetirementScore(input: {
+  sets: ScorePair[] | null;
+  decidingSetFormat: "full_set" | "match_tiebreak";
+}): RetirementScoreValidationResult {
+  if (!input.sets) {
+    return { success: true };
+  }
+
+  let team1Sets = 0;
+  let team2Sets = 0;
+
+  for (const [index, set] of input.sets.entries()) {
+    const isLastSet = index === input.sets.length - 1;
+    const isMatchTiebreak =
+      index === 2 && input.decidingSetFormat === "match_tiebreak";
+    const isComplete = isMatchTiebreak
+      ? isValidMatchTiebreak(set)
+      : isValidFullSet(set);
+
+    if (!isLastSet && !isComplete) {
+      return {
+        success: false,
+        setIndex: index,
+        message: `Set ${index + 1} must be complete before a later set can begin.`,
+      };
+    }
+
+    if (isComplete) {
+      if (winningSide(set) === "team1") {
+        team1Sets += 1;
+      } else {
+        team2Sets += 1;
+      }
+
+      if (team1Sets === 2 || team2Sets === 2) {
+        return {
+          success: false,
+          setIndex: index,
+          message: isLastSet
+            ? "This score shows a completed match. Choose Normal result."
+            : "Do not enter another set after the match was completed.",
+        };
+      }
+
+      continue;
+    }
+
+    const isPossiblePartial = isMatchTiebreak
+      ? isPossibleMatchTiebreakInProgress(set)
+      : isPossibleFullSetInProgress(set);
+    if (!isPossiblePartial) {
+      return {
+        success: false,
+        setIndex: index,
+        message: isMatchTiebreak
+          ? "Enter the match tiebreak score reached before retirement."
+          : "Enter a possible set score reached before retirement.",
+      };
+    }
+  }
+
+  return { success: true };
+}
+
 export function parsePlayedAt(
   date: string,
   time: string,
@@ -375,6 +566,7 @@ function resultValues(
   match: Pick<
     MatchRecord,
     | "deciding_set_format"
+    | "outcome_type"
     | "played_at"
     | "scheduled_at"
     | "sets"
@@ -398,6 +590,7 @@ function resultValues(
   }
 
   return {
+    outcomeType: match.outcome_type ?? "normal",
     winnerId: match.winner_id ?? "",
     decidingSetFormat: match.deciding_set_format ?? "full_set",
     playedDate: localDateTime.toFormat("yyyy-MM-dd"),
@@ -415,6 +608,7 @@ export function createResultFormState(
   match: Pick<
     MatchRecord,
     | "deciding_set_format"
+    | "outcome_type"
     | "played_at"
     | "scheduled_at"
     | "sets"

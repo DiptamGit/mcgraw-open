@@ -93,6 +93,7 @@ function resultFormData(
     intent: "save",
     matchId: match.id,
     expectedUpdatedAt: match.updated_at,
+    outcomeType: "normal",
     winnerId: team1.id,
     decidingSetFormat: "match_tiebreak",
     playedDate: "2026-08-02",
@@ -171,6 +172,7 @@ describe("updateMatchResult", () => {
       status: "updated",
       match: updated,
     });
+
     const { updateMatchResult } = await import("./actions");
 
     const result = await updateMatchResult(
@@ -202,6 +204,183 @@ describe("updateMatchResult", () => {
       hasResult: true,
       expectedUpdatedAt: updated.updated_at,
     });
+  });
+
+  it("records a retirement with a partial score", async () => {
+    const updated: MatchRecord = {
+      ...asRecord(match),
+      status: "completed",
+      deciding_set_format: "full_set",
+      outcome_type: "retirement",
+      sets: [
+        [6, 4],
+        [2, 2],
+      ],
+      winner_id: team2.id,
+      played_at: "2026-08-03T00:30:00Z",
+      completed_at: "2026-08-03T20:00:00Z",
+      updated_at: "2026-08-03T20:00:01Z",
+    };
+    mocks.updateMatchWithVersion.mockResolvedValue({
+      status: "updated",
+      match: updated,
+    });
+    const { updateMatchResult } = await import("./actions");
+
+    const result = await updateMatchResult(
+      createResultFormState(match),
+      resultFormData({
+        outcomeType: "retirement",
+        winnerId: team2.id,
+        decidingSetFormat: "full_set",
+        set1Team1: "6",
+        set1Team2: "4",
+        set2Team1: "2",
+        set2Team2: "2",
+        set3Team1: "",
+        set3Team2: "",
+      }),
+    );
+
+    expect(mocks.updateMatchWithVersion).toHaveBeenCalledWith({
+      id: match.id,
+      expectedUpdatedAt: match.updated_at,
+      changes: {
+        status: "completed",
+        deciding_set_format: "full_set",
+        outcome_type: "retirement",
+        sets: [
+          [6, 4],
+          [2, 2],
+        ],
+        winner_id: team2.id,
+        played_at: "2026-08-03T00:30:00Z",
+        completed_at: "2026-08-03T20:00:00.000Z",
+      },
+    });
+    expect(result).toMatchObject({
+      status: "success",
+      message: "Result recorded.",
+      values: { outcomeType: "retirement" },
+    });
+  });
+
+  it("records a scoreless walkover and clears stale score fields", async () => {
+    const currentNormal: TournamentMatch = {
+      ...match,
+      status: "completed",
+      deciding_set_format: "full_set",
+      outcome_type: "normal",
+      sets: [
+        [6, 4],
+        [6, 3],
+      ],
+      winner_id: team1.id,
+      winner: team1,
+      played_at: "2026-08-02T23:00:00Z",
+      completed_at: "2026-08-03T00:00:00Z",
+    };
+    const updated: MatchRecord = {
+      ...asRecord(currentNormal),
+      deciding_set_format: null,
+      outcome_type: "walkover",
+      sets: null,
+      winner_id: team2.id,
+      played_at: "2026-08-03T00:30:00Z",
+      completed_at: "2026-08-03T20:00:00Z",
+      updated_at: "2026-08-03T20:00:01Z",
+    };
+    mocks.getTournamentData.mockResolvedValue(tournament([currentNormal]));
+    mocks.updateMatchWithVersion.mockResolvedValue({
+      status: "updated",
+      match: updated,
+    });
+    const { updateMatchResult } = await import("./actions");
+
+    const result = await updateMatchResult(
+      createResultFormState(currentNormal),
+      resultFormData({
+        outcomeType: "walkover",
+        expectedUpdatedAt: currentNormal.updated_at,
+        winnerId: team2.id,
+      }),
+    );
+
+    expect(mocks.updateMatchWithVersion).toHaveBeenCalledWith({
+      id: match.id,
+      expectedUpdatedAt: currentNormal.updated_at,
+      changes: {
+        status: "completed",
+        deciding_set_format: null,
+        outcome_type: "walkover",
+        sets: null,
+        winner_id: team2.id,
+        played_at: "2026-08-03T00:30:00Z",
+        completed_at: "2026-08-03T20:00:00.000Z",
+      },
+    });
+    expect(result).toMatchObject({
+      status: "success",
+      message: "Result updated.",
+      values: { outcomeType: "walkover" },
+    });
+  });
+
+  it("replaces exceptional fields when correcting back to normal", async () => {
+    const currentRetirement: TournamentMatch = {
+      ...match,
+      status: "completed",
+      deciding_set_format: "full_set",
+      outcome_type: "retirement",
+      sets: [[2, 1]],
+      winner_id: team2.id,
+      winner: team2,
+      played_at: "2026-08-02T23:00:00Z",
+      completed_at: "2026-08-03T00:00:00Z",
+    };
+    const updated: MatchRecord = {
+      ...asRecord(currentRetirement),
+      outcome_type: "normal",
+      sets: [
+        [6, 4],
+        [4, 6],
+        [10, 8],
+      ],
+      winner_id: team1.id,
+      played_at: "2026-08-03T00:30:00Z",
+      completed_at: "2026-08-03T20:00:00Z",
+      updated_at: "2026-08-03T20:00:01Z",
+    };
+    mocks.getTournamentData.mockResolvedValue(
+      tournament([currentRetirement]),
+    );
+    mocks.updateMatchWithVersion.mockResolvedValue({
+      status: "updated",
+      match: updated,
+    });
+    const { updateMatchResult } = await import("./actions");
+
+    await updateMatchResult(
+      createResultFormState(currentRetirement),
+      resultFormData({
+        expectedUpdatedAt: currentRetirement.updated_at,
+      }),
+    );
+
+    expect(mocks.updateMatchWithVersion).toHaveBeenCalledWith(
+      expect.objectContaining({
+        changes: expect.objectContaining({
+          outcome_type: "normal",
+          deciding_set_format: "match_tiebreak",
+          sets: [
+            [6, 4],
+            [4, 6],
+            [10, 8],
+          ],
+          winner_id: team1.id,
+        }),
+      }),
+    );
   });
 
   it("rejects stale writes and finalized group results", async () => {

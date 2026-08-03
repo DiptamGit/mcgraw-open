@@ -9,7 +9,9 @@ import {
   createResultFormState,
   getResultEditability,
   parsePlayedAt,
+  parseRetirementSets,
   validateNormalScore,
+  validateRetirementScore,
 } from "./result";
 
 const team1Id = "a0000001-0000-4000-8000-000000000001";
@@ -86,6 +88,111 @@ describe("normal score validation", () => {
         winnerSide: "team1",
       }),
     ).toMatchObject({ success: true });
+  });
+
+  describe("retirement score parsing", () => {
+    const emptyScores = {
+      set1Team1: "",
+      set1Team2: "",
+      set2Team1: "",
+      set2Team2: "",
+      set3Team1: "",
+      set3Team2: "",
+    };
+
+    it("accepts no score or a contiguous partial score", () => {
+      expect(parseRetirementSets(emptyScores)).toEqual({
+        success: true,
+        sets: null,
+      });
+      expect(
+        parseRetirementSets({
+          ...emptyScores,
+          set1Team1: "6",
+          set1Team2: "4",
+          set2Team1: "2",
+          set2Team2: "2",
+        }),
+      ).toEqual({
+        success: true,
+        sets: [
+          [6, 4],
+          [2, 2],
+        ],
+      });
+    });
+
+    it("rejects incomplete score pairs and skipped sets", () => {
+      expect(
+        parseRetirementSets({
+          ...emptyScores,
+          set1Team1: "3",
+        }),
+      ).toMatchObject({ success: false });
+      expect(
+        parseRetirementSets({
+          ...emptyScores,
+          set2Team1: "2",
+          set2Team2: "1",
+        }),
+      ).toMatchObject({
+        success: false,
+        message:
+          "Enter both scores for set 1, or clear the later set scores.",
+      });
+    });
+
+    it("accepts completed sets followed by a possible partial set", () => {
+      expect(
+        validateRetirementScore({
+          sets: [
+            [6, 4],
+            [2, 2],
+          ],
+          decidingSetFormat: "full_set",
+        }),
+      ).toEqual({ success: true });
+      expect(
+        validateRetirementScore({
+          sets: [
+            [6, 4],
+            [4, 6],
+            [11, 10],
+          ],
+          decidingSetFormat: "match_tiebreak",
+        }),
+      ).toEqual({ success: true });
+    });
+
+    it("rejects a later set after an unfinished set or completed match", () => {
+      expect(
+        validateRetirementScore({
+          sets: [
+            [2, 1],
+            [1, 0],
+          ],
+          decidingSetFormat: "full_set",
+        }),
+      ).toMatchObject({
+        success: false,
+        setIndex: 0,
+        message: "Set 1 must be complete before a later set can begin.",
+      });
+      expect(
+        validateRetirementScore({
+          sets: [
+            [6, 4],
+            [6, 3],
+          ],
+          decidingSetFormat: "full_set",
+        }),
+      ).toMatchObject({
+        success: false,
+        setIndex: 1,
+        message:
+          "This score shows a completed match. Choose Normal result.",
+      });
+    });
   });
 
   it("accepts a match tiebreak only when it is won from 10 by two", () => {
@@ -194,6 +301,7 @@ describe("result timing and locks", () => {
     ).toMatchObject({
       playedDate: "2026-08-03",
       playedTime: "19:30",
+      outcomeType: "normal",
     });
 
     expect(
