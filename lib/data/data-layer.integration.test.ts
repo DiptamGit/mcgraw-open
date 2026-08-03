@@ -41,6 +41,109 @@ describe.skipIf(!hasPublicEnvironment)("seeded Supabase reads", () => {
 });
 
 describe.skipIf(!hasPrivilegedEnvironment)("versioned Supabase writes", () => {
+  it("schedules, reschedules, and unschedules one fixture with audit history", async () => {
+    const { createPrivilegedSupabaseClient } = await import(
+      "../supabase/clients"
+    );
+    const { updateMatchWithVersion } = await import("./mutations");
+    const client = createPrivilegedSupabaseClient();
+    const { data: original, error } = await client
+      .from("matches")
+      .select("*")
+      .eq("code", "GA-01")
+      .single();
+
+    expect(error).toBeNull();
+    expect(original).not.toBeNull();
+    if (!original) {
+      throw new Error("Seeded GA-01 match is missing.");
+    }
+
+    const scheduled = await updateMatchWithVersion({
+      id: original.id,
+      expectedUpdatedAt: original.updated_at,
+      changes: {
+        status: "scheduled",
+        scheduled_at: "2026-08-04T00:30:00Z",
+        venue: "McGraw Park Court 2",
+      },
+    });
+
+    expect(scheduled.status).toBe("updated");
+    if (scheduled.status !== "updated") {
+      throw new Error("GA-01 was not scheduled.");
+    }
+    expect(scheduled.match).toMatchObject({
+      status: "scheduled",
+      scheduled_at: "2026-08-04T00:30:00+00:00",
+      venue: "McGraw Park Court 2",
+    });
+
+    const rescheduled = await updateMatchWithVersion({
+      id: original.id,
+      expectedUpdatedAt: scheduled.match.updated_at,
+      changes: {
+        scheduled_at: "2026-08-05T01:00:00Z",
+        venue: "McGraw Park Court 3",
+      },
+    });
+
+    expect(rescheduled.status).toBe("updated");
+    if (rescheduled.status !== "updated") {
+      throw new Error("GA-01 was not rescheduled.");
+    }
+
+    const stale = await updateMatchWithVersion({
+      id: original.id,
+      expectedUpdatedAt: original.updated_at,
+      changes: {
+        scheduled_at: "2026-08-06T01:00:00Z",
+        venue: "Stale court",
+      },
+    });
+
+    expect(stale.status).toBe("conflict");
+    if (stale.status !== "conflict") {
+      throw new Error("The stale GA-01 update did not conflict.");
+    }
+    expect(stale.current).toMatchObject({
+      scheduled_at: "2026-08-05T01:00:00+00:00",
+      venue: "McGraw Park Court 3",
+    });
+
+    const unscheduled = await updateMatchWithVersion({
+      id: original.id,
+      expectedUpdatedAt: rescheduled.match.updated_at,
+      changes: {
+        status: "unscheduled",
+        scheduled_at: null,
+        venue: null,
+      },
+    });
+
+    expect(unscheduled.status).toBe("updated");
+    if (unscheduled.status !== "updated") {
+      throw new Error("GA-01 was not returned to unscheduled.");
+    }
+    expect(unscheduled.match).toMatchObject({
+      status: "unscheduled",
+      scheduled_at: null,
+      venue: null,
+    });
+
+    const { count, error: auditError } = await client
+      .from("audit_log")
+      .select("id", { count: "exact", head: true })
+      .eq("entity_type", "matches")
+      .eq("entity_key", "GA-01")
+      .eq("action", "update")
+      .gte("created_at", original.updated_at);
+
+    expect(auditError).toBeNull();
+    expect(count).not.toBeNull();
+    expect(count).toBeGreaterThanOrEqual(3);
+  });
+
   it("rejects stale or invalid updates without orphaning audit records", async () => {
     const { createPrivilegedSupabaseClient } = await import(
       "../supabase/clients"

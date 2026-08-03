@@ -91,6 +91,30 @@ export async function getMatches(): Promise<TournamentMatch[]> {
   return normalizeMatches(matchRecords, teams);
 }
 
+export async function getMatchByCode(
+  code: string,
+): Promise<TournamentMatch | null> {
+  const matches = await getMatches();
+  return matches.find((match) => match.code === code) ?? null;
+}
+
+export async function getMatchRecordById(
+  id: string,
+): Promise<MatchRecord | null> {
+  const client = createPublicSupabaseClient();
+  const { data, error } = await client
+    .from("matches")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throwQueryError("match", error);
+  }
+
+  return data ? parseMatchRecords([data])[0] ?? null : null;
+}
+
 export async function getTournamentState(): Promise<TournamentState> {
   return loadTournamentState(createPublicSupabaseClient());
 }

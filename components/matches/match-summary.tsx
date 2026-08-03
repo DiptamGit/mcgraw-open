@@ -1,4 +1,5 @@
 import type { TournamentMatch } from "../../lib/data/schema";
+import Link from "next/link";
 import {
   formatTournamentDateTime,
   getMatchStageLabel,
@@ -9,6 +10,7 @@ import {
 import { ScoreDisplay } from "./score-display";
 
 type MatchSummaryProps = {
+  canSchedule?: boolean;
   match: TournamentMatch;
 };
 
@@ -38,7 +40,10 @@ function MatchTeams({ match }: MatchSummaryProps) {
   );
 }
 
-export function MatchSummary({ match }: MatchSummaryProps) {
+export function MatchSummary({
+  canSchedule = false,
+  match,
+}: MatchSummaryProps) {
   const team1Name = getTeamDisplayName(match, "team1");
   const team2Name = getTeamDisplayName(match, "team2");
   const outcomeLabel = getOutcomeLabel(match.outcome_type);
@@ -96,6 +101,17 @@ export function MatchSummary({ match }: MatchSummaryProps) {
             </div>
           ) : null}
         </dl>
+      ) : null}
+
+      {canSchedule && match.status !== "completed" ? (
+        <div className="match-summary__actions">
+          <Link
+            className="match-schedule-link"
+            href={`/matches/${encodeURIComponent(match.code)}/schedule`}
+          >
+            {match.status === "scheduled" ? "Reschedule" : "Schedule match"}
+          </Link>
+        </div>
       ) : null}
     </article>
   );
