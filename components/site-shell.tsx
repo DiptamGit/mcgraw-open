@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OrganizerAccessStatus } from "@/components/organizer/access-status";
 import { SiteNavigation } from "@/components/site-navigation";
 
 type SiteShellProps = {
@@ -28,6 +29,7 @@ export function SiteShell({ children }: SiteShellProps) {
         </div>
       </header>
 
+      <OrganizerAccessStatus />
       <main id="main-content">{children}</main>
       <SiteNavigation variant="mobile" />
     </div>

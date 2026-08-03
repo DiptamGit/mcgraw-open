@@ -82,9 +82,13 @@ Additional rules:
   PIN invalidates existing cookies.
 - Validate the organizer cookie and request origin on every mutation.
 - Rate-limit unlock attempts per privacy-preserving client key. The default
-  target is five failures per 15 minutes, but the backing implementation is
-  finalized in MGO-009 after checking current Vercel capabilities. Prefer the
-  existing Supabase stack over adding another hosted service.
+  target is five failures per 15 minutes. MGO-009 uses an atomic,
+  service-role-only Supabase function backed by an RLS-protected limiter table.
+  The client IP supplied by Vercel is HMACed with the server-only cookie secret
+  before it reaches Supabase; raw IPs and PIN values are never persisted.
+  Vercel WAF was not selected because its non-Enterprise fixed window is capped
+  at 10 minutes and its dashboard-only rule would not reproduce the required
+  15-minute policy from this repository.
 - Add baseline security headers before launch. Keep Content Security Policy
   strict but test it against Next.js/Vercel behavior rather than copying a
   brittle template.
@@ -156,8 +160,6 @@ Additional rules:
   checking current Vercel support.
 - **MGO-002/MGO-003:** Exact Vercel, staging Supabase, and production Supabase
   regions.
-- **MGO-009:** Concrete rate-limit storage mechanism after evaluating current
-  Vercel features against a small Supabase-backed limiter.
 - **MGO-010:** Maintained timezone library for converting
   `datetime-local` values to/from America/Chicago. Do not hand-roll DST logic.
 - **MGO-018:** Production domain, final PIN, backup capability available on the

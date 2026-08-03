@@ -32,7 +32,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-006 | Build the mobile app shell | Done | MGO-001 |
 | MGO-007 | Show live matches read-only | Done | MGO-005, MGO-006 |
 | MGO-008 | Organize and filter matches | Done | MGO-007 |
-| MGO-009 | Add the shared PIN gate | Not started | MGO-005, MGO-006 |
+| MGO-009 | Add the shared PIN gate | Done | MGO-005, MGO-006 |
 | MGO-010 | Schedule and reschedule matches | Not started | MGO-008, MGO-009 |
 | MGO-011 | Enter and edit normal scores | Not started | MGO-008, MGO-009 |
 | MGO-012 | Record retirements and walkovers | Not started | MGO-011 |

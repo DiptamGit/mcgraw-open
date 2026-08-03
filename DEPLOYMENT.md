@@ -14,13 +14,17 @@ East Coast regions minimize application-to-database latency.
 1. Create separate staging and production Supabase projects in `us-east-1`.
 2. Import this GitHub repository into Vercel with `main` as the production
    branch. Vercel detects the Next.js framework and reads `vercel.json`.
-3. In Vercel project settings, add `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and
-   `SUPABASE_SERVICE_ROLE_KEY` twice:
+3. In Vercel project settings, add `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
+   `SUPABASE_SERVICE_ROLE_KEY`, `ORGANIZER_PIN`, and
+   `ORGANIZER_COOKIE_SECRET` twice:
    - Preview scope: values from the staging Supabase project only.
    - Production scope: values from the production Supabase project only.
-4. Do not expose the service-role key with a `NEXT_PUBLIC_` prefix or add
-   production values to Preview or Development.
-5. Require the GitHub Actions `Quality` check for pull requests before merge.
+4. Use an independently generated organizer cookie secret of at least 32
+   characters in each environment. Do not reuse the organizer PIN or cookie
+   secret between Preview and Production.
+5. Do not expose the service-role key, organizer PIN, or cookie secret with a
+   `NEXT_PUBLIC_` prefix or add production values to Preview or Development.
+6. Require the GitHub Actions `Quality` check for pull requests before merge.
 
 The current placeholder does not read Supabase during `next build`. Future
 database code must remain runtime-only and server-only.

@@ -129,6 +129,93 @@ textarea:focus-visible {
   color: var(--text-inverse);
 }
 
+.organizer-status {
+  border-bottom: 1px solid var(--court-line);
+  background: var(--line-white);
+}
+
+.organizer-status--unlocked {
+  border-bottom-color: var(--success);
+  background: var(--success-surface);
+}
+
+.organizer-status__inner {
+  display: flex;
+  min-height: 3.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.375rem 1rem;
+}
+
+.organizer-status p {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  color: var(--score-ink);
+  font-size: 0.875rem;
+}
+
+.organizer-status p > span {
+  min-width: 0;
+}
+
+.organizer-status__detail {
+  display: none;
+  color: var(--muted-ink);
+  font-weight: 400;
+}
+
+.organizer-status__link,
+.session-button {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.organizer-status__link {
+  padding-inline: 0.875rem;
+  color: var(--hardcourt-blue);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.organizer-status form {
+  flex: 0 0 auto;
+}
+
+.session-button {
+  min-height: 3rem;
+  border: 1px solid transparent;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+}
+
+.session-button--primary {
+  background: var(--tennis-ball);
+  color: var(--center-court-navy);
+}
+
+.session-button--quiet {
+  min-height: 2.75rem;
+  border-color: var(--hardcourt-blue);
+  background: transparent;
+  color: var(--hardcourt-blue);
+}
+
+.session-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .site-header__inner {
   display: flex;
   min-height: 4rem;
@@ -444,7 +531,8 @@ textarea:focus-visible {
 }
 
 .content-panel,
-.tournament-window {
+.tournament-window,
+.organizer-panel {
   border: 1px solid var(--border-default);
   border-radius: 0.375rem;
   background: var(--surface-content);
@@ -456,11 +544,94 @@ textarea:focus-visible {
 }
 
 .content-panel h2,
-.tournament-window h2 {
+.tournament-window h2,
+.organizer-panel h2 {
   margin: 0.5rem 0 0;
   color: var(--score-ink);
   font-size: clamp(1.875rem, 7vw, 2.5rem);
   line-height: 1.05;
+}
+
+.organizer-panel {
+  max-width: 40rem;
+  border-top: 0.375rem solid var(--hardcourt-blue);
+  padding: 1.25rem 1rem;
+}
+
+.organizer-panel h2 {
+  margin: 0.5rem 0 0;
+  color: var(--score-ink);
+  font-family: var(--font-barlow-condensed), Arial Narrow, sans-serif;
+  font-size: clamp(1.875rem, 7vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.unlock-form {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.form-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.form-field label {
+  color: var(--score-ink);
+  font-weight: 600;
+}
+
+.form-help,
+.form-error {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.form-help {
+  color: var(--muted-ink);
+}
+
+.form-error {
+  border-left: 0.25rem solid var(--danger);
+  padding: 0.5rem 0.75rem;
+  background: var(--danger-surface);
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.form-field input {
+  min-height: 3rem;
+  width: 100%;
+  border: 1px solid var(--muted-ink);
+  border-radius: var(--radius-control);
+  padding: 0.625rem 0.75rem;
+  background: var(--line-white);
+  color: var(--score-ink);
+  font: inherit;
+}
+
+.form-field input[aria-invalid="true"] {
+  border: 2px solid var(--danger);
+}
+
+.organizer-unlocked {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  color: var(--success);
+}
+
+.organizer-unlocked p {
+  margin: 0;
+  color: var(--score-ink);
+}
+
+.organizer-unlocked .session-button {
+  width: fit-content;
 }
 
 .supporting-copy,
@@ -1000,8 +1171,17 @@ textarea:focus-visible {
   }
 
   .content-panel,
-  .tournament-window {
+  .tournament-window,
+  .organizer-panel {
     padding: 1.5rem;
+  }
+
+  .organizer-status__inner {
+    padding-inline: 1.5rem;
+  }
+
+  .organizer-status__detail {
+    display: inline;
   }
 
   .tournament-window {
@@ -1060,6 +1240,10 @@ textarea:focus-visible {
   .site-header__inner,
   .page-intro__content,
   .page-content {
+    padding-inline: 2rem;
+  }
+
+  .organizer-status__inner {
     padding-inline: 2rem;
   }
 

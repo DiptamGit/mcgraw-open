@@ -28,11 +28,12 @@ select is(
       'public.teams'::regclass,
       'public.matches'::regclass,
       'public.tournament_state'::regclass,
-      'public.audit_log'::regclass
+      'public.audit_log'::regclass,
+      'public.organizer_unlock_limits'::regclass
     )
     and relrowsecurity
   ),
-  4::bigint,
+  5::bigint,
   'RLS is enabled on every application table'
 );
 
