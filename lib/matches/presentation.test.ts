@@ -7,7 +7,8 @@ import {
   getMatchStageLabel,
   getOutcomeLabel,
   getTeamDisplayName,
-  partitionMatches,
+  organizeMatches,
+  parseMatchFilters,
 } from "./presentation";
 
 const groupATeam: TournamentMatch["team1"] = {
@@ -132,15 +133,44 @@ describe("match presentation", () => {
     });
 
     expect(
-      partitionMatches([laterSavedMatch, newerPlayedMatch]).completed.map(
+      organizeMatches([laterSavedMatch, newerPlayedMatch]).completed.map(
         (match) => match.code,
       ),
     ).toEqual(["GA-02", "GA-03"]);
   });
 
-  it("keeps fixtures in tournament stage order", () => {
-    const final = createMatch({
+  it("orders scheduled matches by court time across past and future dates", () => {
+    const pastMatch = createMatch({
       id: "a1000000-0000-4000-8000-000000000004",
+      code: "GA-04",
+      status: "scheduled",
+      scheduled_at: "2026-08-01T18:00:00+00:00",
+    });
+    const nearerFutureMatch = createMatch({
+      id: "a1000000-0000-4000-8000-000000000005",
+      code: "GA-05",
+      status: "scheduled",
+      scheduled_at: "2026-08-04T18:00:00+00:00",
+    });
+    const laterFutureMatch = createMatch({
+      id: "a1000000-0000-4000-8000-000000000006",
+      code: "GA-06",
+      status: "scheduled",
+      scheduled_at: "2026-08-10T18:00:00+00:00",
+    });
+
+    expect(
+      organizeMatches([
+        laterFutureMatch,
+        nearerFutureMatch,
+        pastMatch,
+      ]).scheduled.map((match) => match.code),
+    ).toEqual(["GA-04", "GA-05", "GA-06"]);
+  });
+
+  it("keeps unscheduled matches in tournament stage order", () => {
+    const final = createMatch({
+      id: "a1000000-0000-4000-8000-000000000007",
       code: "Final",
       stage: "final",
       group_label: null,
@@ -150,7 +180,7 @@ describe("match presentation", () => {
       team2: null,
     });
     const quarterfinal = createMatch({
-      id: "a1000000-0000-4000-8000-000000000005",
+      id: "a1000000-0000-4000-8000-000000000008",
       code: "QF1",
       stage: "quarterfinal",
       group_label: null,
@@ -161,16 +191,112 @@ describe("match presentation", () => {
     });
 
     expect(
-      partitionMatches([final, quarterfinal, createMatch()]).fixtures.map(
+      organizeMatches([final, quarterfinal, createMatch()]).unscheduled.map(
         (match) => match.code,
       ),
     ).toEqual(["GA-01", "QF1", "Final"]);
   });
 
+  it("filters by each group and knockout stage", () => {
+    const groupBMatch = createMatch({
+      id: "a1000000-0000-4000-8000-000000000009",
+      code: "GB-01",
+      group_label: "B",
+    });
+    const quarterfinal = createMatch({
+      id: "a1000000-0000-4000-8000-000000000010",
+      code: "QF1",
+      stage: "quarterfinal",
+      group_label: null,
+      team1_id: null,
+      team2_id: null,
+      team1: null,
+      team2: null,
+    });
+    const semifinal = createMatch({
+      id: "a1000000-0000-4000-8000-000000000011",
+      code: "SF1",
+      stage: "semifinal",
+      group_label: null,
+      team1_id: null,
+      team2_id: null,
+      team1: null,
+      team2: null,
+    });
+    const final = createMatch({
+      id: "a1000000-0000-4000-8000-000000000012",
+      code: "Final",
+      stage: "final",
+      group_label: null,
+      team1_id: null,
+      team2_id: null,
+      team1: null,
+      team2: null,
+    });
+    const matches = [createMatch(), groupBMatch, quarterfinal, semifinal, final];
+
+    expect(
+      organizeMatches(matches, { group: "A", stage: "all" }).unscheduled.map(
+        (match) => match.code,
+      ),
+    ).toEqual(["GA-01"]);
+    expect(
+      organizeMatches(matches, { group: "B", stage: "all" }).unscheduled.map(
+        (match) => match.code,
+      ),
+    ).toEqual(["GB-01"]);
+    expect(
+      organizeMatches(matches, {
+        group: "all",
+        stage: "quarterfinal",
+      }).unscheduled.map((match) => match.code),
+    ).toEqual(["QF1"]);
+    expect(
+      organizeMatches(matches, {
+        group: "all",
+        stage: "semifinal",
+      }).unscheduled.map((match) => match.code),
+    ).toEqual(["SF1"]);
+    expect(
+      organizeMatches(matches, { group: "all", stage: "final" }).unscheduled.map(
+        (match) => match.code,
+      ),
+    ).toEqual(["Final"]);
+  });
+
+  it("returns an empty result for incompatible filter combinations", () => {
+    const sections = organizeMatches([createMatch()], {
+      group: "A",
+      stage: "quarterfinal",
+    });
+
+    expect(sections).toEqual({
+      scheduled: [],
+      unscheduled: [],
+      completed: [],
+    });
+  });
+
+  it("parses shareable filters and ignores invalid or repeated values", () => {
+    expect(parseMatchFilters({ group: "A", stage: "quarterfinal" })).toEqual({
+      group: "A",
+      stage: "quarterfinal",
+    });
+    expect(
+      parseMatchFilters({
+        group: "unknown",
+        stage: ["final", "semifinal"],
+      }),
+    ).toEqual({ group: "all", stage: "all" });
+  });
+
   it("surfaces inconsistent completed and group match data", () => {
     expect(() =>
-      partitionMatches([createMatch({ status: "completed" })]),
+      organizeMatches([createMatch({ status: "completed" })]),
     ).toThrow(DataIntegrityError);
+    expect(() =>
+      organizeMatches([createMatch({ status: "scheduled" })]),
+    ).toThrow("Scheduled match GA-01 is missing its scheduled time.");
     expect(() =>
       getTeamDisplayName(
         createMatch({ team1: null, team1_id: null }),

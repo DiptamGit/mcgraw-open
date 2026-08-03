@@ -31,7 +31,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-005 | Build the typed server data layer | Done | MGO-003, MGO-004 |
 | MGO-006 | Build the mobile app shell | Done | MGO-001 |
 | MGO-007 | Show live matches read-only | Done | MGO-005, MGO-006 |
-| MGO-008 | Organize and filter matches | Not started | MGO-007 |
+| MGO-008 | Organize and filter matches | Done | MGO-007 |
 | MGO-009 | Add the shared PIN gate | Not started | MGO-005, MGO-006 |
 | MGO-010 | Schedule and reschedule matches | Not started | MGO-008, MGO-009 |
 | MGO-011 | Enter and edit normal scores | Not started | MGO-008, MGO-009 |
