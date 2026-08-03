@@ -16,6 +16,9 @@ This is the authoritative implementation tracker. Product rules live in
   pass, `npm run build` succeeds, and the working version is committed.
 - Deploy each completed slice when Vercel and Supabase access are available.
 - Show every database migration to the user before applying it.
+- Every UI or UX item from MGO-006 through MGO-022 must read and follow the
+  locked system in `DESIGN.md`. Foundational deviations require explicit user
+  approval and an update to `DESIGN.md` first.
 
 ## Current queue
 
@@ -254,10 +257,9 @@ assignments plus staging Supabase access before this item can be completed.
 
 **Scope:**
 
-- Use the local frontend-design and UI/UX Pro Max guidance to define a compact
-  McGraw Open visual direction.
-- Record the approved palette, typography, layout rules, and signature element
-  in `DESIGN.md`.
+- Read and implement the approved visual and interaction system in `DESIGN.md`.
+- Use the local frontend-design and UI/UX Pro Max guidance only to execute that
+  locked direction or fill a documented component-level gap.
 - Add responsive navigation for Home, Groups, Matches, and Bracket.
 - Add CSS custom-property design tokens exposed through Tailwind, shared page
   width, typography, focus styles, and active route treatment.
@@ -274,12 +276,15 @@ assignments plus staging Supabase access before this item can be completed.
   conditions.
 - The visual identity is specific to a local doubles tennis tournament rather
   than a generic dashboard.
+- The shell follows the locked tokens, typography, court-line signature,
+  surface strategy, shape language, and responsive navigation in `DESIGN.md`.
 - Reduced-motion preferences are respected.
 
 **Validate:**
 
 - Test keyboard navigation.
 - Review at 320px, 390px, tablet, and desktop widths.
+- Review the implementation against `DESIGN.md`.
 - `npm run lint`
 - `npm run build`
 
