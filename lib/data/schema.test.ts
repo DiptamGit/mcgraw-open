@@ -4,6 +4,7 @@ import { DataIntegrityError } from "./errors";
 import {
   normalizeMatches,
   parseMatchRecord,
+  parseTournamentSnapshot,
   parseTournamentState,
   versionedMatchUpdateSchema,
   type MatchRecord,
@@ -58,6 +59,26 @@ describe("database record validation", () => {
         sets: [[6, "four"]],
       }),
     ).toThrow(DataIntegrityError);
+  });
+
+  it("validates a complete atomic tournament snapshot", () => {
+    expect(
+      parseTournamentSnapshot({
+        teams: [team],
+        matches: [match],
+        state: {
+          id: 1,
+          group_stage_status: "open",
+          groups_finalized_at: null,
+          tie_resolution_note: null,
+          updated_at: "2026-08-01T19:00:00+00:00",
+        },
+      }),
+    ).toMatchObject({
+      teams: [{ id: team.id }],
+      matches: [{ id: match.id }],
+      state: { id: 1 },
+    });
   });
 
   it("surfaces missing team relationships during normalization", () => {

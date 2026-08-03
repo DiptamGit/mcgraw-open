@@ -234,12 +234,50 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      finalize_group_standings: {
+        Args: {
+          p_expected_state_updated_at: string
+          p_match_versions: Json
+          p_rankings: Json
+          p_tie_resolution_note: string
+        }
+        Returns: {
+          group_stage_status: string
+          groups_finalized_at: string | null
+          id: number
+          tie_resolution_note: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tournament_state"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      get_tournament_snapshot: { Args: never; Returns: Json }
       record_organizer_unlock_attempt: {
         Args: { p_client_key: string; p_was_successful: boolean }
         Returns: {
           allowed: boolean
           retry_after_seconds: number
         }[]
+      }
+      reopen_group_standings: {
+        Args: { p_expected_state_updated_at: string }
+        Returns: {
+          group_stage_status: string
+          groups_finalized_at: string | null
+          id: number
+          tie_resolution_note: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tournament_state"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {

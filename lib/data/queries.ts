@@ -3,6 +3,7 @@ import "server-only";
 import type { PostgrestError } from "@supabase/supabase-js";
 
 import {
+  createPrivilegedSupabaseClient,
   createPublicSupabaseClient,
   type TournamentSupabaseClient,
 } from "../supabase/clients";
@@ -11,6 +12,7 @@ import {
   normalizeMatches,
   parseMatchRecords,
   parseTeams,
+  parseTournamentSnapshot,
   parseTournamentState,
   type MatchRecord,
   type Team,
@@ -119,17 +121,35 @@ export async function getTournamentState(): Promise<TournamentState> {
   return loadTournamentState(createPublicSupabaseClient());
 }
 
+export async function hasQuarterfinalActivityHistory(): Promise<boolean> {
+  const client = createPrivilegedSupabaseClient();
+  const { count, error } = await client
+    .from("audit_log")
+    .select("id", { count: "exact", head: true })
+    .eq("entity_type", "matches")
+    .eq("after_data->>stage", "quarterfinal")
+    .in("after_data->>status", ["scheduled", "completed"]);
+
+  if (error) {
+    throwQueryError("quarterfinal activity history", error);
+  }
+
+  return (count ?? 0) > 0;
+}
+
 export async function getTournamentData(): Promise<TournamentData> {
   const client = createPublicSupabaseClient();
-  const [teams, matchRecords, state] = await Promise.all([
-    loadTeams(client),
-    loadMatchRecords(client),
-    loadTournamentState(client),
-  ]);
+  const { data, error } = await client.rpc("get_tournament_snapshot");
+
+  if (error) {
+    throwQueryError("tournament snapshot", error);
+  }
+
+  const snapshot = parseTournamentSnapshot(data);
 
   return {
-    teams,
-    matches: normalizeMatches(matchRecords, teams),
-    state,
+    teams: snapshot.teams,
+    matches: normalizeMatches(snapshot.matches, snapshot.teams),
+    state: snapshot.state,
   };
 }
