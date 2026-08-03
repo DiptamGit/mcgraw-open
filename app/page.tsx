@@ -1,18 +1,37 @@
-export default function Home() {
+import Link from "next/link";
+import { PageIntro } from "@/components/page-intro";
+
+export default function HomePage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-emerald-950 px-5 py-12 text-white sm:px-8">
-      <section className="w-full max-w-3xl border-l-4 border-lime-300 pl-5 sm:pl-8">
-        <p className="text-sm font-semibold tracking-[0.2em] text-lime-300 uppercase">
-          Local doubles tennis
-        </p>
-        <h1 className="mt-4 text-5xl leading-none font-black tracking-tight sm:text-7xl">
-          McGraw Open 2026.
-        </h1>
-        <p className="mt-6 max-w-xl text-lg leading-8 text-emerald-100 sm:text-xl">
-          August 1 through September 30, 2026. Tournament updates are coming
-          soon.
-        </p>
-      </section>
-    </main>
+    <>
+      <PageIntro
+        eyebrow="Local doubles tennis"
+        title="McGraw Open"
+        description="Eleven teams. Two groups. One late-summer title."
+        hero
+      />
+
+      <div className="page-content">
+        <section
+          className="tournament-window"
+          aria-labelledby="tournament-window"
+        >
+          <div>
+            <p className="utility-label">Tournament window</p>
+            <h2 id="tournament-window">August 1 — September 30</h2>
+          </div>
+          <div className="tournament-window__details">
+            <p>
+              Follow every fixture, result, standing, and knockout round from
+              one court-side home.
+            </p>
+            <div className="inline-links" aria-label="Tournament views">
+              <Link href="/matches">View matches</Link>
+              <Link href="/groups">View groups</Link>
+            </div>
+          </div>
+        </section>
+      </div>
+    </>
   );
 }
