@@ -5,6 +5,7 @@ import type {
   StandingRow,
   UnresolvedTie,
 } from "@/lib/standings/calculate";
+import { getDisplayedStandingsRows } from "@/lib/standings/presentation";
 
 type StandingsTableProps = {
   standings: GroupStandings;
@@ -17,38 +18,6 @@ type StandingsState = "finalized" | "provisional" | "live" | "unresolved";
 
 function formatDifference(value: number): string {
   return value > 0 ? `+${value}` : String(value);
-}
-
-function getFinalizedRows(rows: StandingRow[]): StandingRow[] {
-  const ranks = rows.map((row) => row.team.final_rank);
-  const expectedRanks = new Set(rows.map((_, index) => index + 1));
-
-  if (
-    ranks.some((rank) => rank === null || !expectedRanks.has(rank)) ||
-    new Set(ranks).size !== rows.length
-  ) {
-    throw new DataIntegrityError(
-      "Finalized standings are missing a complete set of group ranks.",
-    );
-  }
-
-  return [...rows]
-    .sort((left, right) => {
-      if (left.team.final_rank === null || right.team.final_rank === null) {
-        throw new DataIntegrityError(
-          "Finalized standings contain an empty group rank.",
-        );
-      }
-      return left.team.final_rank - right.team.final_rank;
-    })
-    .map((row) => {
-      if (row.team.final_rank === null) {
-        throw new DataIntegrityError(
-          "Finalized standings contain an empty group rank.",
-        );
-      }
-      return { ...row, rank: row.team.final_rank };
-    });
 }
 
 function getStandingsState(
@@ -131,10 +100,7 @@ export function StandingsTable({
   const groupId = `group-${groupLabel.toLowerCase()}`;
   const state = getStandingsState(standings, tournamentStatus);
   const stateCopy = getStateCopy(state, completedMatches);
-  const rows =
-    tournamentStatus === "finalized"
-      ? getFinalizedRows(standings.rows)
-      : standings.rows;
+  const rows = getDisplayedStandingsRows(standings, tournamentStatus);
   const cutLineTieTeamIds = new Set(
     standings.unresolvedTies
       .filter(

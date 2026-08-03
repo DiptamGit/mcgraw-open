@@ -39,7 +39,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-013 | Implement the standings engine | Done | MGO-005, MGO-012 |
 | MGO-014 | Build the groups standings page | Done | MGO-006, MGO-013 |
 | MGO-015 | Finalize and reopen group standings | Done | MGO-009, MGO-014 |
-| MGO-016 | Build the tournament home page | Not started | MGO-007, MGO-014 |
+| MGO-016 | Build the tournament home page | Done | MGO-007, MGO-014 |
 | MGO-017 | Harden the group-stage release | Not started | MGO-010, MGO-012, MGO-015, MGO-016 |
 | MGO-018 | Launch the group-stage site | Not started | MGO-002, MGO-017 |
 | MGO-019 | Render the knockout bracket | Not started | MGO-005, MGO-006, MGO-018 |
