@@ -46,6 +46,12 @@ export const tournamentStateSchema = z.object({
   updated_at: timestampSchema,
 });
 
+export const tournamentSnapshotSchema = z.object({
+  teams: z.array(teamSchema),
+  matches: z.array(matchRecordSchema),
+  state: tournamentStateSchema,
+});
+
 export const matchChangesSchema = matchRecordSchema
   .omit({
     id: true,
@@ -67,6 +73,7 @@ export type Team = z.infer<typeof teamSchema>;
 export type MatchRecord = z.infer<typeof matchRecordSchema>;
 export type TournamentState = z.infer<typeof tournamentStateSchema>;
 export type VersionedMatchUpdate = z.input<typeof versionedMatchUpdateSchema>;
+export type TournamentSnapshot = z.infer<typeof tournamentSnapshotSchema>;
 
 export type TournamentMatch = MatchRecord & {
   team1: Team | null;
@@ -108,6 +115,16 @@ export function parseTournamentState(value: unknown): TournamentState {
     tournamentStateSchema,
     value,
     "tournament state",
+  );
+}
+
+export function parseTournamentSnapshot(
+  value: unknown,
+): TournamentSnapshot {
+  return parseDatabaseValue(
+    tournamentSnapshotSchema,
+    value,
+    "tournament snapshot",
   );
 }
 

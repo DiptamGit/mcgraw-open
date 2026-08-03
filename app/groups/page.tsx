@@ -1,12 +1,25 @@
+import Link from "next/link";
+
 import { StandingsTable } from "@/components/groups/standings-table";
 import { PageIntro } from "@/components/page-intro";
+import { hasOrganizerSession } from "@/lib/auth/session";
 import { getTournamentData } from "@/lib/data/queries";
 import { calculateGroupStandings } from "@/lib/standings/calculate";
 
 export const dynamic = "force-dynamic";
 
-export default async function GroupsPage() {
-  const tournament = await getTournamentData();
+type GroupsPageProps = {
+  searchParams: Promise<{ transition?: string }>;
+};
+
+export default async function GroupsPage({
+  searchParams,
+}: GroupsPageProps) {
+  const [tournament, isOrganizer, query] = await Promise.all([
+    getTournamentData(),
+    hasOrganizerSession(),
+    searchParams,
+  ]);
   const standings = {
     A: calculateGroupStandings(tournament.teams, tournament.matches, "A"),
     B: calculateGroupStandings(tournament.teams, tournament.matches, "B"),
@@ -32,6 +45,21 @@ export default async function GroupsPage() {
 
       <div className="page-content">
         <div className="groups-view">
+          {query.transition === "finalized" ||
+          query.transition === "reopened" ? (
+            <div
+              className="form-feedback form-feedback--success"
+              role="status"
+              aria-live="polite"
+            >
+              <p>
+                {query.transition === "finalized"
+                  ? "Groups finalized. Group results and ranks are now locked."
+                  : "Groups reopened. Standings are live and group-result corrections are available."}
+              </p>
+            </div>
+          ) : null}
+
           <section
             className="standings-overview"
             aria-labelledby="group-play"
@@ -43,6 +71,12 @@ export default async function GroupsPage() {
                 ? "The group order is locked for the knockout draw."
                 : "Standings update as completed results are recorded. The top-four rail marks the current qualifying places."}
             </p>
+            {isFinalized && tournament.state.tie_resolution_note ? (
+              <p>
+                <strong>Tie resolution:</strong>{" "}
+                {tournament.state.tie_resolution_note}
+              </p>
+            ) : null}
           </section>
 
           <div className="standings-grid">
@@ -63,6 +97,35 @@ export default async function GroupsPage() {
               );
             })}
           </div>
+
+          {isOrganizer ? (
+            <section
+              className="group-organizer-actions"
+              aria-labelledby="group-organizer-heading"
+            >
+              <p className="utility-label">Organizer action</p>
+              <h2 id="group-organizer-heading">
+                {isFinalized
+                  ? "Need to correct a group result?"
+                  : "Ready to close group play?"}
+              </h2>
+              <p>
+                {isFinalized
+                  ? "Reopening clears locked ranks and allows score corrections. It is unavailable after a quarterfinal is scheduled or completed."
+                  : "Finalization requires every group result, snapshots both tables, and locks group score editing."}
+              </p>
+              <Link
+                className={
+                  isFinalized
+                    ? "group-action-link group-action-link--destructive"
+                    : "group-action-link"
+                }
+                href={isFinalized ? "/groups/reopen" : "/groups/finalize"}
+              >
+                {isFinalized ? "Review reopening" : "Review final ranks"}
+              </Link>
+            </section>
+          ) : null}
 
           <aside
             className="standings-tiebreak-guide"

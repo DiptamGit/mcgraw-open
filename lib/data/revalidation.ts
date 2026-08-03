@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 export const TOURNAMENT_DATA_ROUTES = [
   "/",
   "/groups",
+  "/groups/finalize",
+  "/groups/reopen",
   "/matches",
   "/bracket",
 ] as const;
