@@ -7,6 +7,12 @@ export type KnockoutMatchCode =
   | "SF2"
   | "Final";
 
+export function isKnockoutMatchCode(
+  code: string,
+): code is KnockoutMatchCode {
+  return Object.hasOwn(BRACKET_MAPPING, code);
+}
+
 type GroupRankSource = {
   type: "group-rank";
   group: "A" | "B";
@@ -71,3 +77,20 @@ export const BRACKET_MAPPING = {
     team2Source: { type: "match-winner", matchCode: "SF2" },
   },
 } as const satisfies Record<KnockoutMatchCode, KnockoutMatchDefinition>;
+
+export const DOWNSTREAM_ASSIGNMENTS = {
+  QF1: { matchCode: "SF1", teamField: "team1_id" },
+  QF2: { matchCode: "SF1", teamField: "team2_id" },
+  QF3: { matchCode: "SF2", teamField: "team1_id" },
+  QF4: { matchCode: "SF2", teamField: "team2_id" },
+  SF1: { matchCode: "Final", teamField: "team1_id" },
+  SF2: { matchCode: "Final", teamField: "team2_id" },
+} as const satisfies Partial<
+  Record<
+    KnockoutMatchCode,
+    {
+      matchCode: KnockoutMatchCode;
+      teamField: "team1_id" | "team2_id";
+    }
+  >
+>;

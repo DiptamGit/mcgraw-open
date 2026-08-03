@@ -2,13 +2,17 @@ import { MatchFilters } from "@/components/matches/match-filters";
 import { MatchSummary } from "@/components/matches/match-summary";
 import { PageIntro } from "@/components/page-intro";
 import { hasOrganizerSession } from "@/lib/auth/session";
-import { getMatches } from "@/lib/data/queries";
+import { getTournamentData } from "@/lib/data/queries";
 import type { TournamentMatch } from "@/lib/data/schema";
 import {
   organizeMatches,
   parseMatchFilters,
   type MatchSearchParams,
 } from "@/lib/matches/presentation";
+import {
+  getResultEditability,
+  type ResultEditability,
+} from "@/lib/matches/result";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +27,7 @@ type MatchSectionProps = {
   eyebrow: string;
   title: string;
   matches: TournamentMatch[];
+  resultEditability: Map<string, ResultEditability>;
 };
 
 function MatchSection({
@@ -31,6 +36,7 @@ function MatchSection({
   eyebrow,
   title,
   matches,
+  resultEditability,
 }: MatchSectionProps) {
   if (matches.length === 0) {
     return null;
@@ -53,6 +59,7 @@ function MatchSection({
             canSchedule={canSchedule}
             key={match.id}
             match={match}
+            resultEditability={resultEditability.get(match.id)}
           />
         ))}
       </div>
@@ -63,13 +70,22 @@ function MatchSection({
 export default async function MatchesPage({
   searchParams,
 }: MatchesPageProps) {
-  const [matches, resolvedSearchParams, canSchedule] = await Promise.all([
-    getMatches(),
+  const [tournament, resolvedSearchParams, canSchedule] = await Promise.all([
+    getTournamentData(),
     searchParams,
     hasOrganizerSession(),
   ]);
+  const { matches } = tournament;
   const filters = parseMatchFilters(resolvedSearchParams);
   const sections = organizeMatches(matches, filters);
+  const resultEditability = new Map(
+    canSchedule
+      ? matches.map((match) => [
+          match.id,
+          getResultEditability(match, matches, tournament.state),
+        ])
+      : [],
+  );
   const filteredMatchCount =
     sections.scheduled.length +
     sections.unscheduled.length +
@@ -121,6 +137,7 @@ export default async function MatchesPage({
                   eyebrow="Next on court"
                   title="Scheduled"
                   matches={sections.scheduled}
+                  resultEditability={resultEditability}
                 />
                 <MatchSection
                   canSchedule={canSchedule}
@@ -128,6 +145,7 @@ export default async function MatchesPage({
                   eyebrow="Awaiting a time"
                   title="Unscheduled"
                   matches={sections.unscheduled}
+                  resultEditability={resultEditability}
                 />
                 <MatchSection
                   canSchedule={canSchedule}
@@ -135,6 +153,7 @@ export default async function MatchesPage({
                   eyebrow="Played"
                   title="Completed"
                   matches={sections.completed}
+                  resultEditability={resultEditability}
                 />
               </>
             )}
