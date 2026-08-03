@@ -25,10 +25,19 @@ export function ScoreDisplay({ match }: ScoreDisplayProps) {
     return null;
   }
 
+  const isRetirement = match.outcome_type === "retirement";
+
   return (
-    <div className="score-display">
+    <div
+      className={`score-display${isRetirement ? " score-display--partial" : ""}`}
+    >
+      {isRetirement ? (
+        <p className="score-display__context">Score at retirement</p>
+      ) : null}
       <table>
-        <caption className="sr-only">Score for match {match.code}</caption>
+        <caption className="sr-only">
+          {isRetirement ? "Partial score" : "Score"} for match {match.code}
+        </caption>
         <thead>
           <tr>
             <th scope="col">Team</th>

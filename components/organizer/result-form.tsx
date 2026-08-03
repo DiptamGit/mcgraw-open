@@ -23,6 +23,14 @@ type ResultFormProps = {
   >;
 };
 
+type ResultOutcome = "normal" | "retirement" | "walkover";
+
+function normalizeOutcome(value: string): ResultOutcome {
+  return value === "retirement" || value === "walkover"
+    ? value
+    : "normal";
+}
+
 function describedBy(
   helpId: string,
   error?: string,
@@ -35,11 +43,13 @@ function ScoreInput({
   label,
   defaultValue,
   error,
+  required,
 }: {
   field: ResultField;
   label: string;
   defaultValue: string;
   error?: string;
+  required: boolean;
 }) {
   return (
     <div className="score-entry__input">
@@ -53,7 +63,7 @@ function ScoreInput({
         inputMode="numeric"
         min="0"
         step="1"
-        required={field.startsWith("set1") || field.startsWith("set2")}
+        required={required}
         defaultValue={defaultValue}
         aria-label={label}
         aria-invalid={error ? true : undefined}
@@ -77,10 +87,21 @@ export function ResultForm({
     initialState,
   );
   const [confirmingClear, setConfirmingClear] = useState(false);
+  const [outcomeSelection, setOutcomeSelection] = useState<{
+    version: string;
+    outcome: ResultOutcome;
+  }>({
+    version: state.expectedUpdatedAt,
+    outcome: normalizeOutcome(state.values.outcomeType),
+  });
   const clearButtonRef = useRef<HTMLButtonElement>(null);
   const keepButtonRef = useRef<HTMLButtonElement>(null);
   const feedbackRef = useRef<HTMLDivElement>(null);
   const previousHasResult = useRef(state.hasResult);
+  const selectedOutcome =
+    outcomeSelection.version === state.expectedUpdatedAt
+      ? outcomeSelection.outcome
+      : normalizeOutcome(state.values.outcomeType);
   const team1Name = match.team1?.name ?? "Team 1";
   const team2Name = match.team2?.name ?? "Team 2";
   const setErrors = [1, 2, 3].map((setNumber) => {
@@ -146,9 +167,54 @@ export function ResultForm({
       ) : null}
 
       <fieldset className="result-choice">
+        <legend>Outcome (required)</legend>
+        <p id="outcome-help" className="form-help">
+          Choose how the match ended.
+        </p>
+        <div className="result-choice__options result-choice__options--outcome">
+          {[
+            ["normal", "Normal result"],
+            ["retirement", "Retirement"],
+            ["walkover", "Walkover"],
+          ].map(([value, label]) => {
+            const outcome = value as ResultOutcome;
+            return (
+              <label key={outcome}>
+                <input
+                  type="radio"
+                  name="outcomeType"
+                  value={outcome}
+                  required
+                  checked={selectedOutcome === outcome}
+                  onChange={() =>
+                    setOutcomeSelection({
+                      version: state.expectedUpdatedAt,
+                      outcome,
+                    })
+                  }
+                  aria-describedby={describedBy(
+                    "outcome-help",
+                    state.fieldErrors.outcomeType,
+                  )}
+                />
+                <span>{label}</span>
+              </label>
+            );
+          })}
+        </div>
+        {state.fieldErrors.outcomeType ? (
+          <p id="outcome-help-error" className="form-error" role="alert">
+            {state.fieldErrors.outcomeType}
+          </p>
+        ) : null}
+      </fieldset>
+
+      <fieldset className="result-choice">
         <legend>Winner (required)</legend>
         <p id="winner-help" className="form-help">
-          Choose the team that won two sets.
+          {selectedOutcome === "normal"
+            ? "Choose the team that won two sets."
+            : "Choose the team awarded the match win."}
         </p>
         <div className="result-choice__options">
           {[
@@ -178,102 +244,131 @@ export function ResultForm({
         ) : null}
       </fieldset>
 
-      <fieldset className="score-entry">
-        <legend>Set scores (required)</legend>
-        <p className="form-help" id="score-entry-help">
-          Enter both scores for sets one and two. Use set three only when the
-          teams split the first two sets.
-        </p>
-        <div
-          className="score-entry__grid"
-          aria-describedby="score-entry-help"
-        >
-          <span className="score-entry__corner" aria-hidden="true" />
-          <span className="score-entry__heading">Set 1</span>
-          <span className="score-entry__heading">Set 2</span>
-          <span className="score-entry__heading">Set 3</span>
-
-          <span className="score-entry__team">{team1Name}</span>
-          {[1, 2, 3].map((setNumber) => {
-            const field = `set${setNumber}Team1` as ResultField;
-            return (
-              <ScoreInput
-                key={field}
-                field={field}
-                label={`${team1Name}, set ${setNumber}`}
-                defaultValue={state.values[field]}
-                error={state.fieldErrors[field]}
-              />
-            );
-          })}
-
-          <span className="score-entry__team">{team2Name}</span>
-          {[1, 2, 3].map((setNumber) => {
-            const field = `set${setNumber}Team2` as ResultField;
-            return (
-              <ScoreInput
-                key={field}
-                field={field}
-                label={`${team2Name}, set ${setNumber}`}
-                defaultValue={state.values[field]}
-                error={state.fieldErrors[field]}
-              />
-            );
-          })}
-        </div>
-        {setErrors.map((error, index) =>
-          error ? (
-            <p className="form-error" role="alert" key={`set-error-${index}`}>
-              Set {index + 1}: {error}
-            </p>
-          ) : null,
-        )}
-      </fieldset>
-
-      <fieldset className="result-choice">
-        <legend>Deciding set format (required)</legend>
-        <p id="format-help" className="form-help">
-          Record the format agreed for a third set, even if the match ended in
-          two.
-        </p>
-        <div className="result-choice__options">
-          <label>
-            <input
-              type="radio"
-              name="decidingSetFormat"
-              value="full_set"
-              required
-              defaultChecked={state.values.decidingSetFormat === "full_set"}
-              aria-describedby={describedBy(
-                "format-help",
-                state.fieldErrors.decidingSetFormat,
-              )}
-            />
-            <span>Full third set</span>
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="decidingSetFormat"
-              value="match_tiebreak"
-              required
-              defaultChecked={
-                state.values.decidingSetFormat === "match_tiebreak"
-              }
-              aria-describedby={describedBy(
-                "format-help",
-                state.fieldErrors.decidingSetFormat,
-              )}
-            />
-            <span>10-point match tiebreak</span>
-          </label>
-        </div>
-        {state.fieldErrors.decidingSetFormat ? (
-          <p id="format-help-error" className="form-error" role="alert">
-            {state.fieldErrors.decidingSetFormat}
+      {selectedOutcome === "walkover" ? (
+        <div className="result-outcome-note">
+          <strong>No score for a walkover.</strong>
+          <p>
+            The winner and played time will be recorded without set scores or
+            a deciding set format.
           </p>
-        ) : null}
-      </fieldset>
+        </div>
+      ) : (
+        <>
+          <fieldset className="score-entry">
+            <legend>
+              {selectedOutcome === "normal"
+                ? "Set scores (required)"
+                : "Score at retirement (optional)"}
+            </legend>
+            <p className="form-help" id="score-entry-help">
+              {selectedOutcome === "normal"
+                ? "Enter both scores for sets one and two. Use set three only when the teams split the first two sets."
+                : "Enter the score reached before retirement. Complete both scores in each set used and leave unused later sets empty."}
+            </p>
+            <div
+              className="score-entry__grid"
+              aria-describedby="score-entry-help"
+            >
+              <span className="score-entry__corner" aria-hidden="true" />
+              <span className="score-entry__heading">Set 1</span>
+              <span className="score-entry__heading">Set 2</span>
+              <span className="score-entry__heading">Set 3</span>
+
+              <span className="score-entry__team">{team1Name}</span>
+              {[1, 2, 3].map((setNumber) => {
+                const field = `set${setNumber}Team1` as ResultField;
+                return (
+                  <ScoreInput
+                    key={field}
+                    field={field}
+                    label={`${team1Name}, set ${setNumber}`}
+                    defaultValue={state.values[field]}
+                    error={state.fieldErrors[field]}
+                    required={
+                      selectedOutcome === "normal" && setNumber < 3
+                    }
+                  />
+                );
+              })}
+
+              <span className="score-entry__team">{team2Name}</span>
+              {[1, 2, 3].map((setNumber) => {
+                const field = `set${setNumber}Team2` as ResultField;
+                return (
+                  <ScoreInput
+                    key={field}
+                    field={field}
+                    label={`${team2Name}, set ${setNumber}`}
+                    defaultValue={state.values[field]}
+                    error={state.fieldErrors[field]}
+                    required={
+                      selectedOutcome === "normal" && setNumber < 3
+                    }
+                  />
+                );
+              })}
+            </div>
+            {setErrors.map((error, index) =>
+              error ? (
+                <p
+                  className="form-error"
+                  role="alert"
+                  key={`set-error-${index}`}
+                >
+                  Set {index + 1}: {error}
+                </p>
+              ) : null,
+            )}
+          </fieldset>
+
+          <fieldset className="result-choice">
+            <legend>Deciding set format (required)</legend>
+            <p id="format-help" className="form-help">
+              Record the format agreed for a third set, even if the match ended
+              earlier.
+            </p>
+            <div className="result-choice__options">
+              <label>
+                <input
+                  type="radio"
+                  name="decidingSetFormat"
+                  value="full_set"
+                  required
+                  defaultChecked={
+                    state.values.decidingSetFormat === "full_set"
+                  }
+                  aria-describedby={describedBy(
+                    "format-help",
+                    state.fieldErrors.decidingSetFormat,
+                  )}
+                />
+                <span>Full third set</span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="decidingSetFormat"
+                  value="match_tiebreak"
+                  required
+                  defaultChecked={
+                    state.values.decidingSetFormat === "match_tiebreak"
+                  }
+                  aria-describedby={describedBy(
+                    "format-help",
+                    state.fieldErrors.decidingSetFormat,
+                  )}
+                />
+                <span>10-point match tiebreak</span>
+              </label>
+            </div>
+            {state.fieldErrors.decidingSetFormat ? (
+              <p id="format-help-error" className="form-error" role="alert">
+                {state.fieldErrors.decidingSetFormat}
+              </p>
+            ) : null}
+          </fieldset>
+        </>
+      )}
 
       <div className="schedule-form__date-time">
         <div className="form-field">

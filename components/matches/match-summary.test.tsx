@@ -160,6 +160,8 @@ describe("MatchSummary", () => {
     );
 
     expect(markup).toContain("Retirement");
+    expect(markup).toContain("Score at retirement");
+    expect(markup).toContain("score-display--partial");
     expect(markup).toContain("<table>");
   });
 

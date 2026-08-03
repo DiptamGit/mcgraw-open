@@ -10,9 +10,11 @@ import {
   createResultFormState,
   getResultEditability,
   parsePlayedAt,
+  parseRetirementSets,
   parseSubmittedSets,
   resultSubmissionSchema,
   validateNormalScore,
+  validateRetirementScore,
   type ResultField,
   type ResultFormState,
 } from "@/lib/matches/result";
@@ -35,6 +37,7 @@ function submittedState(
       readFormValue(formData, "expectedUpdatedAt") ||
       previousState.expectedUpdatedAt,
     values: {
+      outcomeType: readFormValue(formData, "outcomeType"),
       winnerId: readFormValue(formData, "winnerId"),
       decidingSetFormat: readFormValue(formData, "decidingSetFormat"),
       playedDate: readFormValue(formData, "playedDate"),
@@ -99,6 +102,7 @@ export async function updateMatchResult(
     intent: formData.get("intent"),
     matchId: formData.get("matchId"),
     expectedUpdatedAt: formData.get("expectedUpdatedAt"),
+    outcomeType: formData.get("outcomeType"),
     winnerId: formData.get("winnerId"),
     decidingSetFormat: formData.get("decidingSetFormat"),
     playedDate: formData.get("playedDate"),
@@ -201,36 +205,6 @@ export async function updateMatchResult(
       };
     }
 
-    const parsedSets = parseSubmittedSets(submission);
-    if (!parsedSets.success) {
-      return {
-        ...pendingState,
-        message: "Check the highlighted set scores.",
-        fieldErrors: parsedSets.fieldErrors,
-      };
-    }
-
-    const scoreValidation = validateNormalScore({
-      sets: parsedSets.sets,
-      decidingSetFormat: submission.decidingSetFormat,
-      winnerSide:
-        submission.winnerId === currentMatch.team1_id ? "team1" : "team2",
-    });
-    if (!scoreValidation.success) {
-      return {
-        ...pendingState,
-        message: scoreValidation.message,
-        fieldErrors: scoreValidation.winnerError
-          ? { winnerId: scoreValidation.message }
-          : scoreValidation.setIndex === undefined
-            ? {}
-            : scoreFieldErrors(
-                scoreValidation.setIndex,
-                scoreValidation.message,
-              ),
-      };
-    }
-
     const completedAt = new Date().toISOString();
     const playedAt = parsePlayedAt(
       submission.playedDate,
@@ -245,11 +219,84 @@ export async function updateMatchResult(
       };
     }
 
+    let resultDetails;
+    if (submission.outcomeType === "normal") {
+      const parsedSets = parseSubmittedSets(submission);
+      if (!parsedSets.success) {
+        return {
+          ...pendingState,
+          message: "Check the highlighted set scores.",
+          fieldErrors: parsedSets.fieldErrors,
+        };
+      }
+
+      const normalScoreValidation = validateNormalScore({
+        sets: parsedSets.sets,
+        decidingSetFormat: submission.decidingSetFormat,
+        winnerSide:
+          submission.winnerId === currentMatch.team1_id ? "team1" : "team2",
+      });
+      if (!normalScoreValidation.success) {
+        return {
+          ...pendingState,
+          message: normalScoreValidation.message,
+          fieldErrors: normalScoreValidation.winnerError
+            ? { winnerId: normalScoreValidation.message }
+            : normalScoreValidation.setIndex === undefined
+              ? {}
+              : scoreFieldErrors(
+                  normalScoreValidation.setIndex,
+                  normalScoreValidation.message,
+                ),
+        };
+      }
+
+      resultDetails = {
+        deciding_set_format: submission.decidingSetFormat,
+        outcome_type: "normal" as const,
+        sets: normalScoreValidation.sets,
+      };
+    } else if (submission.outcomeType === "retirement") {
+      const parsedSets = parseRetirementSets(submission);
+      if (!parsedSets.success) {
+        return {
+          ...pendingState,
+          message: "Check the highlighted retirement score.",
+          fieldErrors: parsedSets.fieldErrors,
+        };
+      }
+
+      const retirementScoreValidation = validateRetirementScore({
+        sets: parsedSets.sets,
+        decidingSetFormat: submission.decidingSetFormat,
+      });
+      if (!retirementScoreValidation.success) {
+        return {
+          ...pendingState,
+          message: retirementScoreValidation.message,
+          fieldErrors: scoreFieldErrors(
+            retirementScoreValidation.setIndex,
+            retirementScoreValidation.message,
+          ),
+        };
+      }
+
+      resultDetails = {
+        deciding_set_format: submission.decidingSetFormat,
+        outcome_type: "retirement" as const,
+        sets: parsedSets.sets,
+      };
+    } else {
+      resultDetails = {
+        deciding_set_format: null,
+        outcome_type: "walkover" as const,
+        sets: null,
+      };
+    }
+
     changes = {
       status: "completed" as const,
-      deciding_set_format: submission.decidingSetFormat,
-      outcome_type: "normal" as const,
-      sets: scoreValidation.sets,
+      ...resultDetails,
       winner_id: submission.winnerId,
       played_at: playedAt.timestamp,
       completed_at: completedAt,
