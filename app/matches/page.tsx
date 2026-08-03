@@ -1,6 +1,7 @@
 import { MatchFilters } from "@/components/matches/match-filters";
 import { MatchSummary } from "@/components/matches/match-summary";
 import { PageIntro } from "@/components/page-intro";
+import { hasOrganizerSession } from "@/lib/auth/session";
 import { getMatches } from "@/lib/data/queries";
 import type { TournamentMatch } from "@/lib/data/schema";
 import {
@@ -17,6 +18,7 @@ type MatchesPageProps = {
 };
 
 type MatchSectionProps = {
+  canSchedule: boolean;
   id: string;
   eyebrow: string;
   title: string;
@@ -24,6 +26,7 @@ type MatchSectionProps = {
 };
 
 function MatchSection({
+  canSchedule,
   id,
   eyebrow,
   title,
@@ -46,7 +49,11 @@ function MatchSection({
       </div>
       <div className="match-list">
         {matches.map((match) => (
-          <MatchSummary key={match.id} match={match} />
+          <MatchSummary
+            canSchedule={canSchedule}
+            key={match.id}
+            match={match}
+          />
         ))}
       </div>
     </section>
@@ -56,9 +63,10 @@ function MatchSection({
 export default async function MatchesPage({
   searchParams,
 }: MatchesPageProps) {
-  const [matches, resolvedSearchParams] = await Promise.all([
+  const [matches, resolvedSearchParams, canSchedule] = await Promise.all([
     getMatches(),
     searchParams,
+    hasOrganizerSession(),
   ]);
   const filters = parseMatchFilters(resolvedSearchParams);
   const sections = organizeMatches(matches, filters);
@@ -108,18 +116,21 @@ export default async function MatchesPage({
             ) : (
               <>
                 <MatchSection
+                  canSchedule={canSchedule}
                   id="scheduled-title"
                   eyebrow="Next on court"
                   title="Scheduled"
                   matches={sections.scheduled}
                 />
                 <MatchSection
+                  canSchedule={canSchedule}
                   id="unscheduled-title"
                   eyebrow="Awaiting a time"
                   title="Unscheduled"
                   matches={sections.unscheduled}
                 />
                 <MatchSection
+                  canSchedule={canSchedule}
                   id="completed-title"
                   eyebrow="Played"
                   title="Completed"

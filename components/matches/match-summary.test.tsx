@@ -59,6 +59,19 @@ describe("MatchSummary", () => {
     expect(markup).not.toContain("Venue");
   });
 
+  it("shows schedule controls only for an unlocked editable match", () => {
+    const unlockedMarkup = renderToStaticMarkup(
+      <MatchSummary canSchedule match={createMatch()} />,
+    );
+    const lockedMarkup = renderToStaticMarkup(
+      <MatchSummary match={createMatch()} />,
+    );
+
+    expect(unlockedMarkup).toContain("Schedule match");
+    expect(unlockedMarkup).toContain("/matches/GA-01/schedule");
+    expect(lockedMarkup).not.toContain("Schedule match");
+  });
+
   it("renders a scheduled fixture in Central Time with its venue", () => {
     const markup = renderToStaticMarkup(
       <MatchSummary
