@@ -1,4 +1,7 @@
-import { BRACKET_MAPPING, type KnockoutMatchCode } from "../bracket";
+import {
+  BRACKET_MAPPING,
+  isKnockoutMatchCode,
+} from "../bracket";
 import { DataIntegrityError } from "../data/errors";
 import type { TournamentMatch } from "../data/schema";
 
@@ -127,10 +130,6 @@ export function getOutcomeLabel(
     case null:
       return null;
   }
-}
-
-function isKnockoutMatchCode(code: string): code is KnockoutMatchCode {
-  return Object.hasOwn(BRACKET_MAPPING, code);
 }
 
 function getKnockoutPlaceholder(

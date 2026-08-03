@@ -9,8 +9,15 @@ export const TOURNAMENT_DATA_ROUTES = [
   "/bracket",
 ] as const;
 
-export function revalidateTournamentData(): void {
+export function revalidateTournamentData(matchCode?: string): void {
   for (const route of TOURNAMENT_DATA_ROUTES) {
     revalidatePath(route, "page");
+  }
+
+  if (matchCode) {
+    revalidatePath(
+      `/matches/${encodeURIComponent(matchCode)}/result`,
+      "page",
+    );
   }
 }

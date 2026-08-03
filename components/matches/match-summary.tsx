@@ -7,11 +7,13 @@ import {
   getOutcomeLabel,
   getTeamDisplayName,
 } from "../../lib/matches/presentation";
+import type { ResultEditability } from "../../lib/matches/result";
 import { ScoreDisplay } from "./score-display";
 
 type MatchSummaryProps = {
   canSchedule?: boolean;
   match: TournamentMatch;
+  resultEditability?: ResultEditability;
 };
 
 function MatchTeams({ match }: MatchSummaryProps) {
@@ -43,6 +45,7 @@ function MatchTeams({ match }: MatchSummaryProps) {
 export function MatchSummary({
   canSchedule = false,
   match,
+  resultEditability,
 }: MatchSummaryProps) {
   const team1Name = getTeamDisplayName(match, "team1");
   const team2Name = getTeamDisplayName(match, "team2");
@@ -103,14 +106,28 @@ export function MatchSummary({
         </dl>
       ) : null}
 
-      {canSchedule && match.status !== "completed" ? (
+      {(canSchedule && match.status !== "completed") || resultEditability ? (
         <div className="match-summary__actions">
-          <Link
-            className="match-schedule-link"
-            href={`/matches/${encodeURIComponent(match.code)}/schedule`}
-          >
-            {match.status === "scheduled" ? "Reschedule" : "Schedule match"}
-          </Link>
+          {canSchedule && match.status !== "completed" ? (
+            <Link
+              className="match-schedule-link"
+              href={`/matches/${encodeURIComponent(match.code)}/schedule`}
+            >
+              {match.status === "scheduled" ? "Reschedule" : "Schedule match"}
+            </Link>
+          ) : null}
+          {resultEditability?.editable ? (
+            <Link
+              className="match-result-link"
+              href={`/matches/${encodeURIComponent(match.code)}/result`}
+            >
+              {match.status === "completed" ? "Edit result" : "Record result"}
+            </Link>
+          ) : resultEditability ? (
+            <p className="match-result-lock">
+              <strong>Result locked.</strong> {resultEditability.reason}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </article>

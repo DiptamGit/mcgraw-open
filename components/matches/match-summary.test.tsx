@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import type { TournamentMatch } from "../../lib/data/schema";
+import type { ResultEditability } from "../../lib/matches/result";
 import { MatchSummary } from "./match-summary";
 
 const team1: TournamentMatch["team1"] = {
@@ -70,6 +71,31 @@ describe("MatchSummary", () => {
     expect(unlockedMarkup).toContain("Schedule match");
     expect(unlockedMarkup).toContain("/matches/GA-01/schedule");
     expect(lockedMarkup).not.toContain("Schedule match");
+  });
+
+  it("shows result controls or an explicit lock reason in organizer mode", () => {
+    const editable: ResultEditability = { editable: true };
+    const locked: ResultEditability = {
+      editable: false,
+      reason: "Group standings are finalized.",
+    };
+    const editableMarkup = renderToStaticMarkup(
+      <MatchSummary
+        match={createMatch()}
+        resultEditability={editable}
+      />,
+    );
+    const lockedMarkup = renderToStaticMarkup(
+      <MatchSummary
+        match={createMatch()}
+        resultEditability={locked}
+      />,
+    );
+
+    expect(editableMarkup).toContain("Record result");
+    expect(editableMarkup).toContain("/matches/GA-01/result");
+    expect(lockedMarkup).toContain("Result locked.");
+    expect(lockedMarkup).toContain("Group standings are finalized.");
   });
 
   it("renders a scheduled fixture in Central Time with its venue", () => {
