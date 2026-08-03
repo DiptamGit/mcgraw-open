@@ -1,13 +1,71 @@
+import { MatchFilters } from "@/components/matches/match-filters";
 import { MatchSummary } from "@/components/matches/match-summary";
 import { PageIntro } from "@/components/page-intro";
 import { getMatches } from "@/lib/data/queries";
-import { partitionMatches } from "@/lib/matches/presentation";
+import type { TournamentMatch } from "@/lib/data/schema";
+import {
+  organizeMatches,
+  parseMatchFilters,
+  type MatchSearchParams,
+} from "@/lib/matches/presentation";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function MatchesPage() {
-  const matches = await getMatches();
-  const sections = partitionMatches(matches);
+type MatchesPageProps = {
+  searchParams: Promise<MatchSearchParams>;
+};
+
+type MatchSectionProps = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  matches: TournamentMatch[];
+};
+
+function MatchSection({
+  id,
+  eyebrow,
+  title,
+  matches,
+}: MatchSectionProps) {
+  if (matches.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="match-section" aria-labelledby={id}>
+      <div className="match-section__heading">
+        <div>
+          <p className="utility-label">{eyebrow}</p>
+          <h2 id={id}>{title}</h2>
+        </div>
+        <span>
+          {matches.length} {matches.length === 1 ? "match" : "matches"}
+        </span>
+      </div>
+      <div className="match-list">
+        {matches.map((match) => (
+          <MatchSummary key={match.id} match={match} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export default async function MatchesPage({
+  searchParams,
+}: MatchesPageProps) {
+  const [matches, resolvedSearchParams] = await Promise.all([
+    getMatches(),
+    searchParams,
+  ]);
+  const filters = parseMatchFilters(resolvedSearchParams);
+  const sections = organizeMatches(matches, filters);
+  const filteredMatchCount =
+    sections.scheduled.length +
+    sections.unscheduled.length +
+    sections.completed.length;
 
   return (
     <>
@@ -28,43 +86,47 @@ export default async function MatchesPage() {
           </section>
         ) : (
           <div className="matches-view">
-            <p className="matches-view__count" aria-live="polite">
-              {matches.length} tournament matches
-            </p>
+            <MatchFilters filters={filters} resultCount={filteredMatchCount} />
 
-            {sections.fixtures.length > 0 ? (
-              <section className="match-section" aria-labelledby="fixtures-title">
-                <div className="match-section__heading">
-                  <div>
-                    <p className="utility-label">Schedule</p>
-                    <h2 id="fixtures-title">Fixtures</h2>
-                  </div>
-                  <span>{sections.fixtures.length} matches</span>
-                </div>
-                <div className="match-list">
-                  {sections.fixtures.map((match) => (
-                    <MatchSummary key={match.id} match={match} />
-                  ))}
-                </div>
+            {filteredMatchCount === 0 ? (
+              <section
+                className="content-panel match-filter-empty"
+                aria-labelledby="match-filter-empty-title"
+              >
+                <p className="utility-label">No results</p>
+                <h2 id="match-filter-empty-title">
+                  No matches match these filters.
+                </h2>
+                <p className="supporting-copy">
+                  Choose a different group or stage, or return to the complete
+                  tournament list.
+                </p>
+                <Link className="match-filter-reset" href="/matches">
+                  Show all matches
+                </Link>
               </section>
-            ) : null}
-
-            {sections.completed.length > 0 ? (
-              <section className="match-section" aria-labelledby="results-title">
-                <div className="match-section__heading">
-                  <div>
-                    <p className="utility-label">Played</p>
-                    <h2 id="results-title">Results</h2>
-                  </div>
-                  <span>{sections.completed.length} matches</span>
-                </div>
-                <div className="match-list">
-                  {sections.completed.map((match) => (
-                    <MatchSummary key={match.id} match={match} />
-                  ))}
-                </div>
-              </section>
-            ) : null}
+            ) : (
+              <>
+                <MatchSection
+                  id="scheduled-title"
+                  eyebrow="Next on court"
+                  title="Scheduled"
+                  matches={sections.scheduled}
+                />
+                <MatchSection
+                  id="unscheduled-title"
+                  eyebrow="Awaiting a time"
+                  title="Unscheduled"
+                  matches={sections.unscheduled}
+                />
+                <MatchSection
+                  id="completed-title"
+                  eyebrow="Played"
+                  title="Completed"
+                  matches={sections.completed}
+                />
+              </>
+            )}
           </div>
         )}
       </div>
