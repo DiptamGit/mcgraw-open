@@ -163,6 +163,27 @@ export type Database = {
           },
         ]
       }
+      organizer_unlock_limits: {
+        Row: {
+          client_key: string
+          failure_count: number
+          updated_at: string
+          window_started_at: string
+        }
+        Insert: {
+          client_key: string
+          failure_count?: number
+          updated_at?: string
+          window_started_at?: string
+        }
+        Update: {
+          client_key?: string
+          failure_count?: number
+          updated_at?: string
+          window_started_at?: string
+        }
+        Relationships: []
+      }
       teams: {
         Row: {
           final_rank: number | null
@@ -213,7 +234,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      record_organizer_unlock_attempt: {
+        Args: { p_client_key: string; p_was_successful: boolean }
+        Returns: {
+          allowed: boolean
+          retry_after_seconds: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
