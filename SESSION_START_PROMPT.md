@@ -23,9 +23,11 @@ Before proposing or changing anything:
    - the Current queue row for `MGO-XXX`;
    - the complete detailed section for `MGO-XXX`;
    - every dependency listed for it.
-5. Inspect the current repository structure, package scripts, Git status, and
+5. If the item includes UI or UX work, read `DESIGN.md` completely before
+   proposing or changing the interface.
+6. Inspect the current repository structure, package scripts, Git status, and
    relevant existing implementation.
-6. Treat those project files as the source of truth. Do not rely on assumptions
+7. Treat those project files as the source of truth. Do not rely on assumptions
    from previous sessions.
 
 ## Confirm readiness
@@ -49,6 +51,7 @@ Before proposing or changing anything:
 - Follow the architecture, environment, security, testing, and design decisions
   in `TECHNICAL_DECISIONS.md`.
 - Follow all tournament and scoring behavior in `SPEC.md`.
+- For UI or UX work, follow the locked system in `DESIGN.md`.
 - Reuse established project helpers and patterns before introducing new ones.
 - Keep TypeScript strict and avoid unsafe casts or silent fallbacks.
 - Surface errors clearly; do not turn failures into empty or successful states.
@@ -81,11 +84,15 @@ If the work item requires a schema, policy, trigger, function, or seed change:
 
 For UI or UX work:
 
+- Read and follow `DESIGN.md` as the approved visual and interaction source of
+  truth for MGO-006 through MGO-022.
 - Invoke and follow the project-local `frontend-design` skill.
 - Use the installed UI/UX Pro Max prompt and search tools where relevant.
-- If this is MGO-006, create or update `DESIGN.md` with the approved palette,
-  typography, layout rules, and signature element before implementing the full
-  visual system.
+- Use design guidance to implement the locked direction or fill a documented
+  component-level gap, not to generate a replacement direction.
+- Do not change the palette, typography, signature device, surface strategy,
+  shape language, navigation model, or responsive bracket model without
+  explicit user approval. Update `DESIGN.md` first after approval.
 - Use semantic HTML, CSS-variable design tokens, Tailwind, `next/font`, visible
   focus, WCAG AA contrast, reduced-motion support, and at least 44px primary
   touch targets.

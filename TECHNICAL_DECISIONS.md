@@ -124,9 +124,13 @@ Additional rules:
 
 ## Frontend and design implementation
 
-- MGO-006 begins with a brief two-pass design plan using the installed
-  frontend-design and UI/UX Pro Max guidance. Persist the approved palette,
-  typography, layout rules, and signature element in a small `DESIGN.md`.
+- The approved visual and interaction system is locked in `DESIGN.md`. Every
+  UI or UX session from MGO-006 through MGO-022 must read and follow it before
+  changing the interface.
+- Use the installed frontend-design and UI/UX Pro Max guidance to implement the
+  locked direction or fill a documented component-level gap, not to generate a
+  replacement direction. Foundational changes require explicit user approval
+  and an update to `DESIGN.md` first.
 - Define design tokens as CSS custom properties and expose them through
   Tailwind. Avoid scattering arbitrary colors and spacing values.
 - Use `next/font` so chosen fonts are optimized and do not require a runtime
@@ -152,8 +156,6 @@ Additional rules:
   checking current Vercel support.
 - **MGO-002/MGO-003:** Exact Vercel, staging Supabase, and production Supabase
   regions.
-- **MGO-006:** Visual direction, fonts, logo treatment, and whether the user has
-  existing tournament artwork or photography.
 - **MGO-009:** Concrete rate-limit storage mechanism after evaluating current
   Vercel features against a small Supabase-backed limiter.
 - **MGO-010:** Maintained timezone library for converting
