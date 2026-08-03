@@ -37,7 +37,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-011 | Enter and edit normal scores | Done | MGO-008, MGO-009 |
 | MGO-012 | Record retirements and walkovers | Done | MGO-011 |
 | MGO-013 | Implement the standings engine | Done | MGO-005, MGO-012 |
-| MGO-014 | Build the groups standings page | Not started | MGO-006, MGO-013 |
+| MGO-014 | Build the groups standings page | Done | MGO-006, MGO-013 |
 | MGO-015 | Finalize and reopen group standings | Not started | MGO-009, MGO-014 |
 | MGO-016 | Build the tournament home page | Not started | MGO-007, MGO-014 |
 | MGO-017 | Harden the group-stage release | Not started | MGO-010, MGO-012, MGO-015, MGO-016 |
