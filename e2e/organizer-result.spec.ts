@@ -6,6 +6,7 @@ import {
   recentTournamentDate,
   settleAfterMutation,
   unlockOrganizerMode,
+  waitForOrganizerForm,
 } from "./support/organizer";
 
 /** Each project edits its own fixtures so runs never collide. */
@@ -30,6 +31,11 @@ async function readCompletedGroupACount(page: Page): Promise<number> {
   return completed;
 }
 
+async function openResultForm(page: Page, code: string): Promise<void> {
+  await page.goto(`/matches/${code}/result`);
+  await waitForOrganizerForm(page);
+}
+
 test.describe("organizer scoring", () => {
   test("records a normal result and updates the standings", async ({
     page,
@@ -38,7 +44,7 @@ test.describe("organizer scoring", () => {
     await unlockOrganizerMode(page);
     const completedBefore = await readCompletedGroupACount(page);
 
-    await page.goto(`/matches/${code}/result`);
+    await openResultForm(page, code);
     await page.locator('input[name="outcomeType"][value="normal"]').check();
     await page.locator('input[name="winnerId"]').first().check();
     await page
@@ -69,7 +75,7 @@ test.describe("organizer scoring", () => {
     const code = resultFixtures[testInfo.project.name].walkover;
     await unlockOrganizerMode(page);
 
-    await page.goto(`/matches/${code}/result`);
+    await openResultForm(page, code);
     await page.locator('input[name="outcomeType"][value="normal"]').check();
     await page.locator('input[name="winnerId"]').first().check();
     await page
@@ -94,7 +100,7 @@ test.describe("organizer scoring", () => {
     const code = resultFixtures[testInfo.project.name].walkover;
     await unlockOrganizerMode(page);
 
-    await page.goto(`/matches/${code}/result`);
+    await openResultForm(page, code);
     await page.locator('input[name="outcomeType"][value="walkover"]').check();
     await expect(
       page.getByText("No score for a walkover."),
@@ -111,7 +117,7 @@ test.describe("organizer scoring", () => {
     const card = page.getByRole("article", { name: new RegExp(`^${code}:`) });
     await expect(card).toContainText("Walkover");
 
-    await page.goto(`/matches/${code}/result`);
+    await openResultForm(page, code);
     await settleAfterMutation(page);
     await page.getByRole("button", { name: "Clear result" }).click();
     await expect(
@@ -148,7 +154,7 @@ test.describe("organizer scoring", () => {
 
     const code = resultFixtures[testInfo.project.name].concurrent;
     await unlockOrganizerMode(page);
-    await page.goto(`/matches/${code}/result`);
+    await openResultForm(page, code);
 
     await page.locator('input[name="outcomeType"][value="normal"]').check();
     await page.locator('input[name="winnerId"]').first().check();
