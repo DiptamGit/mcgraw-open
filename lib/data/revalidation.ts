@@ -25,4 +25,6 @@ export function revalidateTournamentData(matchCode?: string): void {
     revalidatePath("/matches/[code]/result", "page");
     revalidatePath("/matches/[code]/schedule", "page");
   }
+
+  revalidatePath("/bracket/[code]/assignment", "page");
 }

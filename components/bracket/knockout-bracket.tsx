@@ -1,8 +1,12 @@
+import Link from "next/link";
+
 import type { KnockoutBracketRounds } from "@/lib/bracket";
+import { isKnockoutAssignmentCode } from "@/lib/knockout-assignment";
 
 import { MatchSummary } from "../matches/match-summary";
 
 type KnockoutBracketProps = {
+  isOrganizer?: boolean;
   rounds: KnockoutBracketRounds;
 };
 
@@ -33,18 +37,31 @@ function RoundHeading({
 }
 
 function BracketMatch({
+  isOrganizer,
   match,
 }: {
+  isOrganizer: boolean;
   match: KnockoutBracketRounds["quarterfinals"][number];
 }) {
   return (
     <div className="bracket-match">
       <MatchSummary match={match} showBracketSources />
+      {isOrganizer && isKnockoutAssignmentCode(match.code) ? (
+        <Link
+          className="bracket-progression-link"
+          href={`/bracket/${encodeURIComponent(match.code)}/assignment`}
+        >
+          Manage {match.code} teams
+        </Link>
+      ) : null}
     </div>
   );
 }
 
-export function KnockoutBracket({ rounds }: KnockoutBracketProps) {
+export function KnockoutBracket({
+  isOrganizer = false,
+  rounds,
+}: KnockoutBracketProps) {
   const quarterfinalPairs = [
     rounds.quarterfinals.slice(0, 2),
     rounds.quarterfinals.slice(2, 4),
@@ -70,7 +87,11 @@ export function KnockoutBracket({ rounds }: KnockoutBracketProps) {
           {quarterfinalPairs.map((pair) => (
             <div className="bracket-pair" key={pair[0]?.code}>
               {pair.map((match) => (
-                <BracketMatch key={match.id} match={match} />
+                <BracketMatch
+                  isOrganizer={isOrganizer}
+                  key={match.id}
+                  match={match}
+                />
               ))}
             </div>
           ))}
@@ -89,7 +110,11 @@ export function KnockoutBracket({ rounds }: KnockoutBracketProps) {
         />
         <div className="bracket-round__matches">
           {rounds.semifinals.map((match) => (
-            <BracketMatch key={match.id} match={match} />
+            <BracketMatch
+              isOrganizer={isOrganizer}
+              key={match.id}
+              match={match}
+            />
           ))}
         </div>
       </section>
@@ -106,7 +131,11 @@ export function KnockoutBracket({ rounds }: KnockoutBracketProps) {
         />
         <div className="bracket-round__matches">
           {rounds.final.map((match) => (
-            <BracketMatch key={match.id} match={match} />
+            <BracketMatch
+              isOrganizer={isOrganizer}
+              key={match.id}
+              match={match}
+            />
           ))}
         </div>
       </section>

@@ -41,7 +41,7 @@ export default defineConfig({
       // Full organizer writes are covered by the Chromium projects.
       name: "ios-safari",
       testIgnore:
-        /organizer-(schedule|result|group-transitions|quarterfinal-assignment)\.spec\.ts/,
+        /organizer-(schedule|result|group-transitions|quarterfinal-assignment|knockout-progression)\.spec\.ts/,
       use: { ...devices["iPhone 13"] },
     },
     {

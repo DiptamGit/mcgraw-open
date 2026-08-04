@@ -283,6 +283,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_knockout_assignment: {
+        Args: {
+          p_downstream_code: string
+          p_expected_downstream_updated_at: string
+          p_expected_source_updated_at: string
+          p_intent: string
+          p_team_id: string
+          p_team_slot: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
