@@ -1,5 +1,4 @@
 import { Check } from "@phosphor-icons/react/dist/ssr";
-import Link from "next/link";
 
 import type {
   MatchFilterSelection,
@@ -74,18 +73,17 @@ export function MatchFilters({ filters, resultCount }: MatchFiltersProps) {
               const isSelected = filters.group === option.value;
 
               return (
-                <Link
+                <a
                   key={option.value}
                   href={getFilterHref({ ...filters, group: option.value })}
                   className="match-filter-option"
                   aria-current={isSelected ? "true" : undefined}
-                  scroll={false}
                 >
                   {isSelected ? (
                     <Check size={16} weight="bold" aria-hidden="true" />
                   ) : null}
                   <span>{option.label}</span>
-                </Link>
+                </a>
               );
             })}
           </div>
@@ -102,18 +100,17 @@ export function MatchFilters({ filters, resultCount }: MatchFiltersProps) {
               const isSelected = filters.stage === option.value;
 
               return (
-                <Link
+                <a
                   key={option.value}
                   href={getFilterHref({ ...filters, stage: option.value })}
                   className="match-filter-option"
                   aria-current={isSelected ? "true" : undefined}
-                  scroll={false}
                 >
                   {isSelected ? (
                     <Check size={16} weight="bold" aria-hidden="true" />
                   ) : null}
                   <span>{option.label}</span>
-                </Link>
+                </a>
               );
             })}
           </div>
