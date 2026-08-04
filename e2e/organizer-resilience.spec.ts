@@ -4,7 +4,6 @@ import {
   formErrors,
   formFeedback,
   unlockOrganizerMode,
-  waitForOrganizerForm,
 } from "./support/organizer";
 
 const resilienceFixtures: Record<string, string> = {
@@ -19,7 +18,6 @@ test("keeps entered schedule values through a network failure and retry", async 
   const code = resilienceFixtures[testInfo.project.name];
   await unlockOrganizerMode(page);
   await page.goto(`/matches/${code}/schedule`);
-  await waitForOrganizerForm(page);
 
   await page.route(
     (url) => url.pathname === `/matches/${code}/schedule`,

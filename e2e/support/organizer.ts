@@ -43,15 +43,6 @@ export async function settleAfterMutation(page: Page): Promise<void> {
   await page.waitForLoadState("networkidle");
 }
 
-/** Waits until React has attached the wrapped server action to a form. */
-export async function waitForOrganizerForm(page: Page): Promise<void> {
-  await expect(
-    page.locator(
-      'form.schedule-form[data-hydrated="true"], form.result-form[data-hydrated="true"]',
-    ),
-  ).toBeVisible();
-}
-
 /** The form feedback panel, excluding the Next.js route announcer. */
 export function formFeedback(page: Page) {
   return page.locator(".form-feedback");
