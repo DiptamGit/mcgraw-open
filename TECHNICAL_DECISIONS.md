@@ -113,6 +113,13 @@ Additional rules:
 - Use structured Vercel server logs with action/match identifiers and sanitized
   errors. Add an external monitoring service only if production experience
   shows the need.
+- Use `https://macgraw-open-website-mcgraw-open.vercel.app` as the production
+  domain until a custom domain is explicitly requested.
+- Keep lightweight traffic analytics disabled for year one. Operational logs
+  and the server-only audit history are sufficient for launch.
+- Use separate schema and data dumps as the plan-independent production backup
+  floor. Store verified exports outside the repository before migrations and
+  at the initial tournament baseline.
 
 ## Test strategy
 
@@ -162,5 +169,3 @@ Additional rules:
   regions.
 - **MGO-010:** Maintained timezone library for converting
   `datetime-local` values to/from America/Chicago. Do not hand-roll DST logic.
-- **MGO-018:** Production domain, final PIN, backup capability available on the
-  chosen Supabase plan, and whether lightweight analytics are desired.

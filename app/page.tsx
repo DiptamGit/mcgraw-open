@@ -3,10 +3,19 @@ import { MatchSummary } from "@/components/matches/match-summary";
 import { PageIntro } from "@/components/page-intro";
 import { getTournamentData } from "@/lib/data/queries";
 import { getUpcomingMatches } from "@/lib/home/presentation";
+import { createPublicPageMetadata } from "@/lib/site-metadata";
 import { calculateGroupStandings } from "@/lib/standings/calculate";
 import { getGroupLeaders } from "@/lib/standings/presentation";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = createPublicPageMetadata({
+  title: "McGraw Open 2026",
+  description:
+    "Schedules, results, and group standings for the 2026 McGraw Open doubles tennis tournament.",
+  path: "/",
+  absoluteTitle: true,
+});
 
 export default async function HomePage() {
   const tournament = await getTournamentData();

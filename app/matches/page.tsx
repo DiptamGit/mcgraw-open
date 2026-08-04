@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { MatchFilters } from "@/components/matches/match-filters";
 import { MatchSummary } from "@/components/matches/match-summary";
 import { PageIntro } from "@/components/page-intro";
@@ -13,9 +15,16 @@ import {
   getResultEditability,
   type ResultEditability,
 } from "@/lib/matches/result";
-import Link from "next/link";
+import { createPublicPageMetadata } from "@/lib/site-metadata";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = createPublicPageMetadata({
+  title: "Matches",
+  description:
+    "View McGraw Open match schedules, court locations, results, and scores.",
+  path: "/matches",
+});
 
 type MatchesPageProps = {
   searchParams: Promise<MatchSearchParams>;

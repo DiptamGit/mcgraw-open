@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -11,6 +12,15 @@ import {
 } from "@/lib/groups/finalization";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Finalize groups",
+  description: "Review and lock the final McGraw Open group standings.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function FinalizeGroupsPage() {
   const returnTo = "/groups/finalize";

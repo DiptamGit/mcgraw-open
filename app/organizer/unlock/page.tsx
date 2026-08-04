@@ -1,9 +1,19 @@
 import { LockKeyOpen } from "@phosphor-icons/react/dist/ssr";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { UnlockForm } from "@/components/organizer/unlock-form";
 import { PageIntro } from "@/components/page-intro";
 import { hasOrganizerSession } from "@/lib/auth/session";
+
+export const metadata: Metadata = {
+  title: "Organizer access",
+  description: "Unlock McGraw Open organizer controls on this device.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 type UnlockPageProps = {
   searchParams: Promise<{
