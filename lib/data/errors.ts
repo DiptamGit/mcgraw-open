@@ -32,3 +32,24 @@ export class GroupStageMutationError extends DataLayerError {
     this.name = "GroupStageMutationError";
   }
 }
+
+export type QuarterfinalAssignmentIssue =
+  | "FINAL_RANKS_INCOMPLETE"
+  | "GROUPS_NOT_FINALIZED"
+  | "GROUP_STATE_CONFLICT"
+  | "INVALID_QUARTERFINAL_MATCH_VERSIONS"
+  | "QUARTERFINAL_ACTIVITY_EXISTS"
+  | "QUARTERFINAL_ASSIGNMENT_CONFLICT"
+  | "QUARTERFINAL_MATCH_CONFLICT"
+  | "QUARTERFINAL_MATCHES_INVALID"
+  | "TOURNAMENT_STATE_MISSING";
+
+export class QuarterfinalAssignmentError extends DataLayerError {
+  constructor(
+    public readonly issue: QuarterfinalAssignmentIssue,
+    options?: ErrorOptions,
+  ) {
+    super("Supabase rejected the quarterfinal assignment.", options);
+    this.name = "QuarterfinalAssignmentError";
+  }
+}

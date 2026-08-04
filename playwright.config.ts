@@ -40,7 +40,8 @@ export default defineConfig({
       // 320px layout, unlock, and the isolated network-failure recovery flow.
       // Full organizer writes are covered by the Chromium projects.
       name: "ios-safari",
-      testIgnore: /organizer-(schedule|result|group-transitions)\.spec\.ts/,
+      testIgnore:
+        /organizer-(schedule|result|group-transitions|quarterfinal-assignment)\.spec\.ts/,
       use: { ...devices["iPhone 13"] },
     },
     {

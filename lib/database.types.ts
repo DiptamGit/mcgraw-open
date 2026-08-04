@@ -234,6 +234,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_quarterfinal_teams: {
+        Args: { p_expected_state_updated_at: string; p_match_versions: Json }
+        Returns: Json
+      }
       finalize_group_standings: {
         Args: {
           p_expected_state_updated_at: string

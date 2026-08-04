@@ -43,7 +43,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-017 | Harden the group-stage release | Done | MGO-010, MGO-012, MGO-015, MGO-016 |
 | MGO-018 | Launch the group-stage site | Done | MGO-002, MGO-017 |
 | MGO-019 | Render the knockout bracket | Done | MGO-005, MGO-006, MGO-018 |
-| MGO-020 | Assign finalized teams to quarterfinals | Not started | MGO-015, MGO-019 |
+| MGO-020 | Assign finalized teams to quarterfinals | Done | MGO-015, MGO-019 |
 | MGO-021 | Administer semifinal and final assignments | Not started | MGO-011, MGO-019, MGO-020 |
 | MGO-022 | Harden and release the knockout stage | Not started | MGO-018, MGO-021 |
 
