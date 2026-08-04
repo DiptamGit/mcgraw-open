@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useReducer } from "react";
 
 export const NETWORK_FAILURE_MESSAGE =
   "This update could not be sent from this device. Check your connection and try again. Your entries are kept.";
@@ -36,15 +36,32 @@ export function useResilientFormAction<State>(
   onNetworkFailure: (state: Awaited<State>, formData: FormData) => State,
   initialState: Awaited<State>,
 ) {
-  return useActionState<State, FormData>(async (state, formData) => {
-    try {
-      return await action(state, formData);
-    } catch (error) {
-      if (isNetworkFailure(error)) {
-        return onNetworkFailure(state, formData);
-      }
+  const [state, formAction, isPending] = useActionState<State, FormData>(
+    async (state, formData) => {
+      try {
+        return await action(state, formData);
+      } catch (error) {
+        if (isNetworkFailure(error)) {
+          return onNetworkFailure(state, formData);
+        }
 
-      throw error;
+        throw error;
+      }
+    },
+    initialState,
+  );
+  const [, forceRender] = useReducer((count: number) => count + 1, 0);
+
+  useEffect(() => {
+    if (!isPending) {
+      return;
     }
-  }, initialState);
+
+    // Next.js #96233 can lose React's retry after a successful action response
+    // under load. An urgent render lets React commit the resolved transition.
+    const interval = window.setInterval(forceRender, 100);
+    return () => window.clearInterval(interval);
+  }, [isPending]);
+
+  return [state, formAction, isPending] as const;
 }

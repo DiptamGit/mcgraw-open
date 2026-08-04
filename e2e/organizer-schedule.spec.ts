@@ -6,7 +6,6 @@ import {
   formFeedback,
   settleAfterMutation,
   unlockOrganizerMode,
-  waitForOrganizerForm,
 } from "./support/organizer";
 
 /** Every project and test edits its own fixture so runs never collide. */
@@ -36,7 +35,6 @@ async function openScheduleForm(page: Page, code: string): Promise<void> {
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     /Schedule match|Reschedule match/,
   );
-  await waitForOrganizerForm(page);
 }
 
 test.describe("organizer scheduling", () => {

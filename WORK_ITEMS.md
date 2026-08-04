@@ -726,6 +726,11 @@ request was judged more valuable than that pre-hydration path.
 **Goal:** Release the useful group-stage site without waiting for deferred
 knockout features.
 
+**Implementation note:** Launch CI reproduced Next.js issue #96233, where a
+successful server-action response can leave React permanently pending under
+load. The shared resilient-action hook temporarily nudges pending transitions
+until the upstream scheduler race is fixed.
+
 **Scope:**
 
 - Add favicon, page titles, descriptions, social/OG metadata, and share image.
