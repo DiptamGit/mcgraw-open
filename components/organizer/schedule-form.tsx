@@ -51,9 +51,14 @@ export function ScheduleForm({
     initialState,
   );
   const [confirmingClear, setConfirmingClear] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
   const clearButtonRef = useRef<HTMLButtonElement>(null);
   const keepScheduleButtonRef = useRef<HTMLButtonElement>(null);
   const canClear = Boolean(state.values.date && state.values.time);
+
+  useEffect(() => {
+    formRef.current?.setAttribute("data-hydrated", "true");
+  }, []);
 
   useEffect(() => {
     if (confirmingClear) {
@@ -68,6 +73,7 @@ export function ScheduleForm({
 
   return (
     <form
+      ref={formRef}
       className="schedule-form"
       action={formAction}
       key={state.expectedUpdatedAt}

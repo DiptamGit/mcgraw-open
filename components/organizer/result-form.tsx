@@ -134,6 +134,7 @@ export function ResultForm({
     version: state.expectedUpdatedAt,
     outcome: normalizeOutcome(state.values.outcomeType),
   });
+  const formRef = useRef<HTMLFormElement>(null);
   const clearButtonRef = useRef<HTMLButtonElement>(null);
   const keepButtonRef = useRef<HTMLButtonElement>(null);
   const feedbackRef = useRef<HTMLDivElement>(null);
@@ -149,6 +150,10 @@ export function ResultForm({
     const team2Field = `set${setNumber}Team2` as ResultField;
     return state.fieldErrors[team1Field] ?? state.fieldErrors[team2Field];
   });
+
+  useEffect(() => {
+    formRef.current?.setAttribute("data-hydrated", "true");
+  }, []);
 
   useEffect(() => {
     if (confirmingClear) {
@@ -170,6 +175,7 @@ export function ResultForm({
 
   return (
     <form
+      ref={formRef}
       className="result-form"
       action={formAction}
       key={state.expectedUpdatedAt}
