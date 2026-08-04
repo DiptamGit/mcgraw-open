@@ -8,19 +8,20 @@ export const TOURNAMENT_DATA_ROUTES = [
   "/groups/finalize",
   "/groups/reopen",
   "/matches",
-  "/matches/[code]/schedule",
-  "/matches/[code]/result",
   "/bracket",
 ] as const;
 
 export function revalidateTournamentData(matchCode?: string): void {
   for (const route of TOURNAMENT_DATA_ROUTES) {
-    revalidatePath(route, "page");
+    revalidatePath(route);
   }
 
   if (matchCode) {
     const encodedCode = encodeURIComponent(matchCode);
-    revalidatePath(`/matches/${encodedCode}/result`, "page");
-    revalidatePath(`/matches/${encodedCode}/schedule`, "page");
+    revalidatePath(`/matches/${encodedCode}/result`);
+    revalidatePath(`/matches/${encodedCode}/schedule`);
+  } else {
+    revalidatePath("/matches/[code]/result", "page");
+    revalidatePath("/matches/[code]/schedule", "page");
   }
 }

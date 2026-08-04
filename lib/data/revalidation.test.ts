@@ -20,14 +20,25 @@ describe("tournament revalidation", () => {
 
     const refreshed = revalidatePath.mock.calls.map(([route]) => route);
 
-    expect(refreshed).toEqual([...TOURNAMENT_DATA_ROUTES]);
+    expect(refreshed).toEqual([
+      ...TOURNAMENT_DATA_ROUTES,
+      "/matches/[code]/result",
+      "/matches/[code]/schedule",
+    ]);
     expect(refreshed).toContain("/");
     expect(refreshed).toContain("/groups");
     expect(refreshed).toContain("/matches");
     expect(refreshed).toContain("/matches/[code]/schedule");
     expect(refreshed).toContain("/matches/[code]/result");
     expect(
-      revalidatePath.mock.calls.every(([, type]) => type === "page"),
+      revalidatePath.mock.calls
+        .slice(0, TOURNAMENT_DATA_ROUTES.length)
+        .every(([, type]) => type === undefined),
+    ).toBe(true);
+    expect(
+      revalidatePath.mock.calls
+        .slice(TOURNAMENT_DATA_ROUTES.length)
+        .every(([, type]) => type === "page"),
     ).toBe(true);
   });
 
@@ -38,6 +49,11 @@ describe("tournament revalidation", () => {
 
     expect(refreshed).toContain("/matches/GA-01/schedule");
     expect(refreshed).toContain("/matches/GA-01/result");
+    expect(refreshed).not.toContain("/matches/[code]/schedule");
+    expect(refreshed).not.toContain("/matches/[code]/result");
+    expect(
+      revalidatePath.mock.calls.every(([, type]) => type === undefined),
+    ).toBe(true);
   });
 
   it("encodes match codes that need escaping", () => {
