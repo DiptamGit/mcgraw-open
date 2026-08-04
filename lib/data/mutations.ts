@@ -7,7 +7,13 @@ import {
   DataLayerError,
   GroupStageMutationError,
   type GroupStageMutationIssue,
+  QuarterfinalAssignmentError,
+  type QuarterfinalAssignmentIssue,
 } from "./errors";
+import {
+  parseQuarterfinalAssignments,
+  type ExpectedQuarterfinalVersion,
+} from "../quarterfinal-assignment";
 import {
   parseMatchRecord,
   parseTournamentState,
@@ -50,6 +56,38 @@ function throwGroupStageMutationError(
   ) {
     throw new GroupStageMutationError(
       error.message as GroupStageMutationIssue,
+      { cause: error },
+    );
+  }
+
+  throwMutationError(operation, error);
+}
+
+const quarterfinalAssignmentIssues =
+  new Set<QuarterfinalAssignmentIssue>([
+    "FINAL_RANKS_INCOMPLETE",
+    "GROUPS_NOT_FINALIZED",
+    "GROUP_STATE_CONFLICT",
+    "INVALID_QUARTERFINAL_MATCH_VERSIONS",
+    "QUARTERFINAL_ACTIVITY_EXISTS",
+    "QUARTERFINAL_ASSIGNMENT_CONFLICT",
+    "QUARTERFINAL_MATCH_CONFLICT",
+    "QUARTERFINAL_MATCHES_INVALID",
+    "TOURNAMENT_STATE_MISSING",
+  ]);
+
+function throwQuarterfinalAssignmentError(
+  operation: string,
+  error: PostgrestError,
+): never {
+  if (
+    error.code === "P0001" &&
+    quarterfinalAssignmentIssues.has(
+      error.message as QuarterfinalAssignmentIssue,
+    )
+  ) {
+    throw new QuarterfinalAssignmentError(
+      error.message as QuarterfinalAssignmentIssue,
       { cause: error },
     );
   }
@@ -145,4 +183,24 @@ export async function reopenGroupStandings(
   }
 
   return parseTournamentState(data);
+}
+
+export async function assignQuarterfinalTeams(input: {
+  expectedStateUpdatedAt: string;
+  matchVersions: ExpectedQuarterfinalVersion[];
+}) {
+  const client = createPrivilegedSupabaseClient();
+  const { data, error } = await client.rpc("assign_quarterfinal_teams", {
+    p_expected_state_updated_at: input.expectedStateUpdatedAt,
+    p_match_versions: input.matchVersions,
+  });
+
+  if (error) {
+    throwQuarterfinalAssignmentError(
+      "assign finalized teams to quarterfinals",
+      error,
+    );
+  }
+
+  return parseQuarterfinalAssignments(data);
 }

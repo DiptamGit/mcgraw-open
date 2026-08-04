@@ -9,6 +9,7 @@ export const TOURNAMENT_DATA_ROUTES = [
   "/groups/reopen",
   "/matches",
   "/bracket",
+  "/bracket/quarterfinals",
 ] as const;
 
 export function revalidateTournamentData(matchCode?: string): void {

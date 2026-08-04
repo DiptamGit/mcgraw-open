@@ -28,6 +28,7 @@ describe("tournament revalidation", () => {
     expect(refreshed).toContain("/");
     expect(refreshed).toContain("/groups");
     expect(refreshed).toContain("/matches");
+    expect(refreshed).toContain("/bracket/quarterfinals");
     expect(refreshed).toContain("/matches/[code]/schedule");
     expect(refreshed).toContain("/matches/[code]/result");
     expect(
