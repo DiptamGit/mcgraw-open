@@ -137,4 +137,25 @@ describe("KnockoutBracket", () => {
       expect(markup).toContain(`id="match-${match.id}"`);
     }
   });
+
+  it("shows progression controls only to organizers", () => {
+    const matches = [
+      ...BRACKET_ROUND_CODES.quarterfinals,
+      ...BRACKET_ROUND_CODES.semifinals,
+      ...BRACKET_ROUND_CODES.final,
+    ].map((code, index) => knockoutMatch(code, index + 1));
+    const rounds = organizeKnockoutBracket(matches);
+    const publicMarkup = renderToStaticMarkup(
+      <KnockoutBracket rounds={rounds} />,
+    );
+    const organizerMarkup = renderToStaticMarkup(
+      <KnockoutBracket isOrganizer rounds={rounds} />,
+    );
+
+    expect(publicMarkup).not.toContain("Manage SF1 teams");
+    expect(organizerMarkup).toContain("Manage SF1 teams");
+    expect(organizerMarkup).toContain("Manage SF2 teams");
+    expect(organizerMarkup).toContain("Manage Final teams");
+    expect(organizerMarkup).not.toContain("Manage QF1 teams");
+  });
 });

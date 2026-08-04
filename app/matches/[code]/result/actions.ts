@@ -2,7 +2,10 @@
 
 import { OrganizerAuthorizationError } from "@/lib/auth/request";
 import { requireOrganizerServerAction } from "@/lib/auth/server-action";
-import { DataLayerError } from "@/lib/data/errors";
+import {
+  DataLayerError,
+  MatchMutationError,
+} from "@/lib/data/errors";
 import { updateMatchWithVersion } from "@/lib/data/mutations";
 import { getTournamentData } from "@/lib/data/queries";
 import { revalidateTournamentData } from "@/lib/data/revalidation";
@@ -337,6 +340,16 @@ export async function updateMatchResult(
       successMessage,
     );
   } catch (error) {
+    if (
+      error instanceof MatchMutationError &&
+      error.issue === "UPSTREAM_RESULT_LOCKED"
+    ) {
+      return {
+        ...pendingState,
+        message:
+          "This result was assigned to the next round on another device. Clear that downstream assignment before correcting the result.",
+      };
+    }
     if (error instanceof DataLayerError) {
       return {
         ...pendingState,

@@ -53,3 +53,36 @@ export class QuarterfinalAssignmentError extends DataLayerError {
     this.name = "QuarterfinalAssignmentError";
   }
 }
+
+export type KnockoutAssignmentIssue =
+  | "DOWNSTREAM_ASSIGNMENT_CONFLICT"
+  | "DOWNSTREAM_ASSIGNMENT_EXISTS"
+  | "DOWNSTREAM_ASSIGNMENT_MISSING"
+  | "DOWNSTREAM_MATCH_CONFLICT"
+  | "DOWNSTREAM_MATCH_PROTECTED"
+  | "DUPLICATE_DOWNSTREAM_TEAM"
+  | "INVALID_SOURCE_WINNER"
+  | "KNOCKOUT_ASSIGNMENT_INTENT_INVALID"
+  | "KNOCKOUT_PATH_INVALID"
+  | "SOURCE_MATCH_CONFLICT"
+  | "SOURCE_RESULT_INCOMPLETE";
+
+export class KnockoutAssignmentError extends DataLayerError {
+  constructor(
+    public readonly issue: KnockoutAssignmentIssue,
+    options?: ErrorOptions,
+  ) {
+    super("Supabase rejected the knockout assignment.", options);
+    this.name = "KnockoutAssignmentError";
+  }
+}
+
+export class MatchMutationError extends DataLayerError {
+  constructor(
+    public readonly issue: "UPSTREAM_RESULT_LOCKED",
+    options?: ErrorOptions,
+  ) {
+    super("Supabase rejected the match update.", options);
+    this.name = "MatchMutationError";
+  }
+}

@@ -5,6 +5,7 @@ import { PageIntro } from "@/components/page-intro";
 import { hasOrganizerSession } from "@/lib/auth/session";
 import { organizeKnockoutBracket } from "@/lib/bracket";
 import { getTournamentData } from "@/lib/data/queries";
+import { isKnockoutAssignmentCode } from "@/lib/knockout-assignment";
 import { createQuarterfinalAssignmentPreview } from "@/lib/quarterfinal-assignment";
 import { createPublicPageMetadata } from "@/lib/site-metadata";
 
@@ -18,7 +19,11 @@ export const metadata = createPublicPageMetadata({
 });
 
 type BracketPageProps = {
-  searchParams: Promise<{ assignment?: string }>;
+  searchParams: Promise<{
+    assignment?: string;
+    match?: string;
+    progression?: string;
+  }>;
 };
 
 export default async function BracketPage({
@@ -36,6 +41,10 @@ export default async function BracketPage({
           teams: tournament.teams,
           matches: tournament.matches,
         })
+      : null;
+  const progressionMatch =
+    query.match && isKnockoutAssignmentCode(query.match)
+      ? query.match
       : null;
 
   return (
@@ -61,11 +70,26 @@ export default async function BracketPage({
             </p>
           </div>
         ) : null}
+        {(query.progression === "assigned" ||
+          query.progression === "cleared") &&
+        progressionMatch ? (
+          <div
+            className="form-feedback form-feedback--success"
+            role="status"
+            aria-live="polite"
+          >
+            <p>
+              {query.progression === "assigned"
+                ? `Winner assigned to ${progressionMatch}. The source result is now locked.`
+                : `Assignment cleared from ${progressionMatch}. The source result is editable again.`}
+            </p>
+          </div>
+        ) : null}
         <p className="bracket-guide">
           Seed labels show where each team enters. Later rounds name the match
           whose winner advances.
         </p>
-        <KnockoutBracket rounds={rounds} />
+        <KnockoutBracket isOrganizer={isOrganizer} rounds={rounds} />
 
         {isOrganizer ? (
           <section

@@ -2189,6 +2189,34 @@ textarea:focus-visible {
   height: 100%;
 }
 
+.bracket-match:has(.bracket-progression-link) .match-summary {
+  height: auto;
+}
+
+.bracket-progression-link {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--hardcourt-blue);
+  border-top: 0;
+  border-radius: 0 0 var(--radius-control) var(--radius-control);
+  padding: 0.625rem 0.875rem;
+  background: var(--court-ice);
+  color: var(--hardcourt-blue);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  scroll-margin-bottom: 6rem;
+}
+
+.bracket-progression-link:hover {
+  background: var(--hardcourt-blue);
+  color: var(--line-white);
+}
+
 .bracket-board .score-display__team-name {
   align-items: flex-start;
   flex-direction: column;
@@ -2383,6 +2411,117 @@ textarea:focus-visible {
 }
 
 .result-outcome-note p {
+  margin: 0.25rem 0 0;
+  color: var(--muted-ink);
+}
+
+.knockout-assignment-page {
+  align-items: start;
+}
+
+.knockout-assignment-slots {
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+  max-width: 40rem;
+}
+
+.knockout-assignment-slot {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  border: 1px solid var(--court-line);
+  border-top: 0.375rem solid var(--hardcourt-blue);
+  border-radius: var(--radius-panel);
+  padding: 1rem;
+  background: var(--line-white);
+}
+
+.knockout-assignment-slot__heading {
+  display: grid;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--court-line);
+  padding-bottom: 1rem;
+}
+
+.knockout-assignment-slot__heading h2 {
+  margin: 0.25rem 0 0;
+  color: var(--score-ink);
+  font-family: var(--font-barlow-condensed), Arial Narrow, sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.knockout-assignment-state {
+  display: inline-flex;
+  min-height: 1.75rem;
+  width: fit-content;
+  align-items: center;
+  border: 1px solid var(--muted-ink);
+  border-radius: var(--radius-control);
+  padding: 0.25rem 0.5rem;
+  color: var(--muted-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.knockout-assignment-state--ready {
+  border-color: var(--hardcourt-blue);
+  background: var(--court-ice);
+  color: var(--hardcourt-blue);
+}
+
+.knockout-assignment-state--assigned {
+  border-color: var(--success);
+  background: var(--success-surface);
+  color: var(--success);
+}
+
+.knockout-assignment-state--conflict {
+  border-color: var(--danger);
+  background: var(--danger-surface);
+  color: var(--danger);
+}
+
+.knockout-assignment-source {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.knockout-assignment-source .match-summary {
+  background: var(--court-ice);
+}
+
+.knockout-assignment-form {
+  display: grid;
+  gap: 1.25rem;
+  border-top: 1px solid var(--court-line);
+  padding-top: 1.25rem;
+}
+
+.knockout-assignment-choice .result-choice__options {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.knockout-assignment-note {
+  border-left: 0.25rem solid var(--hardcourt-blue);
+  padding: 0.75rem 1rem;
+  background: var(--court-ice);
+}
+
+.knockout-assignment-note--protected {
+  border-color: var(--center-court-navy);
+}
+
+.knockout-assignment-note strong {
+  color: var(--score-ink);
+}
+
+.knockout-assignment-note p {
   margin: 0.25rem 0 0;
   color: var(--muted-ink);
 }
@@ -2702,6 +2841,22 @@ textarea:focus-visible {
     grid-template-columns: 4rem minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
     padding: 1.25rem;
+  }
+
+  .knockout-assignment-slot {
+    padding: 1.5rem;
+  }
+
+  .knockout-assignment-slot__heading {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .knockout-assignment-form
+    .group-transition-actions
+    > .group-transition-button {
+    width: auto;
+    min-width: 12rem;
   }
 
   .quarterfinal-assignment-row header {

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { OrganizerAuthorizationError } from "@/lib/auth/request";
+import { MatchMutationError } from "@/lib/data/errors";
 import type {
   MatchRecord,
   TournamentMatch,
@@ -204,6 +205,46 @@ describe("updateMatchResult", () => {
       hasResult: true,
       expectedUpdatedAt: updated.updated_at,
     });
+  });
+
+  it("surfaces a downstream lock that wins a concurrent result race", async () => {
+    const quarterfinal: TournamentMatch = {
+      ...match,
+      code: "QF1",
+      stage: "quarterfinal",
+      group_label: null,
+      label: "QF1: A1 vs B4",
+    };
+    const semifinal: TournamentMatch = {
+      ...match,
+      id: "a1000000-0000-4000-8000-000000000002",
+      code: "SF1",
+      stage: "semifinal",
+      group_label: null,
+      label: "SF1: Winner QF1 vs Winner QF2",
+      team1_id: null,
+      team2_id: null,
+      team1: null,
+      team2: null,
+    };
+    mocks.getTournamentData.mockResolvedValue(
+      tournament([quarterfinal, semifinal]),
+    );
+    mocks.updateMatchWithVersion.mockRejectedValue(
+      new MatchMutationError("UPSTREAM_RESULT_LOCKED"),
+    );
+    const { updateMatchResult } = await import("./actions");
+
+    const result = await updateMatchResult(
+      createResultFormState(quarterfinal),
+      resultFormData({
+        matchId: quarterfinal.id,
+        expectedUpdatedAt: quarterfinal.updated_at,
+      }),
+    );
+
+    expect(result.message).toContain("assigned to the next round");
+    expect(mocks.revalidateTournamentData).not.toHaveBeenCalled();
   });
 
   it("records a retirement with a partial score", async () => {

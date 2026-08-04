@@ -6,10 +6,17 @@ import { createPrivilegedSupabaseClient } from "../supabase/clients";
 import {
   DataLayerError,
   GroupStageMutationError,
+  KnockoutAssignmentError,
+  type KnockoutAssignmentIssue,
+  MatchMutationError,
   type GroupStageMutationIssue,
   QuarterfinalAssignmentError,
   type QuarterfinalAssignmentIssue,
 } from "./errors";
+import {
+  parseKnockoutAssignmentResult,
+  type KnockoutAssignmentSubmission,
+} from "../knockout-assignment";
 import {
   parseQuarterfinalAssignments,
   type ExpectedQuarterfinalVersion,
@@ -32,6 +39,19 @@ function throwMutationError(operation: string, error: PostgrestError): never {
   throw new DataLayerError(`Supabase could not ${operation}.`, {
     cause: error,
   });
+}
+
+function throwMatchMutationError(
+  operation: string,
+  error: PostgrestError,
+): never {
+  if (error.code === "P0001" && error.message === "UPSTREAM_RESULT_LOCKED") {
+    throw new MatchMutationError("UPSTREAM_RESULT_LOCKED", {
+      cause: error,
+    });
+  }
+
+  throwMutationError(operation, error);
 }
 
 const groupStageMutationIssues = new Set<GroupStageMutationIssue>([
@@ -95,6 +115,37 @@ function throwQuarterfinalAssignmentError(
   throwMutationError(operation, error);
 }
 
+const knockoutAssignmentIssues = new Set<KnockoutAssignmentIssue>([
+  "DOWNSTREAM_ASSIGNMENT_CONFLICT",
+  "DOWNSTREAM_ASSIGNMENT_EXISTS",
+  "DOWNSTREAM_ASSIGNMENT_MISSING",
+  "DOWNSTREAM_MATCH_CONFLICT",
+  "DOWNSTREAM_MATCH_PROTECTED",
+  "DUPLICATE_DOWNSTREAM_TEAM",
+  "INVALID_SOURCE_WINNER",
+  "KNOCKOUT_ASSIGNMENT_INTENT_INVALID",
+  "KNOCKOUT_PATH_INVALID",
+  "SOURCE_MATCH_CONFLICT",
+  "SOURCE_RESULT_INCOMPLETE",
+]);
+
+function throwKnockoutAssignmentError(
+  operation: string,
+  error: PostgrestError,
+): never {
+  if (
+    error.code === "P0001" &&
+    knockoutAssignmentIssues.has(error.message as KnockoutAssignmentIssue)
+  ) {
+    throw new KnockoutAssignmentError(
+      error.message as KnockoutAssignmentIssue,
+      { cause: error },
+    );
+  }
+
+  throwMutationError(operation, error);
+}
+
 export async function updateMatchWithVersion(
   input: VersionedMatchUpdate,
 ): Promise<VersionedMatchUpdateResult> {
@@ -109,7 +160,7 @@ export async function updateMatchWithVersion(
     .maybeSingle();
 
   if (error) {
-    throwMutationError("update the match", error);
+    throwMatchMutationError("update the match", error);
   }
 
   if (data) {
@@ -203,4 +254,25 @@ export async function assignQuarterfinalTeams(input: {
   }
 
   return parseQuarterfinalAssignments(data);
+}
+
+export async function updateKnockoutAssignment(
+  input: KnockoutAssignmentSubmission,
+) {
+  const client = createPrivilegedSupabaseClient();
+  const { data, error } = await client.rpc("update_knockout_assignment", {
+    p_intent: input.intent,
+    p_downstream_code: input.downstreamCode,
+    p_team_slot: input.teamSlot,
+    p_expected_downstream_updated_at:
+      input.expectedDownstreamUpdatedAt,
+    p_expected_source_updated_at: input.expectedSourceUpdatedAt,
+    p_team_id: input.teamId,
+  });
+
+  if (error) {
+    throwKnockoutAssignmentError("update the knockout assignment", error);
+  }
+
+  return parseKnockoutAssignmentResult(data);
 }

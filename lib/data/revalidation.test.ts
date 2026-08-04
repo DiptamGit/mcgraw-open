@@ -24,6 +24,7 @@ describe("tournament revalidation", () => {
       ...TOURNAMENT_DATA_ROUTES,
       "/matches/[code]/result",
       "/matches/[code]/schedule",
+      "/bracket/[code]/assignment",
     ]);
     expect(refreshed).toContain("/");
     expect(refreshed).toContain("/groups");
@@ -31,6 +32,7 @@ describe("tournament revalidation", () => {
     expect(refreshed).toContain("/bracket/quarterfinals");
     expect(refreshed).toContain("/matches/[code]/schedule");
     expect(refreshed).toContain("/matches/[code]/result");
+    expect(refreshed).toContain("/bracket/[code]/assignment");
     expect(
       revalidatePath.mock.calls
         .slice(0, TOURNAMENT_DATA_ROUTES.length)
@@ -53,8 +55,14 @@ describe("tournament revalidation", () => {
     expect(refreshed).not.toContain("/matches/[code]/schedule");
     expect(refreshed).not.toContain("/matches/[code]/result");
     expect(
-      revalidatePath.mock.calls.every(([, type]) => type === undefined),
+      revalidatePath.mock.calls
+        .filter(([route]) => route !== "/bracket/[code]/assignment")
+        .every(([, type]) => type === undefined),
     ).toBe(true);
+    expect(revalidatePath).toHaveBeenCalledWith(
+      "/bracket/[code]/assignment",
+      "page",
+    );
   });
 
   it("encodes match codes that need escaping", () => {
