@@ -19,6 +19,37 @@ import {
 
 export const runtime = "nodejs";
 
+function firstHeaderValue(value: string | null): string | null {
+  const firstValue = value?.split(",")[0]?.trim();
+  return firstValue || null;
+}
+
+/**
+ * Builds redirects from the validated request host so the organizer cookie is
+ * always set and read on the same origin, including behind a proxy where the
+ * internal request URL uses a different hostname.
+ */
+function requestOrigin(request: NextRequest): string {
+  const requestUrl = new URL(request.url);
+  const host =
+    firstHeaderValue(request.headers.get("x-forwarded-host")) ??
+    firstHeaderValue(request.headers.get("host"));
+
+  if (!host) {
+    return requestUrl.origin;
+  }
+
+  const protocol =
+    firstHeaderValue(request.headers.get("x-forwarded-proto")) ??
+    requestUrl.protocol.replace(":", "");
+
+  try {
+    return new URL(`${protocol}://${host}`).origin;
+  } catch {
+    return requestUrl.origin;
+  }
+}
+
 const sessionRequestSchema = z.discriminatedUnion("intent", [
   z.object({
     intent: z.literal("unlock"),
@@ -45,7 +76,7 @@ function redirectWithError(
   error: "invalid" | "limited" | "unavailable",
   retryAfterSeconds?: number,
 ): NextResponse {
-  const destination = new URL("/organizer/unlock", request.url);
+  const destination = new URL("/organizer/unlock", requestOrigin(request));
   destination.searchParams.set("returnTo", returnTo);
   destination.searchParams.set("error", error);
 
@@ -54,6 +85,27 @@ function redirectWithError(
   }
 
   return NextResponse.redirect(destination, 303);
+}
+
+/**
+ * Marks the organizer cookie Secure for every real deployment. Only a loopback
+ * HTTP origin, used by local development and the end-to-end suite, opts out.
+ */
+function secureCookieForRequest(request: NextRequest): boolean {
+  const { protocol, hostname } = new URL(requestOrigin(request));
+
+  if (protocol === "https:") {
+    return true;
+  }
+
+  const isLoopback =
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "[::1]" ||
+    hostname === "::1" ||
+    hostname.endsWith(".localhost");
+
+  return !isLoopback;
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -75,9 +127,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const returnTo = safeReturnTo(parsedRequest.data.returnTo);
 
   if (parsedRequest.data.intent === "lock") {
-    const response = NextResponse.redirect(new URL(returnTo, request.url), 303);
+    const response = NextResponse.redirect(
+      new URL(returnTo, requestOrigin(request)),
+      303,
+    );
     response.cookies.set(ORGANIZER_COOKIE_NAME, "", {
-      ...organizerCookieOptions(),
+      ...organizerCookieOptions(secureCookieForRequest(request)),
       maxAge: 0,
     });
     return response;
@@ -120,11 +175,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const token = await createOrganizerSessionToken(environment);
-  const response = NextResponse.redirect(new URL(returnTo, request.url), 303);
+  const response = NextResponse.redirect(
+    new URL(returnTo, requestOrigin(request)),
+    303,
+  );
   response.cookies.set(
     ORGANIZER_COOKIE_NAME,
     token,
-    organizerCookieOptions(),
+    organizerCookieOptions(secureCookieForRequest(request)),
   );
 
   return response;

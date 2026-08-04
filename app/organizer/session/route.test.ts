@@ -23,16 +23,26 @@ vi.mock("@/lib/auth/rate-limit", () => ({
 
 vi.mock("@/lib/auth/request", () => ({
   getPrivateUnlockClientKey: () => "a".repeat(64),
-  hasSameMutationOrigin: (request: Request) =>
-    request.headers.get("origin") === new URL(request.url).origin,
+  // Mirrors the real check, which trusts the request host rather than the
+  // internal request URL.
+  hasSameMutationOrigin: (request: Request) => {
+    const requestUrl = new URL(request.url);
+    const host =
+      request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+    const expected = host
+      ? new URL(`${requestUrl.protocol}//${host}`).origin
+      : requestUrl.origin;
+
+    return request.headers.get("origin") === expected;
+  },
 }));
 
 vi.mock("@/lib/auth/session", () => ({
   createOrganizerSessionToken: mocks.createOrganizerSessionToken,
   ORGANIZER_COOKIE_NAME: "mgo_organizer",
-  organizerCookieOptions: () => ({
+  organizerCookieOptions: (secure?: boolean) => ({
     httpOnly: true,
-    secure: true,
+    secure: secure ?? true,
     sameSite: "lax" as const,
     path: "/",
     maxAge: 604800,
@@ -43,6 +53,21 @@ vi.mock("@/lib/auth/session", () => ({
 
 import { OrganizerRateLimitError } from "@/lib/auth/rate-limit";
 import { POST } from "./route";
+
+function loopbackSessionRequest(
+  fields: Record<string, string>,
+): NextRequest {
+  return new NextRequest("http://localhost:3100/organizer/session", {
+    method: "POST",
+    headers: {
+      host: "127.0.0.1:3100",
+      origin: "http://127.0.0.1:3100",
+      "x-forwarded-for": "203.0.113.10",
+      "content-type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams(fields),
+  });
+}
 
 function sessionRequest(
   fields: Record<string, string>,
@@ -171,6 +196,54 @@ describe("organizer session route", () => {
     expect(cookie).toContain("mgo_organizer=");
     expect(cookie).toContain("Max-Age=0");
     expect(mocks.recordOrganizerUnlockAttempt).not.toHaveBeenCalled();
+  });
+
+  it("redirects to the requested host so the cookie survives the redirect", async () => {
+    const response = await POST(
+      loopbackSessionRequest({
+        intent: "unlock",
+        pin: "court-2026",
+        returnTo: "/matches",
+      }),
+    );
+
+    expect(response.headers.get("location")).toBe(
+      "http://127.0.0.1:3100/matches",
+    );
+  });
+
+  it("omits Secure only for a loopback HTTP origin", async () => {
+    const loopback = await POST(
+      loopbackSessionRequest({
+        intent: "unlock",
+        pin: "court-2026",
+        returnTo: "/matches",
+      }),
+    );
+
+    expect(loopback.headers.get("set-cookie")).not.toContain("Secure");
+  });
+
+  it("keeps Secure for a non-loopback HTTP origin", async () => {
+    const request = new NextRequest(
+      "http://mcgraw.example/organizer/session",
+      {
+        method: "POST",
+        headers: {
+          host: "mcgraw.example",
+          origin: "http://mcgraw.example",
+          "x-forwarded-for": "203.0.113.10",
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          intent: "unlock",
+          pin: "court-2026",
+          returnTo: "/matches",
+        }),
+      },
+    );
+
+    expect((await POST(request)).headers.get("set-cookie")).toContain("Secure");
   });
 
   it("prevents return paths from becoming cross-origin redirects", async () => {

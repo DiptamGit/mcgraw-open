@@ -1,8 +1,12 @@
 "use client";
 
-import { useActionState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { updateMatchSchedule } from "@/app/matches/[code]/schedule/actions";
+import {
+  NETWORK_FAILURE_MESSAGE,
+  useResilientFormAction,
+} from "@/components/forms/use-resilient-form-action";
 import type { ScheduleFormState } from "@/lib/matches/schedule";
 import { ScheduleSubmitButton } from "./schedule-submit-button";
 
@@ -15,15 +19,52 @@ function describedBy(helpId: string, error?: string): string {
   return error ? `${helpId} ${helpId}-error` : helpId;
 }
 
+function readValue(formData: FormData, name: string): string {
+  const value = formData.get(name);
+  return typeof value === "string" ? value : "";
+}
+
+function networkFailureState(
+  previousState: ScheduleFormState,
+  formData: FormData,
+): ScheduleFormState {
+  return {
+    ...previousState,
+    status: "error",
+    message: NETWORK_FAILURE_MESSAGE,
+    fieldErrors: {},
+    values: {
+      date: readValue(formData, "date"),
+      time: readValue(formData, "time"),
+      venue: readValue(formData, "venue"),
+    },
+  };
+}
+
 export function ScheduleForm({
   initialState,
   matchId,
 }: ScheduleFormProps) {
-  const [state, formAction] = useActionState(
+  const [state, formAction] = useResilientFormAction(
     updateMatchSchedule,
+    networkFailureState,
     initialState,
   );
+  const [confirmingClear, setConfirmingClear] = useState(false);
+  const clearButtonRef = useRef<HTMLButtonElement>(null);
+  const keepScheduleButtonRef = useRef<HTMLButtonElement>(null);
   const canClear = Boolean(state.values.date && state.values.time);
+
+  useEffect(() => {
+    if (confirmingClear) {
+      keepScheduleButtonRef.current?.focus();
+    }
+  }, [confirmingClear]);
+
+  function cancelClear(): void {
+    setConfirmingClear(false);
+    requestAnimationFrame(() => clearButtonRef.current?.focus());
+  }
 
   return (
     <form
@@ -153,16 +194,49 @@ export function ScheduleForm({
         >
           Save schedule
         </ScheduleSubmitButton>
-        {canClear ? (
-          <ScheduleSubmitButton
-            intent="clear"
-            pendingLabel="Removing schedule…"
-            variant="destructive"
-          >
-            Remove schedule
-          </ScheduleSubmitButton>
-        ) : null}
       </div>
+
+      {canClear ? (
+        <div className="result-clear">
+          <h3>Remove this schedule</h3>
+          <p>
+            This clears the date, time, and court, and returns the match to the
+            unscheduled list.
+          </p>
+          {confirmingClear ? (
+            <div
+              className="result-clear__confirmation"
+              role="group"
+              aria-label="Confirm removing the schedule"
+            >
+              <button
+                ref={keepScheduleButtonRef}
+                className="result-button result-button--quiet"
+                type="button"
+                onClick={cancelClear}
+              >
+                Keep schedule
+              </button>
+              <ScheduleSubmitButton
+                intent="clear"
+                pendingLabel="Removing schedule…"
+                variant="destructive"
+              >
+                Remove schedule
+              </ScheduleSubmitButton>
+            </div>
+          ) : (
+            <button
+              ref={clearButtonRef}
+              className="result-button result-button--destructive"
+              type="button"
+              onClick={() => setConfirmingClear(true)}
+            >
+              Remove schedule
+            </button>
+          )}
+        </div>
+      ) : null}
     </form>
   );
 }

@@ -191,7 +191,7 @@ export async function updateMatchSchedule(
       };
     }
 
-    revalidateTournamentData();
+    revalidateTournamentData(currentMatch.code);
     return createScheduleFormState(
       result.match,
       "success",
