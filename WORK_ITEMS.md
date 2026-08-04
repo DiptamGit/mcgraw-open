@@ -46,6 +46,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-020 | Assign finalized teams to quarterfinals | Done | MGO-015, MGO-019 |
 | MGO-021 | Administer semifinal and final assignments | Done | MGO-011, MGO-019, MGO-020 |
 | MGO-022 | Harden and release the knockout stage | Done | MGO-018, MGO-021 |
+| MGO-023 | Expand Group A roster and fixtures | Not started | MGO-022 |
 
 ## Phase 1 - Foundation
 
@@ -916,3 +917,102 @@ group-stage site.
 - `npm run build`
 - Perform a production smoke test of every bracket route and knockout mutation.
 - Repeat a focused smoke test of group-stage reads and writes.
+
+## Phase 8 - Tournament roster maintenance
+
+### MGO-023 - Expand Group A roster and fixtures
+
+**Goal:** Release Fault Tolerant as Group A's sixth team with its complete
+round-robin fixtures without altering existing tournament activity or knockout
+rules.
+
+**Scope:**
+
+- Add `Fault Tolerant - Shankar / Mohan` to Group A through a new versioned
+  Supabase migration with a stable team ID. Do not rewrite the original schema
+  or seed migrations to correct production data.
+- Replace the existing Group A final-rank constraint with one that permits
+  ranks 1-6 while continuing to reject invalid ranks.
+- Insert five deterministic, stable `GA-11` through `GA-15` group fixtures
+  pairing the new team once with every existing Group A team. Add them as
+  unscheduled without changing the original ten Group A fixtures.
+- Make the controlled data change transactional and fail without changing data
+  unless the groups remain open, all group fixtures remain unscheduled, and
+  knockout assignments remain blank. Preserve all existing teams, fixtures,
+  schedule/result data, and audit history.
+- Keep public reads and organizer scheduling and scoring on the existing
+  server-only data paths. Rely on the existing row-level triggers to audit the
+  inserted team and fixtures, and preserve anonymous write denial.
+- Update hard-coded public copy and automated expectations from 11 teams, 25
+  group matches, and 32 total matches to 12 teams, 30 group matches, and 37
+  total matches.
+- Verify Home, Groups, Matches, and Bracket consume the expanded data without
+  special-case client logic. Group A must show six standings rows and 15
+  fixtures while the top-four advancement treatment and quarterfinal mapping
+  remain unchanged.
+- Follow the locked system in `DESIGN.md`; preserve semantic standings,
+  existing match summaries, mobile behavior, keyboard access, and page-level
+  overflow safeguards without introducing a new visual pattern.
+- Update directly related operational documentation and production count
+  checks.
+- Apply the reviewed migration to staging, then use the documented backup,
+  dry-run, migration, deployment, and smoke-test process to release it to
+  production before tournament activity begins.
+- Do not add roster-management UI, player registration, team editing or
+  deletion, schedule regeneration, new authentication behavior, a new
+  dependency, or changes to standings rules, advancement, knockout structure,
+  or the design system.
+
+**Acceptance criteria:**
+
+- Exactly 12 teams exist: six in Group A and six in Group B.
+- Exactly 30 group matches exist: 15 in Group A and 15 in Group B. The seven
+  knockout matches remain unchanged, for 37 matches total.
+- Every team has exactly five group fixtures; no team plays itself and no
+  unordered group pairing is duplicated.
+- `Fault Tolerant - Shankar / Mohan` has one unscheduled fixture against each
+  original Group A team, with stable codes `GA-11` through `GA-15`.
+- The original ten Group A fixtures and all Group B and knockout records retain
+  their IDs and data unchanged.
+- Group A final rank 6 is accepted, rank 7 is rejected, and finalization still
+  requires every group result before atomically storing complete ranks.
+- The migration aborts atomically when the tournament is not in the approved
+  open, all-unscheduled, unassigned-knockout state.
+- Public Home, Groups, Matches, and Bracket pages render the expanded
+  tournament data. Filtering Matches to Group A returns 15 fixtures, and the
+  top four remain the only advancing positions.
+- Existing PIN-authorized scheduling and result flows accept the five new
+  match codes. Unauthorized writes remain denied and the new rows have
+  server-only audit records.
+- The six-row standings table and expanded fixture list remain usable at 320px
+  and desktop widths, at 200% zoom, and with keyboard navigation, without
+  page-level horizontal overflow.
+- Staging and production contain the reviewed counts and data, and the
+  production deployment serves the updated tournament copy and fixtures.
+
+**Validate:**
+
+- Show the complete migration and explain its effect before applying it.
+- Run a clean local Supabase reset and focused pgTAP tests for counts, stable
+  identities, pairings, final-rank constraints, migration preconditions, RLS,
+  and audit records.
+- Run the relevant standings, finalization, match-presentation, page, and
+  organizer-flow automated tests.
+- Run `npm run test`.
+- Run `npm run lint`.
+- Run `npm run build`.
+- Run focused Playwright coverage for public counts and Group A filtering, plus
+  the existing organizer scheduling and result flows against a new fixture.
+- Review Groups and Matches at 320px and desktop widths, at 200% zoom, and by
+  keyboard.
+- Apply and verify the migration on staging without using production data for
+  automated tests.
+- Export readable production schema and data backups, review the linked
+  migration list, perform a dry run, apply the migration, deploy Vercel, and
+  smoke-test the production counts and public routes.
+
+**External input:** Supabase and Vercel access plus explicit approval of the
+complete migration are required for staging and production release.
+
+**Timing:** Complete before the organizer PIN is distributed or any tournament
+match is scheduled or completed.

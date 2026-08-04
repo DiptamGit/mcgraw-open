@@ -42,12 +42,11 @@ Production.
    access-controlled storage.
 6. Review `npx supabase migration list --linked`, then run
    `npx supabase db push --linked --dry-run`.
-7. Apply the reviewed migrations with `npx supabase db push --linked`. The 2026
-   seed migration is idempotent and inserts the 11 teams, 25 group fixtures,
-   and seven knockout placeholders. Do not run `supabase db reset` against
-   Production.
-8. Query counts before deploying: 11 teams, 25 group matches, seven knockout
-   matches, and one tournament-state row.
+7. Apply the reviewed migrations with `npx supabase db push --linked`. The
+   ordered 2026 migrations establish the 12 teams, 30 group fixtures, and seven
+   knockout placeholders. Do not run `supabase db reset` against Production.
+8. Query counts before deploying: 12 teams, 30 group matches, seven knockout
+   matches, 37 matches total, and one tournament-state row.
 9. Deploy the reviewed commit with `npx vercel@latest --prod`, then confirm the
    stable production alias points to that deployment.
 10. Smoke-test Home, Groups, Matches, Bracket, organizer unlock, scheduling,
