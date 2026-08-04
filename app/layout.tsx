@@ -3,7 +3,7 @@ import { Barlow, Barlow_Condensed } from "next/font/google";
 import { SiteShell } from "@/components/site-shell";
 import "./globals.css";
 
-const siteUrl = "https://macgraw-open-website-mcgraw-open.vercel.app";
+const siteUrl = "https://mcgrawopen.com";
 
 const barlow = Barlow({
   subsets: ["latin"],

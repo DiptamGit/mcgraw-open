@@ -6,12 +6,15 @@
 |---|---|---|
 | Local | Local Supabase Docker stack | `npm run dev` |
 | Preview | `mcgraw-open-staging` in `us-east-1` | Vercel Preview |
-| Production | `mcgraw-open-production` in `us-east-1` | `https://macgraw-open-website-mcgraw-open.vercel.app` |
+| Production | `mcgraw-open-production` in `us-east-1` | `https://mcgrawopen.com` |
 
 Vercel Functions run in Washington, D.C. (`iad1`). Never copy Production
 Supabase values into Preview or Development, and never use the production
 project for automated tests. Traffic analytics are intentionally disabled for
 year one.
+
+The Vercel project also retains its generated `vercel.app` hostname as a
+fallback. Public links and metadata use `https://mcgrawopen.com`.
 
 Each Vercel scope needs `SUPABASE_URL`, `SUPABASE_ANON_KEY`,
 `SUPABASE_SERVICE_ROLE_KEY`, `ORGANIZER_PIN`, and

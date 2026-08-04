@@ -113,8 +113,8 @@ Additional rules:
 - Use structured Vercel server logs with action/match identifiers and sanitized
   errors. Add an external monitoring service only if production experience
   shows the need.
-- Use `https://macgraw-open-website-mcgraw-open.vercel.app` as the production
-  domain until a custom domain is explicitly requested.
+- Use `https://mcgrawopen.com` as the canonical production domain. Retain the
+  generated Vercel hostname as a fallback.
 - Keep lightweight traffic analytics disabled for year one. Operational logs
   and the server-only audit history are sufficient for launch.
 - Use separate schema and data dumps as the plan-independent production backup
