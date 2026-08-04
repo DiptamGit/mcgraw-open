@@ -1,6 +1,5 @@
 import {
-  BRACKET_MAPPING,
-  isKnockoutMatchCode,
+  getBracketSourceLabel,
 } from "../bracket";
 import { DataIntegrityError } from "../data/errors";
 import type { TournamentMatch } from "../data/schema";
@@ -132,27 +131,6 @@ export function getOutcomeLabel(
   }
 }
 
-function getKnockoutPlaceholder(
-  match: TournamentMatch,
-  side: MatchSide,
-): string {
-  if (!isKnockoutMatchCode(match.code)) {
-    throw new DataIntegrityError(
-      `Knockout match ${match.code} has no bracket source mapping.`,
-    );
-  }
-
-  const definition = BRACKET_MAPPING[match.code];
-  const source =
-    side === "team1" ? definition.team1Source : definition.team2Source;
-
-  if (source.type === "group-rank") {
-    return `${source.group}${source.rank}`;
-  }
-
-  return `Winner ${source.matchCode}`;
-}
-
 export function getTeamDisplayName(
   match: TournamentMatch,
   side: MatchSide,
@@ -164,7 +142,7 @@ export function getTeamDisplayName(
   }
 
   if (match.stage !== "group") {
-    return getKnockoutPlaceholder(match, side);
+    return getBracketSourceLabel(match.code, side);
   }
 
   throw new DataIntegrityError(

@@ -135,6 +135,11 @@ export default async function HomePage() {
                 </article>
               ))}
             </div>
+
+            <div className="home-bracket-link">
+              <p className="utility-label">Knockout stage</p>
+              <Link href="/bracket">View the knockout bracket</Link>
+            </div>
           </section>
         </div>
       </div>

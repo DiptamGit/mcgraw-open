@@ -1,3 +1,6 @@
+import { DataIntegrityError } from "./data/errors";
+import type { TournamentMatch } from "./data/schema";
+
 export type KnockoutMatchCode =
   | "QF1"
   | "QF2"
@@ -32,6 +35,12 @@ type KnockoutMatchDefinition = {
   team1Source: BracketSource;
   team2Source: BracketSource;
 };
+
+export const BRACKET_ROUND_CODES = {
+  quarterfinals: ["QF1", "QF2", "QF3", "QF4"],
+  semifinals: ["SF1", "SF2"],
+  final: ["Final"],
+} as const satisfies Record<string, readonly KnockoutMatchCode[]>;
 
 export const BRACKET_MAPPING = {
   QF1: {
@@ -77,6 +86,86 @@ export const BRACKET_MAPPING = {
     team2Source: { type: "match-winner", matchCode: "SF2" },
   },
 } as const satisfies Record<KnockoutMatchCode, KnockoutMatchDefinition>;
+
+export type KnockoutBracketRounds = {
+  quarterfinals: TournamentMatch[];
+  semifinals: TournamentMatch[];
+  final: TournamentMatch[];
+};
+
+export function getBracketSourceLabel(
+  code: string,
+  side: "team1" | "team2",
+): string {
+  if (!isKnockoutMatchCode(code)) {
+    throw new DataIntegrityError(
+      `Knockout match ${code} has no bracket source mapping.`,
+    );
+  }
+
+  const definition = BRACKET_MAPPING[code];
+  const source =
+    side === "team1" ? definition.team1Source : definition.team2Source;
+
+  if (source.type === "group-rank") {
+    return `${source.group}${source.rank}`;
+  }
+
+  return `Winner ${source.matchCode}`;
+}
+
+export function organizeKnockoutBracket(
+  matches: TournamentMatch[],
+): KnockoutBracketRounds {
+  const matchesByCode = new Map<KnockoutMatchCode, TournamentMatch>();
+
+  for (const match of matches) {
+    if (match.stage === "group") {
+      continue;
+    }
+
+    if (!isKnockoutMatchCode(match.code)) {
+      throw new DataIntegrityError(
+        `Knockout match ${match.code} has no bracket source mapping.`,
+      );
+    }
+
+    if (matchesByCode.has(match.code)) {
+      throw new DataIntegrityError(
+        `Knockout match ${match.code} appears more than once.`,
+      );
+    }
+
+    if (match.stage !== BRACKET_MAPPING[match.code].stage) {
+      throw new DataIntegrityError(
+        `Knockout match ${match.code} has an invalid bracket stage.`,
+      );
+    }
+
+    matchesByCode.set(match.code, match);
+  }
+
+  const collectRound = (
+    codes: readonly KnockoutMatchCode[],
+  ): TournamentMatch[] =>
+    codes.map((code) => {
+      const match = matchesByCode.get(code);
+
+      if (!match) {
+        throw new DataIntegrityError(
+          `Knockout bracket is missing match ${code}.`,
+        );
+      }
+
+      return match;
+    });
+
+  return {
+    quarterfinals: collectRound(BRACKET_ROUND_CODES.quarterfinals),
+    semifinals: collectRound(BRACKET_ROUND_CODES.semifinals),
+    final: collectRound(BRACKET_ROUND_CODES.final),
+  };
+}
 
 export const DOWNSTREAM_ASSIGNMENTS = {
   QF1: { matchCode: "SF1", teamField: "team1_id" },

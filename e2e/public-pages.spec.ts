@@ -4,6 +4,10 @@ import {
   expectNoHorizontalPageOverflow,
   settleAfterMutation,
 } from "./support/organizer";
+import {
+  executeLocalSql,
+  resetLocalSupabaseDatabase,
+} from "./support/local-supabase";
 
 const publicRoutes = ["/", "/groups", "/matches", "/bracket"];
 
@@ -75,10 +79,105 @@ test.describe("public tournament pages", () => {
     );
   });
 
-  test("bracket stays honest before the knockout release", async ({ page }) => {
+  test("bracket renders the seeded 4-2-1 path", async ({ page }) => {
     await page.goto("/bracket");
 
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Bracket");
+    await expect(
+      page.getByRole("heading", { name: "Quarterfinals" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Semifinals" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Final", exact: true }),
+    ).toBeVisible();
+    await expect(page.locator(".bracket-board article")).toHaveCount(7);
+    await expect(page.getByText("A1", { exact: true })).toBeVisible();
+    await expect(page.getByText("B4", { exact: true })).toBeVisible();
+    await expect(page.getByText("Winner QF1", { exact: true })).toBeVisible();
+    await expect(page.getByText("Winner SF2", { exact: true })).toBeVisible();
+    await expect(page.getByText("Soon", { exact: true })).toHaveCount(0);
+  });
+
+  test("bracket uses connected round columns on desktop", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/bracket");
+
+    const columnCount = await page.locator(".bracket-board").evaluate(
+      (element) =>
+        getComputedStyle(element).gridTemplateColumns.split(" ").length,
+    );
+
+    expect(columnCount).toBe(3);
+  });
+
+  test("bracket presents assigned, scheduled, and completed matches", async ({
+    page,
+  }) => {
+    executeLocalSql(`
+      update public.matches
+      set team1_id = 'a0000001-0000-4000-8000-000000000001'
+      where code = 'QF1';
+
+      update public.matches
+      set
+        team1_id = 'a0000002-0000-4000-8000-000000000002',
+        team2_id = 'b0000003-0000-4000-8000-000000000003',
+        status = 'scheduled',
+        scheduled_at = '2026-09-12T20:30:00+00:00',
+        venue = 'McGraw Park · Court 2'
+      where code = 'QF2';
+
+      update public.matches
+      set
+        team1_id = 'a0000001-0000-4000-8000-000000000001',
+        team2_id = 'b0000004-0000-4000-8000-000000000004',
+        status = 'completed',
+        deciding_set_format = 'match_tiebreak',
+        outcome_type = 'normal',
+        sets = '[[6, 4], [3, 6], [10, 8]]'::jsonb,
+        winner_id = 'a0000001-0000-4000-8000-000000000001',
+        played_at = '2026-09-20T20:30:00+00:00',
+        completed_at = '2026-09-20T22:00:00+00:00'
+      where code = 'SF1';
+    `);
+
+    try {
+      await page.setViewportSize({ width: 320, height: 900 });
+      await page.goto("/bracket");
+      await expectNoHorizontalPageOverflow(page);
+
+      const quarterfinalOne = page.getByRole("article", {
+        name: /^QF1:/,
+      });
+      await expect(quarterfinalOne).toContainText(
+        "Net Results - Ranjit / Venu C",
+      );
+      await expect(quarterfinalOne.getByText("A1", { exact: true })).toBeVisible();
+      await expect(quarterfinalOne.getByText("B4", { exact: true })).toBeVisible();
+
+      const quarterfinalTwo = page.getByRole("article", {
+        name: /^QF2:/,
+      });
+      await expect(quarterfinalTwo).toContainText("Scheduled");
+      await expect(quarterfinalTwo).toContainText(
+        "Sep 12, 2026 · 3:30 PM CDT",
+      );
+      await expect(quarterfinalTwo).toContainText("McGraw Park · Court 2");
+
+      const semifinalOne = page.getByRole("article", {
+        name: /^SF1:/,
+      });
+      await expect(semifinalOne).toContainText("Completed");
+      await expect(semifinalOne.getByText("MTB", { exact: true })).toBeVisible();
+      await expect(
+        semifinalOne.getByText("Winner QF1", { exact: true }),
+      ).toBeVisible();
+      await expect(semifinalOne).toContainText("Winner");
+    } finally {
+      resetLocalSupabaseDatabase();
+    }
   });
 
   for (const route of publicRoutes) {

@@ -10,10 +10,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const routes = [
-  { href: "/", label: "Home", icon: House, soon: false },
-  { href: "/groups", label: "Groups", icon: UsersThree, soon: false },
-  { href: "/matches", label: "Matches", icon: CalendarDots, soon: false },
-  { href: "/bracket", label: "Bracket", icon: Trophy, soon: true },
+  { href: "/", label: "Home", icon: House },
+  { href: "/groups", label: "Groups", icon: UsersThree },
+  { href: "/matches", label: "Matches", icon: CalendarDots },
+  { href: "/bracket", label: "Bracket", icon: Trophy },
 ] as const;
 
 type SiteNavigationProps = {
@@ -29,7 +29,7 @@ export function SiteNavigation({ variant }: SiteNavigationProps) {
       aria-label="Primary"
     >
       <ul>
-        {routes.map(({ href, label, icon: Icon, soon }) => {
+        {routes.map(({ href, label, icon: Icon }) => {
           const isActive =
             pathname === href ||
             (href !== "/" && pathname.startsWith(`${href}/`));
@@ -49,7 +49,6 @@ export function SiteNavigation({ variant }: SiteNavigationProps) {
                   aria-hidden="true"
                 />
                 <span className="site-navigation__label">{label}</span>
-                {soon ? <span className="site-navigation__soon">Soon</span> : null}
               </Link>
             </li>
           );

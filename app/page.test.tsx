@@ -80,6 +80,7 @@ describe("HomePage", () => {
     expect(markup.match(/No leader yet\./g)).toHaveLength(2);
     expect(markup).toContain('href="/matches"');
     expect(markup).toContain('href="/groups"');
+    expect(markup).toContain('href="/bracket"');
   });
 
   it("shows a partial group leader from the standings engine", async () => {
