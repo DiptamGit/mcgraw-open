@@ -6,6 +6,7 @@ import {
 } from "./support/organizer";
 import {
   executeLocalSql,
+  getLocalSupabaseEnvironment,
   resetLocalSupabaseDatabase,
 } from "./support/local-supabase";
 
@@ -98,16 +99,53 @@ test.describe("public tournament pages", () => {
     await expect(page.getByText("Winner QF1", { exact: true })).toBeVisible();
     await expect(page.getByText("Winner SF2", { exact: true })).toBeVisible();
     await expect(page.getByText("Soon", { exact: true })).toHaveCount(0);
+    await expect(
+      page.getByRole("link", { name: /Manage (SF1|SF2|Final) teams/ }),
+    ).toHaveCount(0);
+  });
+
+  test("public clients cannot read audits or call knockout assignment functions", async ({
+    request,
+  }) => {
+    const { SUPABASE_URL, SUPABASE_ANON_KEY } =
+      getLocalSupabaseEnvironment();
+    const headers = {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    };
+    const auditResponse = await request.get(
+      `${SUPABASE_URL}/rest/v1/audit_log?select=id`,
+      { headers },
+    );
+    const assignmentResponse = await request.post(
+      `${SUPABASE_URL}/rest/v1/rpc/update_knockout_assignment`,
+      {
+        headers,
+        data: {
+          p_intent: "assign",
+          p_downstream_code: "SF1",
+          p_team_slot: "team1_id",
+          p_expected_downstream_updated_at: "2026-08-04T18:00:00Z",
+          p_expected_source_updated_at: "2026-08-04T18:00:00Z",
+          p_team_id: "a0000001-0000-4000-8000-000000000001",
+        },
+      },
+    );
+
+    expect(auditResponse.ok()).toBe(false);
+    expect(assignmentResponse.ok()).toBe(false);
   });
 
   test("bracket uses connected round columns on desktop", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto("/bracket");
 
-    const columnCount = await page.locator(".bracket-board").evaluate(
-      (element) =>
-        getComputedStyle(element).gridTemplateColumns.split(" ").length,
-    );
+    const columnCount = await page
+      .getByRole("group", { name: "McGraw Open knockout bracket" })
+      .evaluate(
+        (element) =>
+          getComputedStyle(element).gridTemplateColumns.split(" ").length,
+      );
 
     expect(columnCount).toBe(3);
   });

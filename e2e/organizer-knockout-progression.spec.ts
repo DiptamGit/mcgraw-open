@@ -71,7 +71,29 @@ test("assigns, locks, and clears a semifinal progression path", async (
     await expect(qf1Path).toContainText("Ready to assign");
     await expect(qf1Path.getByRole("radio")).toBeChecked();
     await expectNoHorizontalPageOverflow(page);
+    expect(
+      (await qf1Path.locator("label").first().boundingBox())?.height ?? 0,
+    ).toBeGreaterThanOrEqual(44);
+    expect(
+      (
+        await qf1Path
+          .getByRole("button", { name: "Review assignment" })
+          .boundingBox()
+      )?.height ?? 0,
+    ).toBeGreaterThanOrEqual(44);
 
+    await qf1Path
+      .getByRole("button", { name: "Review assignment" })
+      .click();
+    await expect(
+      qf1Path.getByRole("button", { name: "Keep bracket unchanged" }),
+    ).toBeFocused();
+    await qf1Path
+      .getByRole("button", { name: "Keep bracket unchanged" })
+      .click();
+    await expect(
+      qf1Path.getByRole("button", { name: "Review assignment" }),
+    ).toBeFocused();
     await qf1Path
       .getByRole("button", { name: "Review assignment" })
       .click();
@@ -137,11 +159,80 @@ test("assigns, locks, and clears a semifinal progression path", async (
           and after_data ->> 'team1_id' is null;
       `),
     ).toBe("1");
+    expect(
+      queryLocalSql(`
+        select count(*)
+        from public.audit_log
+        where entity_type = 'matches'
+          and entity_key = 'SF1'
+          and (
+            before_data ->> 'team1_id' is distinct from
+              after_data ->> 'team1_id'
+          );
+      `),
+    ).toBe("2");
 
     await page.goto("/matches/QF1/result");
     await expect(
       page.getByRole("heading", { name: "Correct the match result" }),
     ).toBeVisible();
+  } finally {
+    resetLocalSupabaseDatabase();
+  }
+});
+
+test("rejects a stale downstream assignment without advancing a team", async (
+  { page },
+  testInfo,
+) => {
+  executeLocalSql(COMPLETED_QUARTERFINALS_SQL);
+
+  try {
+    await unlockOrganizerMode(page);
+    if (testInfo.project.name === "android-chrome") {
+      await page.setViewportSize({ width: 320, height: 740 });
+    }
+    await page.goto("/bracket/SF1/assignment");
+
+    executeLocalSql(`
+      update public.matches
+      set label = label || ' '
+      where code = 'SF1';
+    `);
+
+    const qf1Path = page.getByRole("region", {
+      name: "Winner QF1 → SF1",
+    });
+    await qf1Path
+      .getByRole("button", { name: "Review assignment" })
+      .click();
+    await qf1Path
+      .getByRole("group", { name: "Confirm SF1 assignment" })
+      .getByRole("button", { name: "Assign winner" })
+      .click();
+
+    await expect(
+      qf1Path.locator(".form-feedback--conflict"),
+    ).toContainText("changed on another device");
+    await expect(
+      qf1Path.getByRole("button", { name: "Reload bracket" }),
+    ).toBeVisible();
+    expect(
+      queryLocalSql(`
+        select team1_id is null
+        from public.matches
+        where code = 'SF1';
+      `),
+    ).toBe("t");
+    expect(
+      queryLocalSql(`
+        select count(*)
+        from public.audit_log
+        where entity_type = 'matches'
+          and entity_key = 'SF1'
+          and after_data ->> 'team1_id' is not null;
+      `),
+    ).toBe("0");
   } finally {
     resetLocalSupabaseDatabase();
   }

@@ -97,7 +97,7 @@ jobs:
       - name: Start isolated local Supabase
         run: supabase start
 
-      - name: Run the group-stage smoke suite
+      - name: Run the tournament smoke suite
         run: npm run test:e2e
 
       - name: Upload Playwright report

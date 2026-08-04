@@ -75,6 +75,18 @@ test("previews and assigns the finalized quarterfinal draw", async (
     await page
       .getByRole("button", { name: "Assign quarterfinals" })
       .click();
+    await expect(
+      page.getByRole("button", { name: "Keep bracket unchanged" }),
+    ).toBeFocused();
+    await page
+      .getByRole("button", { name: "Keep bracket unchanged" })
+      .click();
+    await expect(
+      page.getByRole("button", { name: "Assign quarterfinals" }),
+    ).toBeFocused();
+    await page
+      .getByRole("button", { name: "Assign quarterfinals" })
+      .click();
     await page
       .getByRole("group", { name: "Confirm quarterfinal assignments" })
       .getByRole("button", { name: "Assign quarterfinals" })
@@ -110,6 +122,80 @@ test("previews and assigns the finalized quarterfinal draw", async (
           and entity_key = 'quarterfinal_assignment';
       `),
     ).toBe("1");
+    expect(
+      queryLocalSql(`
+        select count(*)
+        from public.audit_log
+        where entity_type = 'matches'
+          and entity_key in ('QF1', 'QF2', 'QF3', 'QF4')
+          and before_data ->> 'team1_id' is null
+          and before_data ->> 'team2_id' is null
+          and after_data ->> 'team1_id' is not null
+          and after_data ->> 'team2_id' is not null;
+      `),
+    ).toBe("4");
+
+    await page.goto("/matches?stage=quarterfinal");
+    await expect(page.locator(".matches-view__count")).toHaveText(
+      "4 matches",
+    );
+    await expect(
+      page.getByText("Net Results - Ranjit / Venu C", { exact: true }),
+    ).toBeVisible();
+  } finally {
+    resetLocalSupabaseDatabase();
+  }
+});
+
+test("rejects a stale quarterfinal preview without a partial assignment", async (
+  { page },
+  testInfo,
+) => {
+  executeLocalSql(FINALIZED_GROUPS_SQL);
+
+  try {
+    await unlockOrganizerMode(page);
+    if (testInfo.project.name === "android-chrome") {
+      await page.setViewportSize({ width: 320, height: 740 });
+    }
+    await page.goto("/bracket/quarterfinals");
+
+    executeLocalSql(`
+      update public.matches
+      set label = label || ' '
+      where code = 'QF1';
+    `);
+
+    await page
+      .getByRole("button", { name: "Assign quarterfinals" })
+      .click();
+    await page
+      .getByRole("group", { name: "Confirm quarterfinal assignments" })
+      .getByRole("button", { name: "Assign quarterfinals" })
+      .click();
+
+    await expect(page.locator(".form-feedback--conflict")).toContainText(
+      "changed on another device",
+    );
+    await expect(
+      page.getByRole("button", { name: "Reload draw" }),
+    ).toBeVisible();
+    expect(
+      queryLocalSql(`
+        select count(*)
+        from public.matches
+        where stage = 'quarterfinal'
+          and (team1_id is not null or team2_id is not null);
+      `),
+    ).toBe("0");
+    expect(
+      queryLocalSql(`
+        select count(*)
+        from public.audit_log
+        where entity_type = 'bracket'
+          and entity_key = 'quarterfinal_assignment';
+      `),
+    ).toBe("0");
   } finally {
     resetLocalSupabaseDatabase();
   }
