@@ -1,3 +1,4 @@
+import { getBracketSourceLabel } from "../../lib/bracket";
 import type { TournamentMatch } from "../../lib/data/schema";
 import Link from "next/link";
 import {
@@ -14,9 +15,13 @@ type MatchSummaryProps = {
   canSchedule?: boolean;
   match: TournamentMatch;
   resultEditability?: ResultEditability;
+  showBracketSources?: boolean;
 };
 
-function MatchTeams({ match }: MatchSummaryProps) {
+function MatchTeams({
+  match,
+  showBracketSources = false,
+}: MatchSummaryProps) {
   return (
     <div className="match-teams">
       {(["team1", "team2"] as const).map((side, index) => {
@@ -28,7 +33,14 @@ function MatchTeams({ match }: MatchSummaryProps) {
             className={`match-teams__team${isWinner ? " is-winner" : ""}`}
             key={side}
           >
-            <span>{getTeamDisplayName(match, side)}</span>
+            <span className="match-teams__identity">
+              {showBracketSources && teamId !== null ? (
+                <span className="bracket-source">
+                  {getBracketSourceLabel(match.code, side)}
+                </span>
+              ) : null}
+              <span>{getTeamDisplayName(match, side)}</span>
+            </span>
             {isWinner ? <span className="winner-label">Winner</span> : null}
             {index === 0 ? (
               <span className="match-teams__versus" aria-hidden="true">
@@ -46,6 +58,7 @@ export function MatchSummary({
   canSchedule = false,
   match,
   resultEditability,
+  showBracketSources = false,
 }: MatchSummaryProps) {
   const team1Name = getTeamDisplayName(match, "team1");
   const team2Name = getTeamDisplayName(match, "team2");
@@ -77,7 +90,28 @@ export function MatchSummary({
       </div>
 
       <div className="match-summary__competition">
-        {hasScore ? <ScoreDisplay match={match} /> : <MatchTeams match={match} />}
+        {hasScore && showBracketSources ? (
+          <p
+            className="bracket-source-path"
+            aria-label={`Bracket sources: ${getBracketSourceLabel(match.code, "team1")} versus ${getBracketSourceLabel(match.code, "team2")}`}
+          >
+            <span className="bracket-source">
+              {getBracketSourceLabel(match.code, "team1")}
+            </span>
+            <span aria-hidden="true">vs</span>
+            <span className="bracket-source">
+              {getBracketSourceLabel(match.code, "team2")}
+            </span>
+          </p>
+        ) : null}
+        {hasScore ? (
+          <ScoreDisplay match={match} />
+        ) : (
+          <MatchTeams
+            match={match}
+            showBracketSources={showBracketSources}
+          />
+        )}
         {outcomeLabel ? (
           <p className="outcome-label">{outcomeLabel}</p>
         ) : null}

@@ -1,32 +1,35 @@
+import { KnockoutBracket } from "@/components/bracket/knockout-bracket";
 import { PageIntro } from "@/components/page-intro";
+import { organizeKnockoutBracket } from "@/lib/bracket";
+import { getMatches } from "@/lib/data/queries";
 import { createPublicPageMetadata } from "@/lib/site-metadata";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = createPublicPageMetadata({
-  title: "Bracket coming soon",
+  title: "Knockout bracket",
   description:
-    "The McGraw Open knockout bracket will open after the group stage is finalized.",
+    "Follow the McGraw Open quarterfinals, semifinals, and championship match.",
   path: "/bracket",
 });
 
-export default function BracketPage() {
+export default async function BracketPage() {
+  const rounds = organizeKnockoutBracket(await getMatches());
+
   return (
     <>
       <PageIntro
         eyebrow="Knockout stage"
         title="Bracket"
         description="Four quarterfinals lead to one McGraw Open champion."
-        badge="Soon"
       />
 
       <div className="page-content">
-        <section className="content-panel" aria-labelledby="bracket-release">
-          <p className="utility-label">Later this tournament</p>
-          <h2 id="bracket-release">The knockout bracket opens after groups.</h2>
-          <p className="supporting-copy">
-            Quarterfinal places will be filled from the finalized Group A and
-            Group B standings.
-          </p>
-        </section>
+        <p className="bracket-guide">
+          Seed labels show where each team enters. Later rounds name the match
+          whose winner advances.
+        </p>
+        <KnockoutBracket rounds={rounds} />
       </div>
     </>
   );

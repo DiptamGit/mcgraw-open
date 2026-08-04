@@ -202,4 +202,25 @@ describe("MatchSummary", () => {
     expect(markup).toContain("Winner SF1");
     expect(markup).toContain("Winner SF2");
   });
+
+  it("keeps an assigned knockout team's source visible when requested", () => {
+    const markup = renderToStaticMarkup(
+      <MatchSummary
+        match={createMatch({
+          code: "QF1",
+          stage: "quarterfinal",
+          group_label: null,
+          label: "QF1: A1 vs B4",
+          team2_id: null,
+          team2: null,
+        })}
+        showBracketSources
+      />,
+    );
+
+    expect(markup).toContain(team1.name);
+    expect(markup).toContain("bracket-source");
+    expect(markup).toContain(">A1<");
+    expect(markup).toContain(">B4<");
+  });
 });

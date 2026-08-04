@@ -817,6 +817,23 @@ textarea:focus-visible {
   font-size: 1.25rem;
 }
 
+.home-bracket-link {
+  display: grid;
+  gap: 0.25rem;
+  border-top: 1px solid var(--court-line);
+  padding-top: 0.75rem;
+}
+
+.home-bracket-link a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  width: fit-content;
+  align-items: center;
+  color: var(--hardcourt-blue);
+  font-weight: 600;
+  text-underline-offset: 0.2em;
+}
+
 .group-shield {
   display: grid;
   width: 2.5rem;
@@ -1747,6 +1764,48 @@ textarea:focus-visible {
   font-weight: 700;
 }
 
+.match-teams__identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.match-teams__identity > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.bracket-source {
+  display: inline-flex;
+  min-height: 1.5rem;
+  flex: 0 0 auto;
+  align-items: center;
+  border: 1px solid var(--hardcourt-blue);
+  border-radius: var(--radius-control);
+  padding: 0.125rem 0.375rem;
+  background: var(--court-ice);
+  color: var(--hardcourt-blue);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.bracket-source-path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0 0 0.5rem;
+  color: var(--muted-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
 .match-teams__versus {
   position: absolute;
   top: calc(100% - 0.2rem);
@@ -1963,6 +2022,84 @@ textarea:focus-visible {
 
 .match-result-lock strong {
   color: var(--center-court-navy);
+}
+
+.bracket-guide {
+  max-width: 44rem;
+  margin: 0 0 1.5rem;
+  border-left: 0.25rem solid var(--hardcourt-blue);
+  padding: 0.625rem 0.75rem;
+  background: var(--line-white);
+  color: var(--muted-ink);
+}
+
+.bracket-board,
+.bracket-round,
+.bracket-round__matches,
+.bracket-pair {
+  display: grid;
+  min-width: 0;
+}
+
+.bracket-board {
+  gap: 2rem;
+}
+
+.bracket-round {
+  gap: 1rem;
+}
+
+.bracket-round__heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 2px solid var(--hardcourt-blue);
+  padding-bottom: 0.75rem;
+}
+
+.bracket-round__heading h2 {
+  margin: 0.25rem 0 0;
+  color: var(--score-ink);
+  font-family: var(--font-barlow-condensed), Arial Narrow, sans-serif;
+  font-size: 1.875rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.bracket-round__heading > span {
+  flex: 0 0 auto;
+  color: var(--muted-ink);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.bracket-round__matches,
+.bracket-pair {
+  gap: 0.75rem;
+}
+
+.bracket-match {
+  min-width: 0;
+}
+
+.bracket-match .match-summary {
+  height: 100%;
+}
+
+.bracket-board .score-display__team-name {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.bracket-board .score-display thead th:not(:first-child),
+.bracket-board .score-display td {
+  width: 2.25rem;
 }
 
 .schedule-page {
@@ -2545,6 +2682,10 @@ textarea:focus-visible {
     grid-column: 1 / -1;
   }
 
+  .bracket-round__heading h2 {
+    font-size: 2.5rem;
+  }
+
   .schedule-match-context,
   .schedule-form-panel {
     padding: 1.5rem;
@@ -2644,6 +2785,97 @@ textarea:focus-visible {
     position: absolute;
     top: 0.25rem;
     right: 0.25rem;
+  }
+
+  .bracket-board {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3rem;
+    align-items: stretch;
+  }
+
+  .bracket-round {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .bracket-round__matches {
+    position: relative;
+    height: 100%;
+  }
+
+  .bracket-round--quarterfinals .bracket-round__matches,
+  .bracket-round--semifinals .bracket-round__matches {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+  }
+
+  .bracket-pair {
+    position: relative;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .bracket-match {
+    position: relative;
+    align-self: center;
+  }
+
+  .bracket-round--final .bracket-round__matches {
+    align-content: center;
+  }
+
+  .bracket-round--quarterfinals .bracket-pair::after {
+    position: absolute;
+    top: calc(25% - 0.3125rem);
+    right: -1.5rem;
+    bottom: calc(25% - 0.3125rem);
+    border-right: 2px solid var(--court-line);
+    content: "";
+  }
+
+  .bracket-round--semifinals .bracket-round__matches::after {
+    position: absolute;
+    top: calc(25% - 0.5rem);
+    right: -1.5rem;
+    bottom: calc(25% - 0.5rem);
+    border-right: 2px solid var(--court-line);
+    content: "";
+  }
+
+  .bracket-round--quarterfinals .bracket-match::after,
+  .bracket-round--semifinals .bracket-match::after {
+    position: absolute;
+    top: 50%;
+    right: -1.5rem;
+    width: 1.5rem;
+    border-top: 2px solid var(--court-line);
+    content: "";
+  }
+
+  .bracket-round--semifinals .bracket-match::before,
+  .bracket-round--final .bracket-match::before {
+    position: absolute;
+    top: 50%;
+    left: -1.5rem;
+    width: 1.5rem;
+    border-top: 2px solid var(--court-line);
+    content: "";
+  }
+
+  .bracket-board .match-summary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .bracket-board .match-summary__header,
+  .bracket-board .match-summary__actions {
+    grid-column: auto;
+  }
+
+  .bracket-board .match-summary__details {
+    border-top: 1px solid var(--court-line);
+    border-left: 0;
+    padding: 0.75rem 0 0;
   }
 
   #main-content {
