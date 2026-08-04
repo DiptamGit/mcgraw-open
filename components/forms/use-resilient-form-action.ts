@@ -5,22 +5,20 @@ import { useActionState } from "react";
 export const NETWORK_FAILURE_MESSAGE =
   "This update could not be sent from this device. Check your connection and try again. Your entries are kept.";
 
+const FETCH_FAILURE_MESSAGES = new Set([
+  "failed to fetch",
+  "load failed",
+  "network request failed",
+  "networkerror when attempting to fetch resource.",
+  "the network connection was lost.",
+]);
+
 export function isNetworkFailure(error: unknown): boolean {
-  if (!(error instanceof Error)) {
+  if (!(error instanceof TypeError)) {
     return false;
   }
 
-  if (error.name === "TypeError") {
-    return true;
-  }
-
-  const message = error.message.toLowerCase();
-  return (
-    message.includes("failed to fetch") ||
-    message.includes("load failed") ||
-    message.includes("network") ||
-    message.includes("connection was lost")
-  );
+  return FETCH_FAILURE_MESSAGES.has(error.message.trim().toLowerCase());
 }
 
 /**

@@ -1,5 +1,7 @@
 import { execFileSync } from "node:child_process";
 
+const LOCAL_DATABASE_CONTAINER = "supabase_db_macgraw-open-website";
+
 const RESET_SQL = `-- Restores the seeded tournament fixtures between end-to-end runs without a
 -- full \`supabase db reset\`. Only the local test database is ever touched.
 begin;
@@ -96,6 +98,20 @@ export function getLocalSupabaseEnvironment(): LocalSupabaseEnvironment {
 
 /** Restores the seeded fixtures so every run starts from known data. */
 export function resetLocalSupabaseDatabase(): void {
+  executeLocalSql(RESET_SQL);
+}
+
+/** Runs fixture SQL only against this repository's local Supabase container. */
+export function executeLocalSql(sql: string): void {
+  runLocalSql(sql);
+}
+
+/** Returns a scalar or unaligned query result from the local test database. */
+export function queryLocalSql(sql: string): string {
+  return runLocalSql(sql).trim();
+}
+
+function runLocalSql(sql: string): string {
   const databaseUrl = readStatusEnvironment().get("DB_URL");
 
   if (!databaseUrl) {
@@ -110,38 +126,48 @@ export function resetLocalSupabaseDatabase(): void {
     );
   }
 
-  execFileSync(
+  assertLocalDatabaseContainer();
+  return execFileSync(
     "docker",
     [
       "exec",
       "-i",
-      localDatabaseContainer(),
+      LOCAL_DATABASE_CONTAINER,
       "psql",
       "--username=postgres",
       "--dbname=postgres",
       "--quiet",
+      "--tuples-only",
+      "--no-align",
       "--variable=ON_ERROR_STOP=1",
     ],
-    { input: RESET_SQL, encoding: "utf8", stdio: ["pipe", "pipe", "inherit"] },
+    { input: sql, encoding: "utf8", stdio: ["pipe", "pipe", "inherit"] },
   );
 }
 
-function localDatabaseContainer(): string {
-  const containers = execFileSync(
-    "docker",
-    ["ps", "--filter", "name=supabase_db_", "--format", "{{.Names}}"],
-    { encoding: "utf8" },
-  )
-    .split("\n")
-    .map((name) => name.trim())
-    .filter(Boolean);
+function assertLocalDatabaseContainer(): void {
+  let running: string;
 
-  const container = containers[0];
-  if (!container) {
+  try {
+    running = execFileSync(
+      "docker",
+      [
+        "inspect",
+        "--format",
+        "{{.State.Running}}",
+        LOCAL_DATABASE_CONTAINER,
+      ],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+    ).trim();
+  } catch {
     throw new Error(
-      "The local Supabase database container is not running. Start it with `npx supabase start`.",
+      `The ${LOCAL_DATABASE_CONTAINER} container is not running. Start this repository's stack with \`npx supabase start\`.`,
     );
   }
 
-  return container;
+  if (running !== "true") {
+    throw new Error(
+      `The ${LOCAL_DATABASE_CONTAINER} container is not running. Start this repository's stack with \`npx supabase start\`.`,
+    );
+  }
 }

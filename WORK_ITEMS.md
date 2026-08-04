@@ -671,8 +671,9 @@ left to the `default-src` fallback because WebKit blocks Next.js RSC and
 server-action fetches when both are declared. The smoke suite runs organizer
 write flows on the Chromium projects; Playwright's WebKit instrumentation
 intermittently drops streamed server-action responses, so iOS Safari covers the
-public pages, the 320px layout, and unlock, and the WebKit write flows were
-verified manually.
+public pages, the 320px layout, unlock, and an automated network-failure retry
+that preserves form input. The complete WebKit write flows were also verified
+manually.
 
 Accepted trade-off: organizer forms now dispatch their server action through a
 client wrapper so a dropped mobile connection becomes a retryable message with

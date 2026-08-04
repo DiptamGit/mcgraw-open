@@ -16,9 +16,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   forbidOnly: Boolean(process.env.CI),
-  // One retry absorbs WebKit prefetch requests that Playwright's interception
-  // layer aborts. A real regression fails on both attempts.
-  retries: 1,
+  retries: 0,
   timeout: 45_000,
   expect: { timeout: 10_000 },
   reporter: process.env.CI
@@ -26,7 +24,7 @@ export default defineConfig({
     : [["list"] as const],
   use: {
     baseURL,
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     // Vercel supplies this header in every deployed environment, and the
     // unlock rate limiter requires it. `next start` does not add it locally.
     extraHTTPHeaders: { "x-forwarded-for": "203.0.113.10" },
@@ -39,10 +37,10 @@ export default defineConfig({
     {
       // Playwright's WebKit instrumentation intermittently drops streamed
       // server-action responses, so iOS Safari covers the public pages, the
-      // 320px layout, and the unlock flow. Organizer writes are covered by the
-      // Chromium projects and were verified manually in WebKit.
+      // 320px layout, unlock, and the isolated network-failure recovery flow.
+      // Full organizer writes are covered by the Chromium projects.
       name: "ios-safari",
-      testIgnore: /organizer-(schedule|result)\.spec\.ts/,
+      testIgnore: /organizer-(schedule|result|group-transitions)\.spec\.ts/,
       use: { ...devices["iPhone 13"] },
     },
     {

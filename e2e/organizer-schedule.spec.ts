@@ -159,43 +159,4 @@ test.describe("organizer scheduling", () => {
     await secondContext.close();
   });
 
-  test("keeps entered values when the network drops mid-save", async ({
-    page,
-  }, testInfo) => {
-    const code = scheduleFixtures[testInfo.project.name].validation;
-    await unlockOrganizerMode(page);
-    await openScheduleForm(page, code);
-
-    await page.route(
-      (url) => url.pathname === `/matches/${code}/schedule`,
-      async (route) => {
-        if (route.request().method() === "POST") {
-          await route.abort("failed");
-          return;
-        }
-
-        await route.continue();
-      },
-    );
-
-    await page.getByLabel("Date (required)").fill("2026-08-22");
-    await page.getByLabel("Time (required)").fill("07:30");
-    await page.getByLabel("Court or venue (required)").fill("Court 12");
-    await page.getByRole("button", { name: "Save schedule" }).click();
-
-    await expect(formErrors(page).first()).toContainText(
-      "This update could not be sent from this device.",
-    );
-    await expect(page.getByLabel("Date (required)")).toHaveValue("2026-08-22");
-    await expect(page.getByLabel("Time (required)")).toHaveValue("07:30");
-    await expect(page.getByLabel("Court or venue (required)")).toHaveValue(
-      "Court 12",
-    );
-
-    await page.unrouteAll({ behavior: "ignoreErrors" });
-    await page.getByRole("button", { name: "Save schedule" }).click();
-    await expect(formFeedback(page)).toContainText(
-      /Match scheduled\.|Schedule updated\./,
-    );
-  });
 });
