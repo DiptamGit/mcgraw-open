@@ -40,7 +40,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-014 | Build the groups standings page | Done | MGO-006, MGO-013 |
 | MGO-015 | Finalize and reopen group standings | Done | MGO-009, MGO-014 |
 | MGO-016 | Build the tournament home page | Done | MGO-007, MGO-014 |
-| MGO-017 | Harden the group-stage release | Not started | MGO-010, MGO-012, MGO-015, MGO-016 |
+| MGO-017 | Harden the group-stage release | Done | MGO-010, MGO-012, MGO-015, MGO-016 |
 | MGO-018 | Launch the group-stage site | Not started | MGO-002, MGO-017 |
 | MGO-019 | Render the knockout bracket | Not started | MGO-005, MGO-006, MGO-018 |
 | MGO-020 | Assign finalized teams to quarterfinals | Not started | MGO-015, MGO-019 |
@@ -659,6 +659,27 @@ quick view.
 
 **Goal:** Make the group-stage workflows dependable during real court-side use
 before the tournament begins.
+
+**Implementation note:** Hardening this slice exposed three defects that were
+fixed here. The unlock route built its redirect from the internal request URL,
+so the organizer cookie could be set on one hostname and read on another;
+redirects now use the validated request host, and the cookie is Secure for every
+real deployment while a loopback HTTP origin (local and end-to-end runs) opts
+out. The Content Security Policy also needed two adjustments found in browser
+testing: `upgrade-insecure-requests` is sent only on HTTPS, and `connect-src` is
+left to the `default-src` fallback because WebKit blocks Next.js RSC and
+server-action fetches when both are declared. The smoke suite runs organizer
+write flows on the Chromium projects; Playwright's WebKit instrumentation
+intermittently drops streamed server-action responses, so iOS Safari covers the
+public pages, the 320px layout, and unlock, and the WebKit write flows were
+verified manually.
+
+Accepted trade-off: organizer forms now dispatch their server action through a
+client wrapper so a dropped mobile connection becomes a retryable message with
+every entered value preserved. React cannot serialize a native POST target for
+a wrapped action, so a submit sent before hydration is replayed once the bundle
+loads instead of posting directly. Preserving entered values on a failed
+request was judged more valuable than that pre-hydration path.
 
 **Scope:**
 

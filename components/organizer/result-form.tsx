@@ -1,17 +1,21 @@
 "use client";
 
 import {
-  useActionState,
   useEffect,
   useRef,
   useState,
 } from "react";
 
 import { updateMatchResult } from "@/app/matches/[code]/result/actions";
+import {
+  NETWORK_FAILURE_MESSAGE,
+  useResilientFormAction,
+} from "@/components/forms/use-resilient-form-action";
 import type { TournamentMatch } from "@/lib/data/schema";
 import type {
   ResultField,
   ResultFormState,
+  ResultFormValues,
 } from "@/lib/matches/result";
 import { ResultSubmitButton } from "./result-submit-button";
 
@@ -29,6 +33,41 @@ function normalizeOutcome(value: string): ResultOutcome {
   return value === "retirement" || value === "walkover"
     ? value
     : "normal";
+}
+
+function readValue(formData: FormData, name: keyof ResultFormValues): string {
+  const value = formData.get(name);
+  return typeof value === "string" ? value : "";
+}
+
+function networkFailureState(
+  previousState: ResultFormState,
+  formData: FormData,
+): ResultFormState {
+  const fields: (keyof ResultFormValues)[] = [
+    "outcomeType",
+    "winnerId",
+    "decidingSetFormat",
+    "playedDate",
+    "playedTime",
+    "set1Team1",
+    "set1Team2",
+    "set2Team1",
+    "set2Team2",
+    "set3Team1",
+    "set3Team2",
+  ];
+
+  return {
+    ...previousState,
+    status: "error",
+    message: NETWORK_FAILURE_MESSAGE,
+    fieldErrors: {},
+    values: fields.reduce(
+      (values, field) => ({ ...values, [field]: readValue(formData, field) }),
+      { ...previousState.values },
+    ),
+  };
 }
 
 function describedBy(
@@ -82,8 +121,9 @@ export function ResultForm({
   initialState,
   match,
 }: ResultFormProps) {
-  const [state, formAction] = useActionState(
+  const [state, formAction] = useResilientFormAction(
     updateMatchResult,
+    networkFailureState,
     initialState,
   );
   const [confirmingClear, setConfirmingClear] = useState(false);

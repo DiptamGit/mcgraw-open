@@ -1,12 +1,26 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   reopenGroups,
   type ReopenGroupsFormState,
 } from "@/app/groups/reopen/actions";
+import {
+  NETWORK_FAILURE_MESSAGE,
+  useResilientFormAction,
+} from "@/components/forms/use-resilient-form-action";
 import { GroupTransitionSubmitButton } from "./group-transition-submit-button";
+
+function networkFailureState(
+  previousState: ReopenGroupsFormState,
+): ReopenGroupsFormState {
+  return {
+    ...previousState,
+    status: "error",
+    message: NETWORK_FAILURE_MESSAGE,
+  };
+}
 
 export function ReopenGroupsForm({
   expectedStateUpdatedAt,
@@ -17,7 +31,11 @@ export function ReopenGroupsForm({
   initialState: ReopenGroupsFormState;
   assignedQuarterfinals: number;
 }) {
-  const [state, formAction] = useActionState(reopenGroups, initialState);
+  const [state, formAction] = useResilientFormAction(
+    reopenGroups,
+    networkFailureState,
+    initialState,
+  );
   const [confirming, setConfirming] = useState(false);
   const reopenButtonRef = useRef<HTMLButtonElement>(null);
   const keepFinalizedButtonRef = useRef<HTMLButtonElement>(null);

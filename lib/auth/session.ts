@@ -99,10 +99,16 @@ export async function hasOrganizerSession(): Promise<boolean> {
   return token ? verifyOrganizerSessionToken(token) : false;
 }
 
-export function organizerCookieOptions() {
+/**
+ * `secure` defaults to the build mode. Callers that know the request protocol
+ * should pass it so a production build served over loopback HTTP (local and
+ * end-to-end runs) can still set the cookie, while every real deployment keeps
+ * the Secure attribute.
+ */
+export function organizerCookieOptions(secure?: boolean) {
   return {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: secure ?? process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/",
     maxAge: ORGANIZER_SESSION_SECONDS,

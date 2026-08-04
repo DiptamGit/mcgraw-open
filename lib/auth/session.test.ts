@@ -50,9 +50,13 @@ describe("organizer sessions", () => {
 
   it("rejects tampered tokens", async () => {
     const token = await createOrganizerSessionToken(environment);
-    const tamperedToken = `${token.slice(0, -1)}${
-      token.endsWith("a") ? "b" : "a"
-    }`;
+    const [header, payload, signature] = token.split(".");
+    const firstSignatureCharacter = signature.slice(0, 1);
+    const tamperedToken = [
+      header,
+      payload,
+      `${firstSignatureCharacter === "A" ? "B" : "A"}${signature.slice(1)}`,
+    ].join(".");
 
     expect(
       await verifyOrganizerSessionToken(tamperedToken, environment),

@@ -1,8 +1,12 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { finalizeGroups } from "@/app/groups/finalize/actions";
+import {
+  NETWORK_FAILURE_MESSAGE,
+  useResilientFormAction,
+} from "@/components/forms/use-resilient-form-action";
 import type {
   FinalizationFormState,
   FinalizationPreview,
@@ -10,6 +14,25 @@ import type {
   ManualTieOrders,
 } from "@/lib/groups/finalization";
 import { GroupTransitionSubmitButton } from "./group-transition-submit-button";
+
+function networkFailureState(
+  previousState: FinalizationFormState,
+  formData: FormData,
+): FinalizationFormState {
+  const note = formData.get("tieResolutionNote");
+
+  return {
+    ...previousState,
+    status: "error",
+    message: NETWORK_FAILURE_MESSAGE,
+    fieldErrors: {},
+    values: {
+      ...previousState.values,
+      tieResolutionNote:
+        typeof note === "string" ? note : previousState.values.tieResolutionNote,
+    },
+  };
+}
 
 function orderedRows(
   group: FinalizationPreviewGroup,
@@ -56,7 +79,11 @@ export function FinalizationForm({
   initialState: FinalizationFormState;
   preview: FinalizationPreview;
 }) {
-  const [state, formAction] = useActionState(finalizeGroups, initialState);
+  const [state, formAction] = useResilientFormAction(
+    finalizeGroups,
+    networkFailureState,
+    initialState,
+  );
   const [orders, setOrders] = useState(state.values.manualOrders);
   const [note, setNote] = useState(state.values.tieResolutionNote);
   const [confirming, setConfirming] = useState(false);
