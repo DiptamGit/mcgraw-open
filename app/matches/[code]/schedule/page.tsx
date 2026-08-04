@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -10,6 +11,15 @@ import { createScheduleFormState } from "@/lib/matches/schedule";
 import { getTeamDisplayName } from "@/lib/matches/presentation";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Schedule match",
+  description: "Schedule or reschedule a McGraw Open tournament match.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 type ScheduleMatchPageProps = {
   params: Promise<{ code: string }>;

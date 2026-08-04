@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -13,6 +14,15 @@ import {
 import { getTeamDisplayName } from "@/lib/matches/presentation";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Record match result",
+  description: "Record or correct a McGraw Open tournament match result.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 type ResultMatchPageProps = {
   params: Promise<{ code: string }>;

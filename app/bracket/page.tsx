@@ -1,4 +1,12 @@
 import { PageIntro } from "@/components/page-intro";
+import { createPublicPageMetadata } from "@/lib/site-metadata";
+
+export const metadata = createPublicPageMetadata({
+  title: "Bracket coming soon",
+  description:
+    "The McGraw Open knockout bracket will open after the group stage is finalized.",
+  path: "/bracket",
+});
 
 export default function BracketPage() {
   return (

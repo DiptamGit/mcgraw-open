@@ -4,9 +4,17 @@ import { StandingsTable } from "@/components/groups/standings-table";
 import { PageIntro } from "@/components/page-intro";
 import { hasOrganizerSession } from "@/lib/auth/session";
 import { getTournamentData } from "@/lib/data/queries";
+import { createPublicPageMetadata } from "@/lib/site-metadata";
 import { calculateGroupStandings } from "@/lib/standings/calculate";
 
 export const dynamic = "force-dynamic";
+
+export const metadata = createPublicPageMetadata({
+  title: "Group standings",
+  description:
+    "Live Group A and Group B standings for the 2026 McGraw Open doubles tennis tournament.",
+  path: "/groups",
+});
 
 type GroupsPageProps = {
   searchParams: Promise<{ transition?: string }>;

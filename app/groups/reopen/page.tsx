@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -10,6 +11,16 @@ import {
 } from "@/lib/data/queries";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Reopen groups",
+  description:
+    "Review the effects of reopening McGraw Open group standings for corrections.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function ReopenGroupsPage() {
   const returnTo = "/groups/reopen";
