@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { MatchFilters } from "@/components/matches/match-filters";
 import { MatchSummary } from "@/components/matches/match-summary";
 import { PageIntro } from "@/components/page-intro";
@@ -134,9 +132,9 @@ export default async function MatchesPage({
                   Choose a different group or stage, or return to the complete
                   tournament list.
                 </p>
-                <Link className="match-filter-reset" href="/matches">
+                <a className="match-filter-reset" href="/matches">
                   Show all matches
-                </Link>
+                </a>
               </section>
             ) : (
               <>
