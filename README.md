@@ -10,7 +10,7 @@ isolation setup.
 - `npm run lint`
 - `npm test` — domain, action, and component unit tests
 - `npm run build`
-- `npm run test:e2e` — group-stage browser smoke suite
+- `npm run test:e2e` — public and organizer tournament smoke suite
 
 The smoke suite needs Docker and a running local Supabase stack
 (`npx supabase start`). It reseeds the local database, builds the app, serves it

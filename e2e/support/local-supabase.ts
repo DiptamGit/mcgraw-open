@@ -13,9 +13,26 @@ set
   tie_resolution_note = null
 where id = 1;
 
-update public.teams
-set final_rank = null
-where final_rank is not null;
+-- Unwind knockout rounds from downstream to upstream. Active matches must
+-- retain both teams, and assigned downstream teams lock their source results.
+update public.matches
+set
+  status = 'unscheduled',
+  scheduled_at = null,
+  venue = null,
+  deciding_set_format = null,
+  outcome_type = null,
+  sets = null,
+  winner_id = null,
+  played_at = null,
+  completed_at = null
+where stage = 'final';
+
+update public.matches
+set
+  team1_id = null,
+  team2_id = null
+where stage = 'final';
 
 update public.matches
 set
@@ -27,13 +44,50 @@ set
   sets = null,
   winner_id = null,
   played_at = null,
-  completed_at = null;
+  completed_at = null
+where stage = 'semifinal';
 
 update public.matches
 set
   team1_id = null,
   team2_id = null
-where stage <> 'group';
+where stage = 'semifinal';
+
+update public.matches
+set
+  status = 'unscheduled',
+  scheduled_at = null,
+  venue = null,
+  deciding_set_format = null,
+  outcome_type = null,
+  sets = null,
+  winner_id = null,
+  played_at = null,
+  completed_at = null
+where stage = 'quarterfinal';
+
+update public.matches
+set
+  team1_id = null,
+  team2_id = null
+where stage = 'quarterfinal';
+
+update public.matches
+set
+  status = 'unscheduled',
+  scheduled_at = null,
+  venue = null,
+  deciding_set_format = null,
+  outcome_type = null,
+  sets = null,
+  winner_id = null,
+  played_at = null,
+  completed_at = null
+where stage = 'group';
+
+update public.teams
+set final_rank = null
+where final_rank is not null;
 
 delete from public.organizer_unlock_limits;
 delete from public.audit_log;

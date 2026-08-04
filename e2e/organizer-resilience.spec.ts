@@ -5,6 +5,11 @@ import {
   formFeedback,
   unlockOrganizerMode,
 } from "./support/organizer";
+import {
+  executeLocalSql,
+  queryLocalSql,
+  resetLocalSupabaseDatabase,
+} from "./support/local-supabase";
 
 const resilienceFixtures: Record<string, string> = {
   "android-chrome": "GB-10",
@@ -50,4 +55,78 @@ test("keeps entered schedule values through a network failure and retry", async 
   await expect(formFeedback(page)).toContainText(
     /Match scheduled\.|Schedule updated\./,
   );
+});
+
+test("keeps a knockout winner selected through a network failure", async ({
+  page,
+}) => {
+  executeLocalSql(`
+    begin;
+
+    update public.matches
+    set
+      team1_id = (
+        select id from public.teams order by id limit 1 offset 4
+      ),
+      team2_id = (
+        select id from public.teams order by id limit 1 offset 5
+      )
+    where code = 'QF3';
+
+    update public.matches
+    set
+      status = 'completed',
+      deciding_set_format = 'full_set',
+      outcome_type = 'normal',
+      sets = '[[6, 4], [6, 4]]'::jsonb,
+      winner_id = team1_id,
+      played_at = statement_timestamp() - interval '1 day',
+      completed_at = statement_timestamp()
+    where code = 'QF3';
+
+    commit;
+  `);
+
+  try {
+    await unlockOrganizerMode(page);
+    await page.goto("/bracket/SF2/assignment");
+
+    await page.route(
+      (url) => url.pathname === "/bracket/SF2/assignment",
+      async (route) => {
+        if (route.request().method() === "POST") {
+          await route.abort("failed");
+          return;
+        }
+
+        await route.continue();
+      },
+    );
+
+    const qf3Path = page.getByRole("region", {
+      name: "Winner QF3 → SF2",
+    });
+    await qf3Path
+      .getByRole("button", { name: "Review assignment" })
+      .click();
+    await qf3Path
+      .getByRole("group", { name: "Confirm SF2 assignment" })
+      .getByRole("button", { name: "Assign winner" })
+      .click();
+
+    await expect(qf3Path.locator(".form-feedback--error")).toContainText(
+      "This update could not be sent from this device.",
+    );
+    await expect(qf3Path.getByRole("radio")).toBeChecked();
+    expect(
+      queryLocalSql(`
+        select team1_id is null
+        from public.matches
+        where code = 'SF2';
+      `),
+    ).toBe("t");
+  } finally {
+    await page.unrouteAll({ behavior: "ignoreErrors" });
+    resetLocalSupabaseDatabase();
+  }
 });

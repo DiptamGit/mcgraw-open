@@ -47,9 +47,11 @@ Production.
    matches, and one tournament-state row.
 9. Deploy the reviewed commit with `npx vercel@latest --prod`, then confirm the
    stable production alias points to that deployment.
-10. Smoke-test Home, Groups, Matches, organizer unlock, scheduling, normal
-    scores, retirement, walkover, clearing results, and group finalization
-    safeguards. Restore any fixture changed solely for the smoke test.
+10. Smoke-test Home, Groups, Matches, Bracket, organizer unlock, scheduling,
+    normal scores, retirement, walkover, clearing results, group finalization
+    safeguards, quarterfinal assignment, semifinal/final assignment, upstream
+    result locks, and eligible downstream clears. Restore any fixture changed
+    solely for the smoke test.
 11. Take a post-release schema and data export as the initial tournament
     snapshot and verify both files are readable.
 

@@ -13,6 +13,8 @@ const organizerRoutes = [
   `/matches/${LAYOUT_MATCH}/schedule`,
   `/matches/${LAYOUT_MATCH}/result`,
   "/groups/finalize",
+  "/bracket/quarterfinals",
+  "/bracket/SF1/assignment",
 ];
 
 test.describe("organizer layout", () => {
