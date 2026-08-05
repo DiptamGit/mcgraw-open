@@ -5,8 +5,10 @@ import { hasOrganizerSession } from "@/lib/auth/session";
 import { getTournamentData } from "@/lib/data/queries";
 import type { TournamentMatch } from "@/lib/data/schema";
 import {
+  describeActiveMatchFilters,
   organizeMatches,
   parseMatchFilters,
+  type MatchFilterSelection,
   type MatchSearchParams,
 } from "@/lib/matches/presentation";
 import {
@@ -52,12 +54,13 @@ function MatchSection({
   return (
     <section className="match-section" aria-labelledby={id}>
       <div className="match-section__heading">
-        <div>
-          <p className="utility-label">{eyebrow}</p>
-          <h2 id={id}>{title}</h2>
-        </div>
-        <span>
-          {matches.length} {matches.length === 1 ? "match" : "matches"}
+        <p className="utility-label">{eyebrow}</p>
+        <h2 className="match-section__title" id={id}>
+          {title}
+        </h2>
+        <span className="match-section__count">
+          <span className="figure">{matches.length}</span>{" "}
+          {matches.length === 1 ? "match" : "matches"}
         </span>
       </div>
       <div className="match-list">
@@ -70,6 +73,34 @@ function MatchSection({
           />
         ))}
       </div>
+    </section>
+  );
+}
+
+function FilteredEmptyState({ filters }: { filters: MatchFilterSelection }) {
+  const activeFilters = describeActiveMatchFilters(filters);
+
+  return (
+    <section
+      className="content-panel match-filter-empty"
+      aria-labelledby="match-filter-empty-title"
+    >
+      <p className="utility-label">No results</p>
+      <h2 id="match-filter-empty-title">No matches match these filters.</h2>
+      <p className="supporting-copy">
+        {activeFilters.length > 0 ? (
+          <>
+            Nothing is listed under{" "}
+            <strong>{activeFilters.join(" and ")}</strong>. Clear the filters to
+            see every fixture.
+          </>
+        ) : (
+          <>Clear the filters to see every fixture.</>
+        )}
+      </p>
+      <a className="btn btn--volt" href="/matches">
+        Show all matches
+      </a>
     </section>
   );
 }
@@ -106,8 +137,8 @@ export default async function MatchesPage({
         description="Find the next court time and every completed score."
       />
 
-      <div className="page-content">
-        {matches.length === 0 ? (
+      {matches.length === 0 ? (
+        <div className="page-content">
           <section className="content-panel" aria-labelledby="match-list-empty">
             <p className="utility-label">Tournament fixtures</p>
             <h2 id="match-list-empty">No matches are available yet.</h2>
@@ -115,27 +146,14 @@ export default async function MatchesPage({
               Tournament fixtures will appear here when they are added.
             </p>
           </section>
-        ) : (
-          <div className="matches-view">
-            <MatchFilters filters={filters} resultCount={filteredMatchCount} />
+        </div>
+      ) : (
+        <>
+          <MatchFilters filters={filters} resultCount={filteredMatchCount} />
 
+          <div className="page-content matches-view">
             {filteredMatchCount === 0 ? (
-              <section
-                className="content-panel match-filter-empty"
-                aria-labelledby="match-filter-empty-title"
-              >
-                <p className="utility-label">No results</p>
-                <h2 id="match-filter-empty-title">
-                  No matches match these filters.
-                </h2>
-                <p className="supporting-copy">
-                  Choose a different group or stage, or return to the complete
-                  tournament list.
-                </p>
-                <a className="match-filter-reset" href="/matches">
-                  Show all matches
-                </a>
-              </section>
+              <FilteredEmptyState filters={filters} />
             ) : (
               <>
                 <MatchSection
@@ -165,8 +183,8 @@ export default async function MatchesPage({
               </>
             )}
           </div>
-        )}
-      </div>
+        </>
+      )}
     </>
   );
 }

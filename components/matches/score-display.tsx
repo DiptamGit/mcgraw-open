@@ -1,22 +1,55 @@
 import type { TournamentMatch } from "../../lib/data/schema";
-import { getTeamDisplayName } from "../../lib/matches/presentation";
+import {
+  getTeamDisplayName,
+  type MatchSide,
+} from "../../lib/matches/presentation";
+import { TeamName } from "./team-name";
 
 type ScoreDisplayProps = {
   match: TournamentMatch;
 };
 
-function WinnerLabel({
-  isWinner,
-  children,
+function isMatchTiebreakColumn(
+  match: TournamentMatch,
+  index: number,
+): boolean {
+  return index === 2 && match.deciding_set_format === "match_tiebreak";
+}
+
+function ScoreRow({
+  match,
+  side,
 }: {
-  isWinner: boolean;
-  children: React.ReactNode;
+  match: TournamentMatch;
+  side: MatchSide;
 }) {
+  const teamId = side === "team1" ? match.team1_id : match.team2_id;
+  const isWinner = match.winner_id !== null && match.winner_id === teamId;
+  const sets = match.sets ?? [];
+
   return (
-    <span className="score-display__team-name">
-      <span>{children}</span>
-      {isWinner ? <span className="winner-label">Winner</span> : null}
-    </span>
+    <tr
+      className={`score-display__row${isWinner ? " is-winner" : " is-loser"}`}
+    >
+      <th scope="row">
+        <span className="score-display__team-name">
+          <TeamName name={getTeamDisplayName(match, side)} />
+          {isWinner ? <span className="winner-label">Winner</span> : null}
+        </span>
+      </th>
+      {sets.map((set, index) => (
+        <td
+          key={`${match.id}-${side}-set-${index + 1}`}
+          className={
+            isMatchTiebreakColumn(match, index)
+              ? "figure score-display__mtb"
+              : "figure"
+          }
+        >
+          {side === "team1" ? set[0] : set[1]}
+        </td>
+      ))}
+    </tr>
   );
 }
 
@@ -42,8 +75,7 @@ export function ScoreDisplay({ match }: ScoreDisplayProps) {
           <tr>
             <th scope="col">Team</th>
             {match.sets.map((_, index) => {
-              const isMatchTiebreak =
-                index === 2 && match.deciding_set_format === "match_tiebreak";
+              const isMatchTiebreak = isMatchTiebreakColumn(match, index);
 
               return (
                 <th
@@ -51,53 +83,19 @@ export function ScoreDisplay({ match }: ScoreDisplayProps) {
                   scope="col"
                   className={isMatchTiebreak ? "score-display__mtb" : undefined}
                 >
-                  {isMatchTiebreak ? "MTB" : `S${index + 1}`}
+                  <abbr
+                    title={isMatchTiebreak ? "Match tiebreak" : `Set ${index + 1}`}
+                  >
+                    {isMatchTiebreak ? "MTB" : `S${index + 1}`}
+                  </abbr>
                 </th>
               );
             })}
           </tr>
         </thead>
         <tbody>
-          <tr className={match.winner_id === match.team1_id ? "is-winner" : undefined}>
-            <th scope="row">
-              <WinnerLabel isWinner={match.winner_id === match.team1_id}>
-                {getTeamDisplayName(match, "team1")}
-              </WinnerLabel>
-            </th>
-            {match.sets.map(([team1Score], index) => (
-              <td
-                key={`${match.id}-team-1-set-${index + 1}`}
-                className={
-                  index === 2 &&
-                  match.deciding_set_format === "match_tiebreak"
-                    ? "score-display__mtb"
-                    : undefined
-                }
-              >
-                {team1Score}
-              </td>
-            ))}
-          </tr>
-          <tr className={match.winner_id === match.team2_id ? "is-winner" : undefined}>
-            <th scope="row">
-              <WinnerLabel isWinner={match.winner_id === match.team2_id}>
-                {getTeamDisplayName(match, "team2")}
-              </WinnerLabel>
-            </th>
-            {match.sets.map(([, team2Score], index) => (
-              <td
-                key={`${match.id}-team-2-set-${index + 1}`}
-                className={
-                  index === 2 &&
-                  match.deciding_set_format === "match_tiebreak"
-                    ? "score-display__mtb"
-                    : undefined
-                }
-              >
-                {team2Score}
-              </td>
-            ))}
-          </tr>
+          <ScoreRow match={match} side="team1" />
+          <ScoreRow match={match} side="team2" />
         </tbody>
       </table>
     </div>

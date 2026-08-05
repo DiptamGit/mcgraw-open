@@ -12,7 +12,7 @@ describe("MatchFilters", () => {
       />,
     );
 
-    expect(markup).toContain("0 matches");
+    expect(markup).toContain(">0</strong> matches");
     expect(markup).toContain('href="/matches?group=A&amp;stage=quarterfinal"');
     expect(markup).toContain('href="/matches?stage=quarterfinal"');
     expect(markup).toContain('href="/matches?group=A&amp;stage=semifinal"');
@@ -27,7 +27,21 @@ describe("MatchFilters", () => {
       />,
     );
 
-    expect(markup).toContain("1 match");
-    expect(markup).not.toContain("1 matches");
+    expect(markup).toContain(">1</strong> match<");
+    expect(markup).not.toContain("match<span");
+  });
+
+  it("labels both chip groups and keeps every stage reachable", () => {
+    const markup = renderToStaticMarkup(
+      <MatchFilters filters={{ group: "all", stage: "all" }} resultCount={37} />,
+    );
+
+    expect(markup).toContain('role="group" aria-label="Group"');
+    expect(markup).toContain('role="group" aria-label="Stage"');
+    expect(markup).toContain("Quarterfinals");
+    expect(markup).toContain("Semifinals");
+    expect(markup).toContain(">Final<");
+    // Every chip is a plain link, so a shared filter URL restores the view.
+    expect(markup.match(/class="chip"/g)).toHaveLength(8);
   });
 });

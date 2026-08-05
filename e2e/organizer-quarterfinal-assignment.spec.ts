@@ -96,13 +96,18 @@ test("previews and assigns the finalized quarterfinal draw", async (
     await expect(page.locator(".form-feedback--success")).toContainText(
       "Quarterfinal teams assigned",
     );
+    // Team names render as a nickname over the player pair (MGO-025).
     await expect(
-      page.getByText("Net Results - Ranjit / Venu C", { exact: true }),
+      page.getByText("Net Results", { exact: true }).first(),
     ).toBeVisible();
     await expect(
-      page.getByText("Drop Shot Society - Giri / Srini", {
-        exact: true,
-      }),
+      page.getByText("Ranjit / Venu C", { exact: true }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Drop Shot Society", { exact: true }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Giri / Srini", { exact: true }).first(),
     ).toBeVisible();
 
     expect(
@@ -139,8 +144,12 @@ test("previews and assigns the finalized quarterfinal draw", async (
     await expect(page.locator(".matches-view__count")).toHaveText(
       "4 matches",
     );
+    const quarterfinalOne = page.getByRole("article", { name: /^QF1:/ });
     await expect(
-      page.getByText("Net Results - Ranjit / Venu C", { exact: true }),
+      quarterfinalOne.getByText("Net Results", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      quarterfinalOne.getByText("Ranjit / Venu C", { exact: true }),
     ).toBeVisible();
   } finally {
     resetLocalSupabaseDatabase();
