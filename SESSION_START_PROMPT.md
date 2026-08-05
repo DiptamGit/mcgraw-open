@@ -85,7 +85,7 @@ If the work item requires a schema, policy, trigger, function, or seed change:
 For UI or UX work:
 
 - Read and follow `DESIGN.md` as the approved visual and interaction source of
-  truth for MGO-006 through MGO-022.
+  truth. `DESIGN.md` v2.0 (Night Match) is the current locked system.
 - Invoke and follow the project-local `frontend-design` skill.
 - Use the installed UI/UX Pro Max prompt and search tools where relevant.
 - Use design guidance to implement the locked direction or fill a documented
