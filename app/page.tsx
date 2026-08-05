@@ -96,7 +96,10 @@ export default async function HomePage() {
                   key={groupLabel}
                 >
                   <header>
-                    <span className="group-shield" aria-hidden="true">
+                    <span
+                      className={`group-shield group-shield--${groupLabel.toLowerCase()}`}
+                      aria-hidden="true"
+                    >
                       {groupLabel}
                     </span>
                     <div>

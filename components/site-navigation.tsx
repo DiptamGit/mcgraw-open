@@ -38,16 +38,18 @@ export function SiteNavigation({ variant }: SiteNavigationProps) {
             <li key={href}>
               <Link
                 href={href}
-                className="site-navigation__link focus-inverse"
+                className="site-navigation__link"
                 aria-current={isActive ? "page" : undefined}
               >
                 <span className="site-navigation__marker" aria-hidden="true" />
-                <Icon
-                  className="site-navigation__icon"
-                  size={22}
-                  weight="regular"
-                  aria-hidden="true"
-                />
+                {variant === "mobile" ? (
+                  <Icon
+                    className="site-navigation__icon"
+                    size={22}
+                    weight={isActive ? "fill" : "regular"}
+                    aria-hidden="true"
+                  />
+                ) : null}
                 <span className="site-navigation__label">{label}</span>
               </Link>
             </li>

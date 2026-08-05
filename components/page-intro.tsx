@@ -1,3 +1,5 @@
+import { CourtDevice } from "@/components/court-device";
+
 type PageIntroProps = {
   eyebrow: string;
   title: string;
@@ -15,12 +17,7 @@ export function PageIntro({
 }: PageIntroProps) {
   return (
     <header className={`page-intro${hero ? " page-intro--hero" : ""}`}>
-      <div className="court-lines" aria-hidden="true">
-        <span className="court-lines__horizontal" />
-        <span className="court-lines__vertical" />
-        <span className="court-lines__service" />
-        <span className="court-lines__ball" />
-      </div>
+      <CourtDevice />
       <div className="page-frame page-intro__content">
         <div className="page-intro__label-row">
           <p className="utility-label utility-label--inverse">{eyebrow}</p>

@@ -47,7 +47,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-021 | Administer semifinal and final assignments | Done | MGO-011, MGO-019, MGO-020 |
 | MGO-022 | Harden and release the knockout stage | Done | MGO-018, MGO-021 |
 | MGO-023 | Expand Group A roster and fixtures | Done | MGO-022 |
-| MGO-024 | Rebuild the design foundation and app shell | Not started | MGO-023 |
+| MGO-024 | Rebuild the design foundation and app shell | Done | MGO-023 |
 | MGO-025 | Rebuild the matches list and shared match presentation | Not started | MGO-024 |
 | MGO-026 | Rebuild the group standings page | Not started | MGO-024, MGO-025 |
 | MGO-027 | Rebuild the home page and cinematic hero | Not started | MGO-025, MGO-026 |
@@ -1047,6 +1047,14 @@ legible resting state under `prefers-reduced-motion: reduce`.
 **Goal:** Replace the v1.0 light design foundation with the Night Match token
 system, typefaces, primitives, and navigation shell while every existing route
 keeps working.
+
+**Implementation note:** `DESIGN.md` originally placed the organizer control in
+the header only at 900px and above. Because the phone bottom bar is reserved
+for the four public routes and there is no hamburger menu, that would have
+stranded the unlock entry point on phones. The control now renders at every
+width — icon-only below 900px, labelled above it — and appears only while
+organizer mode is locked, since the banner owns the lock control once unlocked.
+`DESIGN.md` was updated in the same session to record this.
 
 **Scope:**
 

@@ -318,7 +318,14 @@ secondary line. This is presentation only; the stored value never changes.
 
 - **Header** is sticky, `--bg-page` at 90% with a blur, hairline bottom border.
   It holds the wordmark on the left. On screens ≥900px it also holds the
-  four primary links and an outlined Organizer control on the right.
+  four primary links on the right.
+- **Organizer control.** The header carries the organizer entry point at
+  **every** width, because the phone bottom bar is reserved for the four public
+  routes and there is no hamburger menu. Below 900px it is an icon-only
+  outlined pill with an accessible name; at 900px and above it also shows the
+  "Organizer" label. It appears only while organizer mode is locked — once
+  unlocked, the banner below the header owns the lock control, so the header
+  does not offer a second, duplicate affordance.
 - **Primary routes** are Home, Groups, Matches, Bracket, in that order.
 - **Phone navigation** is a fixed bottom tab bar with the same four routes,
   each a 44px-tall target with a label. The active tab is volt with a marker.
@@ -333,7 +340,8 @@ secondary line. This is presentation only; the stored value never changes.
 - When a valid organizer cookie is present, an `OrganizerBanner` sits directly
   below the header on every page: a volt-tinted strip reading
   `● ORGANIZER MODE`, a short explanation, and a "Lock again" control on the
-  right.
+  right. While locked, the banner is absent and the header's organizer control
+  is the single unlock entry point.
 - Organizer actions appear inline on the object they affect — a match card
   gets "Schedule match", "Reschedule", or "Record result"; the groups page
   gets a finalization panel at the bottom.

@@ -53,9 +53,14 @@ test.describe("organizer unlock", () => {
     expect(organizerCookie?.value).not.toContain(E2E_ORGANIZER_PIN);
 
     await page.getByRole("button", { name: "Lock again" }).click();
+    // Locking removes the organizer banner entirely; the header control
+    // becomes the only unlock entry point again.
     await expect(
       page.getByRole("complementary", { name: "Organizer access" }),
-    ).toContainText("Organizer updates locked");
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("link", { name: /organizer/i }).first(),
+    ).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Schedule match" }),
     ).toHaveCount(0);
