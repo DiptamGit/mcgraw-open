@@ -51,7 +51,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-025 | Rebuild the matches list and shared match presentation | Done | MGO-024 |
 | MGO-026 | Rebuild the group standings page | Done | MGO-024, MGO-025 |
 | MGO-027 | Rebuild the home page and cinematic hero | Done | MGO-025, MGO-026 |
-| MGO-028 | Rebuild the knockout bracket signature | Not started | MGO-024, MGO-025 |
+| MGO-028 | Rebuild the knockout bracket signature | Done | MGO-024, MGO-025 |
 | MGO-029 | Rebuild the organizer forms and transition pages | Not started | MGO-024, MGO-025 |
 | MGO-030 | Harden and release the interface overhaul | Not started | MGO-027, MGO-028, MGO-029 |
 
@@ -1419,6 +1419,18 @@ accessible DOM content.
 - Review Bracket at 320px, 390px, 900px, and desktop widths, and at 200% zoom.
 - Verify the reduced-motion resting state and confirm the animation runs once
   and does not loop.
+
+**Implementation note:** The connector layer is a client-measured, aria-hidden
+SVG (`components/bracket/bracket-connectors.tsx`) that reads the rendered card
+positions and redraws elbows for the desktop four-column board and a left-hand
+rail on phone. Highlighting is derived by `computeChampionPath` in
+`lib/bracket.ts`: a connector lights up in volt only when its source match is
+completed with a winner, so the path shows nothing before the first knockout
+result, and the travelling ball follows the single realized route toward the
+trophy. Validated with `npm run test`, `npm run lint`, `npm run build`, and the
+Playwright public-pages, knockout-progression, and quarterfinal-assignment
+suites (desktop-chrome, android-chrome, ios-safari), plus manual review of the
+empty, in-progress, completed-final, phone, and reduced-motion states.
 
 ### MGO-029 - Rebuild the organizer forms and transition pages
 

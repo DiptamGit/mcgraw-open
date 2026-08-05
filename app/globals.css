@@ -2777,17 +2777,30 @@ textarea:focus-visible,
 .bracket-board,
 .bracket-round,
 .bracket-round__matches,
-.bracket-pair {
+.bracket-pair,
+.bracket-champion {
   display: grid;
   min-width: 0;
 }
 
 .bracket-board {
+  position: relative;
+  isolation: isolate;
   gap: 2rem;
 }
 
-.bracket-round {
+.bracket-round,
+.bracket-champion {
+  position: relative;
+  z-index: 1;
   gap: 1rem;
+}
+
+/* Phone stacks the rounds and routes the connectors down a left rail, so the
+   card containers sit inset from the round headings to open that gutter. */
+.bracket-round__matches,
+.bracket-champion__panel {
+  margin-left: 1.5rem;
 }
 
 .bracket-round__heading {
@@ -2887,6 +2900,175 @@ textarea:focus-visible,
 .bracket-board .score-display thead th:not(:first-child),
 .bracket-board .score-display td {
   width: 2.25rem;
+}
+
+/* Self-drawing connector layer. Decorative and aria-hidden; the cards above it
+   carry every result as text, so the board reads fully without these lines. */
+.bracket-connectors {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.bracket-path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bracket-path--base {
+  stroke: var(--border-subtle);
+  stroke-width: 2;
+}
+
+.bracket-path--champion {
+  stroke: var(--accent-primary);
+  stroke-width: 3;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 4px rgb(214 255 63 / 45%));
+  animation: bracket-draw 0.8s var(--ease-out) forwards;
+}
+
+@keyframes bracket-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.bracket-ball {
+  fill: var(--accent-primary);
+  filter: drop-shadow(0 0 6px rgb(214 255 63 / 70%));
+}
+
+/* The Final card is the one elevated moment on the board. */
+.bracket-match--final {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.bracket-match__crown {
+  margin: 0;
+  color: var(--accent-primary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.bracket-match--final .match-summary {
+  border-color: var(--accent-primary);
+  background:
+    linear-gradient(
+      160deg,
+      rgb(214 255 63 / 10%),
+      rgb(214 255 63 / 2%) 55%,
+      transparent
+    ),
+    var(--bg-surface);
+  box-shadow: var(--glow-volt);
+}
+
+/* Champion cell: a dashed volt panel that names the winner once decided. */
+.bracket-champion__panel {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  border: 2px dashed var(--accent-primary);
+  border-radius: var(--radius-panel);
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+}
+
+.bracket-champion__panel.is-crowned {
+  border-style: solid;
+  background:
+    linear-gradient(
+      165deg,
+      rgb(214 255 63 / 12%),
+      rgb(214 255 63 / 3%) 60%,
+      transparent
+    ),
+    var(--bg-surface);
+  box-shadow: var(--glow-volt);
+}
+
+.bracket-champion__icon {
+  color: var(--accent-primary);
+}
+
+.bracket-champion__waiting {
+  margin: 0;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.bracket-champion__name {
+  align-items: center;
+}
+
+.bracket-champion__name .team-name__nickname {
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--heading-sm);
+  letter-spacing: var(--tracking-tight);
+  text-transform: uppercase;
+}
+
+/* Four-column board with round eyebrows. DESIGN.md switches the bracket to the
+   horizontal draw at 900px. */
+@media (min-width: 56.25rem) {
+  .bracket-board {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2.75rem;
+    align-items: stretch;
+  }
+
+  .bracket-round {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .bracket-round__matches {
+    height: 100%;
+    margin-left: 0;
+  }
+
+  .bracket-round--quarterfinals .bracket-round__matches,
+  .bracket-round--semifinals .bracket-round__matches {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 1.75rem;
+  }
+
+  .bracket-pair {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    align-content: center;
+  }
+
+  .bracket-match {
+    align-self: center;
+  }
+
+  .bracket-round--final .bracket-round__matches,
+  .bracket-champion {
+    align-content: center;
+  }
+
+  .bracket-champion {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .bracket-champion__panel {
+    margin-left: 0;
+    align-self: center;
+  }
+
+  .bracket-board .match-summary {
+    gap: 0.75rem;
+    padding: 1rem;
+  }
 }
 
 .schedule-page {
@@ -3762,85 +3944,6 @@ textarea:focus-visible,
 
   .organizer-banner__inner {
     padding-inline: 2rem;
-  }
-
-  .bracket-board {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 3rem;
-    align-items: stretch;
-  }
-
-  .bracket-round {
-    grid-template-rows: auto minmax(0, 1fr);
-  }
-
-  .bracket-round__matches {
-    position: relative;
-    height: 100%;
-  }
-
-  .bracket-round--quarterfinals .bracket-round__matches,
-  .bracket-round--semifinals .bracket-round__matches {
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-    gap: 2rem;
-  }
-
-  .bracket-pair {
-    position: relative;
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem;
-  }
-
-  .bracket-match {
-    position: relative;
-    align-self: center;
-  }
-
-  .bracket-round--final .bracket-round__matches {
-    align-content: center;
-  }
-
-  .bracket-round--quarterfinals .bracket-pair::after {
-    position: absolute;
-    top: calc(25% - 0.3125rem);
-    right: -1.5rem;
-    bottom: calc(25% - 0.3125rem);
-    border-right: 2px solid var(--border-subtle);
-    content: "";
-  }
-
-  .bracket-round--semifinals .bracket-round__matches::after {
-    position: absolute;
-    top: calc(25% - 0.5rem);
-    right: -1.5rem;
-    bottom: calc(25% - 0.5rem);
-    border-right: 2px solid var(--border-subtle);
-    content: "";
-  }
-
-  .bracket-round--quarterfinals .bracket-match::after,
-  .bracket-round--semifinals .bracket-match::after {
-    position: absolute;
-    top: 50%;
-    right: -1.5rem;
-    width: 1.5rem;
-    border-top: 2px solid var(--border-subtle);
-    content: "";
-  }
-
-  .bracket-round--semifinals .bracket-match::before,
-  .bracket-round--final .bracket-match::before {
-    position: absolute;
-    top: 50%;
-    left: -1.5rem;
-    width: 1.5rem;
-    border-top: 2px solid var(--border-subtle);
-    content: "";
-  }
-
-  .bracket-board .match-summary {
-    gap: 0.75rem;
-    padding: 1rem;
   }
 
   #main-content {

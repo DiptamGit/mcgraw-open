@@ -172,7 +172,7 @@ test.describe("public tournament pages", () => {
           getComputedStyle(element).gridTemplateColumns.split(" ").length,
       );
 
-    expect(columnCount).toBe(3);
+    expect(columnCount).toBe(4);
   });
 
   test("bracket presents assigned, scheduled, and completed matches", async ({
