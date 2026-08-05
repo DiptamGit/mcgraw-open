@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { MatchSummary } from "@/components/matches/match-summary";
-import { PageIntro } from "@/components/page-intro";
+
+import { CourtDevice } from "@/components/court-device";
+import { BracketTeaser } from "@/components/home/bracket-teaser";
+import { NextOnCourt } from "@/components/home/next-on-court";
 import { getTournamentData } from "@/lib/data/queries";
 import { getUpcomingMatches } from "@/lib/home/presentation";
 import { createPublicPageMetadata } from "@/lib/site-metadata";
@@ -19,7 +21,26 @@ export const metadata = createPublicPageMetadata({
 
 export default async function HomePage() {
   const tournament = await getTournamentData();
-  const upcomingMatches = getUpcomingMatches(tournament.matches);
+  const nextMatch = getUpcomingMatches(tournament.matches)[0] ?? null;
+  const groupCount = new Set(
+    tournament.teams.map((team) => team.group_label),
+  ).size;
+  const stats = [
+    {
+      key: "teams",
+      value: tournament.teams.length,
+      label: "Teams",
+      accent: true,
+    },
+    { key: "groups", value: groupCount, label: "Groups", accent: false },
+    {
+      key: "matches",
+      value: tournament.matches.length,
+      label: "Matches",
+      accent: false,
+    },
+    { key: "title", value: 1, label: "Title", accent: true },
+  ];
   const groupSummaries = (["A", "B"] as const).map((groupLabel) => {
     const standings = calculateGroupStandings(
       tournament.teams,
@@ -45,39 +66,50 @@ export default async function HomePage() {
 
   return (
     <>
-      <PageIntro
-        eyebrow="August 1 - September 30, 2026"
-        title="McGraw Open"
-        description="Twelve doubles teams play across two groups for one late-summer title."
-        hero
-      />
+      <header className="home-hero">
+        <CourtDevice />
+        <div className="page-frame home-hero__inner">
+          <div className="home-hero__intro">
+            <p className="home-hero__eyebrow">August 1 – September 30, 2026</p>
+            <h1 className="home-hero__headline">
+              Nine to five.{" "}
+              <span className="home-hero__break">
+                Then they <span className="home-hero__accent">serve.</span>
+              </span>
+            </h1>
+            <p className="home-hero__subhead">
+              Twelve doubles teams. Two groups. One late-summer title decided
+              under the lights.
+            </p>
+            <div className="home-hero__actions">
+              <Link className="btn btn--volt" href="/bracket">
+                View the bracket
+              </Link>
+              <Link className="btn btn--outline" href="/matches">
+                Full schedule
+              </Link>
+            </div>
+          </div>
+
+          <NextOnCourt match={nextMatch} />
+        </div>
+      </header>
 
       <div className="page-content">
         <div className="home-view">
-          <section className="home-section" aria-labelledby="upcoming-title">
-            <header className="home-section__heading">
-              <div>
-                <p className="utility-label">Next on court</p>
-                <h2 id="upcoming-title">Upcoming matches</h2>
+          <section className="home-stats" aria-label="Tournament at a glance">
+            {stats.map((stat) => (
+              <div className="home-stat" key={stat.key}>
+                <span
+                  className={`home-stat__value${
+                    stat.accent ? " home-stat__value--accent" : ""
+                  }`}
+                >
+                  {stat.value}
+                </span>
+                <span className="home-stat__label">{stat.label}</span>
               </div>
-              <Link href="/matches">View all matches</Link>
-            </header>
-
-            {upcomingMatches.length > 0 ? (
-              <div className="match-list">
-                {upcomingMatches.map((match) => (
-                  <MatchSummary key={match.id} match={match} />
-                ))}
-              </div>
-            ) : (
-              <div className="home-empty">
-                <h3>No matches are scheduled yet.</h3>
-                <p>
-                  Check the full fixture list for matches awaiting a court time.
-                </p>
-                <Link href="/matches">See all fixtures</Link>
-              </div>
-            )}
+            ))}
           </section>
 
           <section className="home-section" aria-labelledby="leaders-title">
@@ -138,12 +170,9 @@ export default async function HomePage() {
                 </article>
               ))}
             </div>
-
-            <div className="home-bracket-link">
-              <p className="utility-label">Knockout stage</p>
-              <Link href="/bracket">View the knockout bracket</Link>
-            </div>
           </section>
+
+          <BracketTeaser />
         </div>
       </div>
     </>

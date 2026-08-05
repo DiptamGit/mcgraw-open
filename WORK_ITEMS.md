@@ -50,7 +50,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-024 | Rebuild the design foundation and app shell | Done | MGO-023 |
 | MGO-025 | Rebuild the matches list and shared match presentation | Done | MGO-024 |
 | MGO-026 | Rebuild the group standings page | Done | MGO-024, MGO-025 |
-| MGO-027 | Rebuild the home page and cinematic hero | Not started | MGO-025, MGO-026 |
+| MGO-027 | Rebuild the home page and cinematic hero | Done | MGO-025, MGO-026 |
 | MGO-028 | Rebuild the knockout bracket signature | Not started | MGO-024, MGO-025 |
 | MGO-029 | Rebuild the organizer forms and transition pages | Not started | MGO-024, MGO-025 |
 | MGO-030 | Harden and release the interface overhaul | Not started | MGO-027, MGO-028, MGO-029 |
@@ -1341,6 +1341,14 @@ bracket teaser.
   results, and with joint leaders.
 - Review Home at 320px, 390px, tablet, and desktop widths, and at 200% zoom.
 - Verify the reduced-motion resting state of the pulse dot and bracket teaser.
+
+**Implementation note:** Home now leads with a bespoke cinematic hero
+(`home-hero`) and a single `NextOnCourt` card (the soonest scheduled match,
+reusing the MGO-025 team treatment) rather than the previous two-match
+"Upcoming matches" list; the removed home "View all matches" link meant the CSP
+public-pages check now navigates via the hero "Full schedule" action. Stat and
+teaser use new `components/home/` pieces; the pulse dot and teaser draw-in are
+the only home animations and both rest fully drawn/static under reduced motion.
 
 ### MGO-028 - Rebuild the knockout bracket signature
 
