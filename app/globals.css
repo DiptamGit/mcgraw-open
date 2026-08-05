@@ -4058,3 +4058,380 @@ textarea:focus-visible,
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   Organizer focused-task shell (MGO-029)
+   The single-task surface every organizer route renders on: a back link, a
+   task eyebrow, a display title, a context subtitle, and a 640px cap. The
+   global OrganizerBanner marks organizer mode above it.
+   ========================================================================== */
+
+.focused-task {
+  padding: 1.5rem 1.125rem 3rem;
+}
+
+.focused-task__frame {
+  display: grid;
+  gap: 1.5rem;
+  width: min(100%, 40rem);
+  margin-inline: auto;
+}
+
+.focused-task__back {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: var(--radius-control);
+  color: var(--accent-info-text);
+  font-weight: 600;
+  text-underline-offset: 0.2em;
+}
+
+.focused-task__back svg {
+  flex: 0 0 auto;
+}
+
+.focused-task__head {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-top: 0.375rem solid var(--accent-primary);
+  border-radius: var(--radius-panel);
+  padding: 1.25rem 1rem;
+  background: var(--bg-surface);
+}
+
+.focused-task__head--hero {
+  border-top-color: var(--accent-secondary);
+  background:
+    radial-gradient(120% 150% at 100% 0%, var(--court-surface), transparent 62%),
+    var(--bg-page);
+}
+
+.focused-task__head-content {
+  position: relative;
+  z-index: 1;
+}
+
+.focused-task__eyebrow-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.focused-task__title {
+  margin: 0.5rem 0 0;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: var(--display-md);
+  font-weight: 400;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-tight);
+  text-transform: uppercase;
+}
+
+.focused-task__subtitle {
+  margin: 0.5rem 0 0;
+  color: var(--text-secondary);
+}
+
+.focused-task__body {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* Read-only context card and the plain form section that sits on the shell. */
+.task-panel {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-panel);
+  padding: 1rem;
+  background: var(--bg-surface-alt);
+}
+
+.task-panel--readonly {
+  border-top: 0.25rem solid var(--border-strong);
+}
+
+.task-form-section {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.task-panel > h2,
+.task-form-section > h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 400;
+  letter-spacing: var(--tracking-tight);
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.task-form-section > .supporting-copy {
+  margin-top: -0.25rem;
+}
+
+/* Summarized error region, rendered inside the form's alert panel. */
+.form-error-summary {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.form-error-summary__title {
+  margin: 0;
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.form-error-summary ul {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding-left: 1.125rem;
+}
+
+.form-error-summary a {
+  color: var(--danger);
+  font-weight: 600;
+  text-underline-offset: 0.2em;
+}
+
+/* Chip groups for the outcome and deciding-set format selectors. */
+.result-fieldset {
+  display: grid;
+  min-width: 0;
+  gap: 0.75rem;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.result-fieldset > legend {
+  padding: 0;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip-group .chip {
+  position: relative;
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  padding: 0.5rem 1rem;
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.chip-group .chip input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.chip-group .chip:has(input:checked) {
+  border-color: var(--accent-secondary);
+  background: var(--accent-secondary);
+  color: var(--white);
+}
+
+.chip-group .chip:has(input:focus-visible) {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  box-shadow: var(--glow-volt);
+}
+
+/* Winner selection as labelled volt-ring controls. */
+.winner-choice {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.winner-ring {
+  position: relative;
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-surface-alt);
+  cursor: pointer;
+}
+
+.winner-ring input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.winner-ring__control {
+  position: relative;
+  flex: 0 0 auto;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+}
+
+.winner-ring:has(input:checked) {
+  border-color: var(--accent-primary);
+  background: var(--bg-elevated);
+}
+
+.winner-ring:has(input:checked) .winner-ring__control {
+  border-color: var(--accent-primary);
+}
+
+.winner-ring:has(input:checked) .winner-ring__control::after {
+  content: "";
+  position: absolute;
+  inset: 0.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-primary);
+}
+
+.winner-ring:has(input:focus-visible) {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  box-shadow: var(--glow-volt);
+}
+
+.winner-ring__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The match-tiebreak score column: distinct dashed, warning-toned treatment,
+   only present when the deciding-set format is a match tiebreak. */
+.score-entry__heading--mtb {
+  color: var(--warning);
+}
+
+.score-entry__input--mtb input {
+  border-color: var(--warning);
+  border-style: dashed;
+}
+
+.score-entry__input--mtb input:focus-visible {
+  border-style: solid;
+}
+
+/* The derived-outcome callout restates the entered result in words. */
+.result-derived {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid var(--success-border);
+  border-left-width: 0.25rem;
+  border-radius: var(--radius-control);
+  padding: 0.875rem 1rem;
+  background: var(--success-surface);
+  color: var(--text-primary);
+}
+
+.result-derived__label {
+  margin: 0;
+  color: var(--success);
+  font-size: var(--eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+
+.result-derived p {
+  margin: 0;
+}
+
+.result-derived--pending {
+  border-color: var(--border-subtle);
+  background: var(--bg-elevated);
+}
+
+.result-derived--pending .result-derived__label {
+  color: var(--text-dim);
+}
+
+/* Phone sticky save bar for the schedule form, fading into the page. */
+.schedule-save-bar {
+  position: sticky;
+  bottom: calc(var(--phone-nav-height) + env(safe-area-inset-bottom));
+  z-index: 5;
+  display: grid;
+  gap: 0.75rem;
+  border-top: 1px solid var(--border-subtle);
+  padding-block: 1rem;
+  background: linear-gradient(
+    to top,
+    var(--bg-page) 74%,
+    color-mix(in srgb, var(--bg-page) 0%, transparent)
+  );
+}
+
+@media (min-width: 40rem) {
+  .focused-task {
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  .focused-task__head {
+    padding: 1.75rem 1.75rem 2rem;
+  }
+
+  .focused-task__title {
+    font-size: var(--display-lg);
+  }
+
+  .task-panel,
+  .task-form-section > .supporting-copy {
+    padding: 1.25rem;
+  }
+
+  .task-form-section > .supporting-copy {
+    padding: 0;
+  }
+
+  .winner-choice {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .schedule-save-bar {
+    position: static;
+    display: flex;
+    border-top: 0;
+    padding-block: 1.5rem 0;
+    background: none;
+  }
+}

@@ -52,7 +52,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-026 | Rebuild the group standings page | Done | MGO-024, MGO-025 |
 | MGO-027 | Rebuild the home page and cinematic hero | Done | MGO-025, MGO-026 |
 | MGO-028 | Rebuild the knockout bracket signature | Done | MGO-024, MGO-025 |
-| MGO-029 | Rebuild the organizer forms and transition pages | Not started | MGO-024, MGO-025 |
+| MGO-029 | Rebuild the organizer forms and transition pages | Done | MGO-024, MGO-025 |
 | MGO-030 | Harden and release the interface overhaul | Not started | MGO-027, MGO-028, MGO-029 |
 
 ## Phase 1 - Foundation
@@ -1513,6 +1513,23 @@ behavior.
   at 200% zoom.
 - Complete a full schedule and a full result entry using only the keyboard.
 - Confirm no secret or server-only value entered the browser bundle.
+
+**Implementation note:** Delivered on a shared `FocusedTaskShell`
+(`components/organizer/focused-task-shell.tsx`) with the global
+`OrganizerBanner` above it. The result score grid's third column is the single
+deciding-set column: it renders as `S3` for the full-set format and switches to
+the dashed, warning-toned `MTB` column only when the match-tiebreak format is
+selected, keeping the existing `set3` fields and server validation unchanged.
+The live derived-outcome callout is a client-only preview recomputed from an
+`onChange` snapshot; the server action remains the source of truth. On the
+schedule form the phone sticky save bar is the last flow element with the
+"Remove schedule" action above it so the bar never covers a field. A summarized
+error region (`components/forms/form-error-summary.tsx`) links each field error
+inside the existing alert panel. No server action, Zod schema, score
+validation, cookie/origin check, rate limit, concurrency, lock, audit, or
+revalidation behavior was changed. Verified with `npm run test` (181 passed),
+`npm run lint`, `npm run build`, and the full Playwright suite (88 passed, 2
+intentionally skipped) against local Supabase.
 
 ### MGO-030 - Harden and release the interface overhaul
 

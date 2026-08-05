@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { finalizeGroups } from "@/app/groups/finalize/actions";
+import { FormErrorSummary } from "@/components/forms/form-error-summary";
 import {
   NETWORK_FAILURE_MESSAGE,
   useResilientFormAction,
@@ -145,6 +146,22 @@ export function FinalizationForm({
           aria-live="polite"
         >
           <p>{state.message}</p>
+          <FormErrorSummary
+            errors={[
+              state.fieldErrors.tieResolutionNote
+                ? {
+                    targetId: "tieResolutionNote",
+                    message: state.fieldErrors.tieResolutionNote,
+                  }
+                : null,
+              state.fieldErrors.manualOrders
+                ? {
+                    targetId: "tieResolutionNote",
+                    message: state.fieldErrors.manualOrders,
+                  }
+                : null,
+            ].filter((entry) => entry !== null)}
+          />
           {state.status === "conflict" ? (
             <button
               className="schedule-reload"
