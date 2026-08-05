@@ -51,13 +51,11 @@ test.describe("public tournament pages", () => {
       groupAStandings.getByRole("row"),
     ).toHaveCount(7);
     await expect(
-      groupAStandings.getByText("Fault Tolerant - Shankar / Mohan", {
-        exact: true,
-      }),
+      groupAStandings.getByText("Fault Tolerant", { exact: true }),
     ).toBeVisible();
     await expect(
       page.getByRole("region", { name: "Group B standings table" }),
-    ).toBeVisible();
+    ).toBeAttached();
     await expect(
       page.getByRole("heading", { name: "Wins lead. Head-to-head breaks ties." }),
     ).toBeVisible();

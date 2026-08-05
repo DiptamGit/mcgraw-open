@@ -49,7 +49,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-023 | Expand Group A roster and fixtures | Done | MGO-022 |
 | MGO-024 | Rebuild the design foundation and app shell | Done | MGO-023 |
 | MGO-025 | Rebuild the matches list and shared match presentation | Done | MGO-024 |
-| MGO-026 | Rebuild the group standings page | Not started | MGO-024, MGO-025 |
+| MGO-026 | Rebuild the group standings page | Done | MGO-024, MGO-025 |
 | MGO-027 | Rebuild the home page and cinematic hero | Not started | MGO-025, MGO-026 |
 | MGO-028 | Rebuild the knockout bracket signature | Not started | MGO-024, MGO-025 |
 | MGO-029 | Rebuild the organizer forms and transition pages | Not started | MGO-024, MGO-025 |

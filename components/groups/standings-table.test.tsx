@@ -50,8 +50,12 @@ function standings(
   };
 }
 
+function countMatches(markup: string, pattern: RegExp): number {
+  return markup.match(pattern)?.length ?? 0;
+}
+
 describe("StandingsTable", () => {
-  it("renders a known live table with explicit advancement zones", () => {
+  it("renders a live table with a compact badge and advancing rails", () => {
     const markup = renderToStaticMarkup(
       <StandingsTable
         completedMatches={15}
@@ -61,16 +65,21 @@ describe("StandingsTable", () => {
       />,
     );
 
-    expect(markup).toContain("<strong>15</strong> of 15 matches complete");
-    expect(markup).toContain("The current order includes all completed results");
+    expect(markup).toContain('<strong class="figure">15</strong> of ');
+    expect(markup).toContain("</span> complete");
+    expect(markup).toContain("status-badge--live");
+    expect(markup).toContain("status-badge__dot");
+    expect(markup).toContain(">Live<");
     expect(markup).toContain("Team 1 / Partner 1");
     expect(markup).toContain(">+17<");
-    expect(markup.match(/>Advancing</g)).toHaveLength(4);
-    expect(markup.match(/>Outside top 4</g)).toHaveLength(2);
     expect(markup).toContain('title="Set difference"');
+    expect(countMatches(markup, /standings-table__zone--in/g)).toBe(4);
+    expect(countMatches(markup, /standings-table__zone--out/g)).toBe(2);
+    expect(markup).toContain("standings-row--leader");
+    expect(markup).toContain("standings-row--cut");
   });
 
-  it("marks an unresolved tie across the cut line without choosing a qualifier", () => {
+  it("marks a cut-line tie without choosing a qualifier", () => {
     const fourth = row(4);
     const fifth = row(5, { rank: 4 });
     const markup = renderToStaticMarkup(
@@ -91,16 +100,17 @@ describe("StandingsTable", () => {
       />,
     );
 
-    expect(markup).toContain(">Provisional<");
-    expect(markup.match(/>Cut line tie</g)).toHaveLength(2);
-    expect(markup.match(/>Advancing</g)).toHaveLength(3);
+    expect(markup).toContain("status-badge--warning");
+    expect(markup).toContain(">Cut-line tie<");
+    expect(countMatches(markup, /standings-table__zone--tie/g)).toBe(2);
+    expect(countMatches(markup, /standings-table__zone--in/g)).toBe(3);
     expect(markup).toContain("Rank 4: Team 4 / Partner 4, Team 5 / Partner 5");
     expect(markup).toContain(
       "Remaining head-to-head matches may resolve this order.",
     );
   });
 
-  it("presents an unplayed group without choosing an arbitrary top four", () => {
+  it("presents an unplayed group without an arbitrary top four", () => {
     const rows = [1, 2, 3, 4, 5, 6].map((index) =>
       row(index, {
         rank: 1,
@@ -130,9 +140,11 @@ describe("StandingsTable", () => {
       />,
     );
 
-    expect(markup.match(/>All tied</g)).toHaveLength(6);
+    expect(countMatches(markup, />All tied</g)).toBe(6);
+    expect(markup).toContain(">Live<");
     expect(markup).not.toContain(">Advancing<");
-    expect(markup).not.toContain(">Cut line tie<");
+    expect(markup).not.toContain(">Cut-line tie<");
+    expect(markup).not.toContain("standings-row--leader");
     expect(markup).toContain("All positions are currently tied");
   });
 
@@ -149,7 +161,8 @@ describe("StandingsTable", () => {
       />,
     );
 
-    expect(markup).toContain(">Finalized<");
+    expect(markup).toContain(">Locked<");
+    expect(markup).toContain("status-badge--locked");
     expect(markup.indexOf("Team 6 / Partner 6")).toBeLessThan(
       markup.indexOf("Team 1 / Partner 1"),
     );

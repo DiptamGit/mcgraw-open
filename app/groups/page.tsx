@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { StandingsTable } from "@/components/groups/standings-table";
+import { StandingsBoard } from "@/components/groups/standings-board";
 import { PageIntro } from "@/components/page-intro";
 import { hasOrganizerSession } from "@/lib/auth/session";
 import { getTournamentData } from "@/lib/data/queries";
@@ -41,14 +41,26 @@ export default async function GroupsPage({
     ),
   };
   const isFinalized = tournament.state.group_stage_status === "finalized";
+  const isProvisional =
+    !isFinalized && (standings.A.provisional || standings.B.provisional);
 
   return (
     <>
       <PageIntro
         eyebrow="Round robin"
         title="Groups"
-        description="Live tables and the road to the top four in each group."
-        badge={isFinalized ? "Finalized" : "Live standings"}
+        description={
+          isFinalized
+            ? "The final group order is locked in for the knockout draw."
+            : isProvisional
+              ? "While a decisive head-to-head is still unplayed, tied teams are ordered by overall set difference, then game difference."
+              : "Two groups. The top four in each advance to the knockout draw."
+        }
+        badge={
+          isFinalized ? "Locked" : isProvisional ? "Live standings" : undefined
+        }
+        badgeTone={isFinalized ? "locked" : isProvisional ? "live" : undefined}
+        badgeDot={isProvisional}
       />
 
       <div className="page-content">
@@ -68,43 +80,36 @@ export default async function GroupsPage({
             </div>
           ) : null}
 
-          <section
-            className="standings-overview"
-            aria-labelledby="group-play"
-          >
-            <p className="utility-label">Group stage</p>
-            <h2 id="group-play">Two groups. Four advance from each.</h2>
-            <p>
-              {isFinalized
-                ? "The group order is locked for the knockout draw."
-                : "Standings update as completed results are recorded. The top-four rail marks the current qualifying places."}
-            </p>
-            {isFinalized && tournament.state.tie_resolution_note ? (
-              <p>
-                <strong>Tie resolution:</strong>{" "}
-                {tournament.state.tie_resolution_note}
-              </p>
-            ) : null}
-          </section>
+          {isFinalized && tournament.state.tie_resolution_note ? (
+            <section
+              className="standings-tie-note"
+              aria-labelledby="tie-note-heading"
+            >
+              <p className="utility-label">Manual tie resolution</p>
+              <h2 id="tie-note-heading">Recorded tiebreak decision</h2>
+              <p>{tournament.state.tie_resolution_note}</p>
+            </section>
+          ) : null}
 
-          <div className="standings-grid">
-            {(["A", "B"] as const).map((groupLabel) => {
-              const matches = groupMatchCounts[groupLabel];
-
-              return (
-                <StandingsTable
-                  completedMatches={
-                    matches.filter((match) => match.status === "completed")
-                      .length
-                  }
-                  key={groupLabel}
-                  standings={standings[groupLabel]}
-                  totalMatches={matches.length}
-                  tournamentStatus={tournament.state.group_stage_status}
-                />
-              );
-            })}
-          </div>
+          <StandingsBoard
+            groups={{
+              A: {
+                standings: standings.A,
+                completedMatches: groupMatchCounts.A.filter(
+                  (match) => match.status === "completed",
+                ).length,
+                totalMatches: groupMatchCounts.A.length,
+              },
+              B: {
+                standings: standings.B,
+                completedMatches: groupMatchCounts.B.filter(
+                  (match) => match.status === "completed",
+                ).length,
+                totalMatches: groupMatchCounts.B.length,
+              },
+            }}
+            tournamentStatus={tournament.state.group_stage_status}
+          />
 
           {isOrganizer ? (
             <section

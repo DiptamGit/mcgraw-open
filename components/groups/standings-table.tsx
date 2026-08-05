@@ -1,3 +1,6 @@
+import { Lock, Warning } from "@phosphor-icons/react/dist/ssr";
+
+import { TeamName } from "@/components/matches/team-name";
 import { DataIntegrityError } from "@/lib/data/errors";
 import type { TournamentState } from "@/lib/data/schema";
 import type {
@@ -14,70 +17,22 @@ type StandingsTableProps = {
   totalMatches: number;
 };
 
-type StandingsState = "finalized" | "provisional" | "live" | "unresolved";
+type StateTone = "live" | "warning" | "locked";
+
+type ZoneLabel =
+  | "Advancing"
+  | "Cut-line tie"
+  | "All tied"
+  | "Outside top 4"
+  | "Eliminated";
+
+const ADVANCING_PLACES = 4;
 
 function formatDifference(value: number): string {
   return value > 0 ? `+${value}` : String(value);
 }
 
-function getStandingsState(
-  standings: GroupStandings,
-  tournamentStatus: TournamentState["group_stage_status"],
-): StandingsState {
-  if (tournamentStatus === "finalized") {
-    return "finalized";
-  }
-  if (standings.provisional) {
-    return "provisional";
-  }
-  if (standings.unresolvedTies.length > 0) {
-    return "unresolved";
-  }
-  return "live";
-}
-
-function getStateCopy(
-  state: StandingsState,
-  completedMatches: number,
-): { label: string; description: string } {
-  if (state === "finalized") {
-    return {
-      label: "Finalized",
-      description: "These are the locked group-stage ranks.",
-    };
-  }
-  if (completedMatches === 0) {
-    return {
-      label: "Provisional",
-      description:
-        "No results yet. Every team begins level and the order will change as matches finish.",
-    };
-  }
-  if (state === "provisional") {
-    return {
-      label: "Provisional",
-      description:
-        "A required head-to-head result is incomplete, so tied teams use overall set and game difference for now.",
-    };
-  }
-  if (state === "unresolved") {
-    return {
-      label: "Unresolved tie",
-      description:
-        "The completed results and every automatic tiebreak still leave teams level.",
-    };
-  }
-  return {
-    label: "Live",
-    description:
-      "The current order includes all completed results and the required tiebreak data.",
-  };
-}
-
-function getTieNames(
-  tie: UnresolvedTie,
-  rows: StandingRow[],
-): string[] {
+function getTieNames(tie: UnresolvedTie, rows: StandingRow[]): string[] {
   const teamsById = new Map(rows.map((row) => [row.team.id, row.team.name]));
   const names = tie.teamIds.map((teamId) => teamsById.get(teamId));
 
@@ -98,20 +53,31 @@ export function StandingsTable({
 }: StandingsTableProps) {
   const { groupLabel } = standings;
   const groupId = `group-${groupLabel.toLowerCase()}`;
-  const state = getStandingsState(standings, tournamentStatus);
-  const stateCopy = getStateCopy(state, completedMatches);
-  const rows = getDisplayedStandingsRows(standings, tournamentStatus);
-  const cutLineTieTeamIds = new Set(
-    standings.unresolvedTies
-      .filter(
-        (tie) =>
-          tie.rank <= 4 && tie.rank + tie.teamIds.length - 1 > 4,
-      )
-      .flatMap((tie) => tie.teamIds),
-  );
-  const visibleTies =
-    tournamentStatus === "finalized" ? [] : standings.unresolvedTies;
+  const isFinalized = tournamentStatus === "finalized";
   const isAllUnplayed = completedMatches === 0;
+  const rows = getDisplayedStandingsRows(standings, tournamentStatus);
+
+  // Teams inside a tie that straddles the top-four cut line. An all-unplayed
+  // group is a single flat tie rather than a competitive cut-line tie.
+  const cutLineTieTeamIds = new Set(
+    isFinalized || isAllUnplayed
+      ? []
+      : standings.unresolvedTies
+          .filter(
+            (tie) =>
+              tie.rank <= ADVANCING_PLACES &&
+              tie.rank + tie.teamIds.length - 1 > ADVANCING_PLACES,
+          )
+          .flatMap((tie) => tie.teamIds),
+  );
+  const hasCutLineTie = cutLineTieTeamIds.size > 0;
+  const visibleTies = isFinalized ? [] : standings.unresolvedTies;
+
+  const state: { tone: StateTone; label: string } = isFinalized
+    ? { tone: "locked", label: "Locked" }
+    : hasCutLineTie
+      ? { tone: "warning", label: "Cut-line tie" }
+      : { tone: "live", label: "Live" };
 
   return (
     <section
@@ -131,15 +97,31 @@ export function StandingsTable({
             <h2 id={`${groupId}-title`}>Group {groupLabel}</h2>
           </div>
         </div>
-        <p className="standings-group__progress">
-          <strong>{completedMatches}</strong> of {totalMatches} matches complete
-        </p>
+        <div className="standings-group__meta">
+          <p className="standings-group__progress">
+            <strong className="figure">{completedMatches}</strong> of{" "}
+            <span className="figure">{totalMatches}</span> complete
+          </p>
+          <span
+            className={`status-badge status-badge--${
+              state.tone === "warning"
+                ? "warning"
+                : state.tone === "locked"
+                  ? "locked"
+                  : "live"
+            }`}
+          >
+            {state.tone === "warning" ? (
+              <Warning size={13} weight="fill" aria-hidden="true" />
+            ) : state.tone === "locked" ? (
+              <Lock size={13} weight="fill" aria-hidden="true" />
+            ) : (
+              <span className="status-badge__dot" aria-hidden="true" />
+            )}
+            {state.label}
+          </span>
+        </div>
       </header>
-
-      <div className={`standings-state standings-state--${state}`}>
-        <span className="standings-state__label">{stateCopy.label}</span>
-        <p>{stateCopy.description}</p>
-      </div>
 
       {rows.length === 0 ? (
         <div className="standings-empty">
@@ -156,26 +138,27 @@ export function StandingsTable({
           >
             <table className="standings-table">
               <caption className="sr-only">
-                Group {groupLabel} standings. P is played, W is wins, L is
-                losses, sets is set difference, and games is game difference.
+                Group {groupLabel} standings. Rank, team, P is played, W is
+                wins, L is losses, sets is set difference, and games is game
+                difference. The top four teams advance.
               </caption>
               <thead>
                 <tr>
                   <th scope="col">Rank</th>
                   <th scope="col">Team</th>
-                  <th scope="col">
+                  <th className="standings-table__col--wide" scope="col">
                     <abbr title="Played">P</abbr>
                   </th>
                   <th scope="col">
                     <abbr title="Wins">W</abbr>
                   </th>
-                  <th scope="col">
+                  <th className="standings-table__col--wide" scope="col">
                     <abbr title="Losses">L</abbr>
                   </th>
                   <th scope="col">
                     <abbr title="Set difference">Sets</abbr>
                   </th>
-                  <th scope="col">
+                  <th className="standings-table__col--wide" scope="col">
                     <abbr title="Game difference">Games</abbr>
                   </th>
                 </tr>
@@ -183,44 +166,71 @@ export function StandingsTable({
               <tbody>
                 {rows.map((row, index) => {
                   const isCutLineTie = cutLineTieTeamIds.has(row.team.id);
-                  const isAdvancing = index < 4 && !isCutLineTie;
-                  const zoneLabel = isAllUnplayed
+                  const isAdvancing =
+                    !isAllUnplayed &&
+                    index < ADVANCING_PLACES &&
+                    !isCutLineTie;
+                  const isLeader = !isAllUnplayed && index === 0;
+                  const zoneLabel: ZoneLabel = isAllUnplayed
                     ? "All tied"
                     : isCutLineTie
-                    ? "Cut line tie"
-                    : isAdvancing
-                      ? "Advancing"
-                      : tournamentStatus === "finalized"
-                        ? "Eliminated"
-                        : "Outside top 4";
+                      ? "Cut-line tie"
+                      : isAdvancing
+                        ? "Advancing"
+                        : isFinalized
+                          ? "Eliminated"
+                          : "Outside top 4";
+                  const rowClasses = [
+                    "standings-row",
+                    isAllUnplayed
+                      ? "standings-row--unplayed"
+                      : isCutLineTie
+                        ? "standings-row--cut-line"
+                        : isAdvancing
+                          ? "standings-row--advancing"
+                          : "standings-row--outside",
+                    isLeader ? "standings-row--leader" : null,
+                    index === ADVANCING_PLACES ? "standings-row--cut" : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
 
                   return (
-                    <tr
-                      className={
-                        isAllUnplayed
-                          ? "standings-row standings-row--unplayed"
-                          : isCutLineTie
-                          ? "standings-row standings-row--cut-line"
-                          : isAdvancing
-                            ? "standings-row standings-row--advancing"
-                            : "standings-row standings-row--outside"
-                      }
-                      key={row.team.id}
-                    >
-                      <td>{row.rank}</td>
+                    <tr className={rowClasses} key={row.team.id}>
+                      <td className="standings-table__rank">{row.rank}</td>
                       <th scope="row">
-                        <span className="standings-table__team-name">
-                          {row.team.name}
-                        </span>
-                        <span className="standings-table__zone">
+                        <TeamName
+                          className="standings-table__team"
+                          name={row.team.name}
+                        />
+                        <span
+                          className={`standings-table__zone standings-table__zone--${
+                            isCutLineTie ? "tie" : isAdvancing ? "in" : "out"
+                          }`}
+                        >
+                          {isCutLineTie ? (
+                            <Warning
+                              size={12}
+                              weight="fill"
+                              aria-hidden="true"
+                            />
+                          ) : null}
                           {zoneLabel}
                         </span>
                       </th>
-                      <td>{row.played}</td>
-                      <td>{row.wins}</td>
-                      <td>{row.losses}</td>
-                      <td>{formatDifference(row.setDifference)}</td>
-                      <td>{formatDifference(row.gameDifference)}</td>
+                      <td className="standings-table__col--wide figure">
+                        {row.played}
+                      </td>
+                      <td className="figure">{row.wins}</td>
+                      <td className="standings-table__col--wide figure">
+                        {row.losses}
+                      </td>
+                      <td className="figure">
+                        {formatDifference(row.setDifference)}
+                      </td>
+                      <td className="standings-table__col--wide figure">
+                        {formatDifference(row.gameDifference)}
+                      </td>
                     </tr>
                   );
                 })}
@@ -231,7 +241,8 @@ export function StandingsTable({
           {visibleTies.length > 0 ? (
             <div className="standings-ties" role="status">
               <h3>
-                {completedMatches === 0
+                <Warning size={16} weight="fill" aria-hidden="true" />
+                {isAllUnplayed
                   ? "All positions are currently tied"
                   : "Ties to watch"}
               </h3>
