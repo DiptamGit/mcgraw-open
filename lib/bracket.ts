@@ -167,6 +167,163 @@ export function organizeKnockoutBracket(
   };
 }
 
+export type BracketNodeId = KnockoutMatchCode | "Champion";
+
+type BracketEdge = {
+  id: string;
+  from: KnockoutMatchCode;
+  to: BracketNodeId;
+};
+
+/**
+ * The seven connectors of the fixed 4-2-1 draw, ordered from the
+ * quarterfinals down to the trophy. The bracket connector layer renders one
+ * base line per edge and highlights the edges an actual winner has advanced
+ * along.
+ */
+export const BRACKET_EDGES = [
+  { id: "QF1-SF1", from: "QF1", to: "SF1" },
+  { id: "QF2-SF1", from: "QF2", to: "SF1" },
+  { id: "QF3-SF2", from: "QF3", to: "SF2" },
+  { id: "QF4-SF2", from: "QF4", to: "SF2" },
+  { id: "SF1-Final", from: "SF1", to: "Final" },
+  { id: "SF2-Final", from: "SF2", to: "Final" },
+  { id: "Final-Champion", from: "Final", to: "Champion" },
+] as const satisfies readonly BracketEdge[];
+
+export type BracketEdgeId = (typeof BRACKET_EDGES)[number]["id"];
+
+const SEMIFINAL_FEEDERS = {
+  SF1: ["QF1", "QF2"],
+  SF2: ["QF3", "QF4"],
+} as const satisfies Record<
+  "SF1" | "SF2",
+  readonly [KnockoutMatchCode, KnockoutMatchCode]
+>;
+
+export type ChampionPath = {
+  /** The final winner's name once the final is complete, otherwise null. */
+  championName: string | null;
+  /**
+   * Every connector whose source match has a recorded winner. These light up
+   * in volt; the set is empty until the first knockout result exists.
+   */
+  highlightedEdges: BracketEdgeId[];
+  /**
+   * A single connected route toward the trophy that the travelling ball
+   * follows. It traces the furthest-advanced winner and is empty with no
+   * recorded knockout result.
+   */
+  ballRoute: BracketEdgeId[];
+};
+
+function edgeId(from: KnockoutMatchCode, to: BracketNodeId): BracketEdgeId {
+  return `${from}-${to}` as BracketEdgeId;
+}
+
+/**
+ * Derives the highlighted champion path purely from recorded results. An edge
+ * is highlighted when its source match is completed with a winner, so the
+ * volt path only ever reflects real outcomes and shows nothing before the
+ * first knockout result.
+ */
+export function computeChampionPath(
+  rounds: KnockoutBracketRounds,
+): ChampionPath {
+  const byCode = new Map<KnockoutMatchCode, TournamentMatch>();
+
+  for (const match of [
+    ...rounds.quarterfinals,
+    ...rounds.semifinals,
+    ...rounds.final,
+  ]) {
+    byCode.set(match.code as KnockoutMatchCode, match);
+  }
+
+  const isDecided = (code: KnockoutMatchCode): boolean => {
+    const match = byCode.get(code);
+    return Boolean(match && match.status === "completed" && match.winner_id);
+  };
+
+  const winnerOf = (code: KnockoutMatchCode): string | null => {
+    const match = byCode.get(code);
+    return match && match.status === "completed" ? match.winner_id : null;
+  };
+
+  const highlightedEdges = BRACKET_EDGES.filter((edge) =>
+    isDecided(edge.from),
+  ).map((edge) => edge.id);
+
+  const finalMatch = byCode.get("Final");
+  const championName =
+    finalMatch && finalMatch.status === "completed" && finalMatch.winner
+      ? finalMatch.winner.name
+      : null;
+
+  return {
+    championName,
+    highlightedEdges,
+    ballRoute: computeBallRoute(isDecided, winnerOf),
+  };
+}
+
+function computeBallRoute(
+  isDecided: (code: KnockoutMatchCode) => boolean,
+  winnerOf: (code: KnockoutMatchCode) => string | null,
+): BracketEdgeId[] {
+  const routeToSemifinal = (
+    semifinal: "SF1" | "SF2",
+    winnerId: string | null,
+  ): BracketEdgeId[] => {
+    const feederWon = SEMIFINAL_FEEDERS[semifinal].find(
+      (quarterfinal) =>
+        isDecided(quarterfinal) && winnerOf(quarterfinal) === winnerId,
+    );
+
+    return feederWon ? [edgeId(feederWon, semifinal)] : [];
+  };
+
+  if (isDecided("Final")) {
+    const championId = winnerOf("Final");
+    const semifinalWon = (["SF1", "SF2"] as const).find(
+      (semifinal) => isDecided(semifinal) && winnerOf(semifinal) === championId,
+    );
+    const route: BracketEdgeId[] = [];
+
+    if (semifinalWon) {
+      route.push(...routeToSemifinal(semifinalWon, championId));
+      route.push(edgeId(semifinalWon, "Final"));
+    }
+
+    route.push(edgeId("Final", "Champion"));
+    return route;
+  }
+
+  const semifinalDecided = (["SF1", "SF2"] as const).find(isDecided);
+
+  if (semifinalDecided) {
+    return [
+      ...routeToSemifinal(semifinalDecided, winnerOf(semifinalDecided)),
+      edgeId(semifinalDecided, "Final"),
+    ];
+  }
+
+  const quarterfinalDecided = (
+    ["QF1", "QF2", "QF3", "QF4"] as const
+  ).find(isDecided);
+
+  if (quarterfinalDecided) {
+    return [
+      edgeId(
+        quarterfinalDecided,
+        BRACKET_EDGES.find((edge) => edge.from === quarterfinalDecided)!.to,
+      ),
+    ];
+  }
+
+  return [];
+}
+
 export const DOWNSTREAM_ASSIGNMENTS = {
   QF1: { matchCode: "SF1", teamField: "team1_id" },
   QF2: { matchCode: "SF1", teamField: "team2_id" },

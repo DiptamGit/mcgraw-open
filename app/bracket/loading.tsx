@@ -19,7 +19,7 @@ const loadingRounds = [
   },
   {
     className: "bracket-round--final",
-    eyebrow: "Championship match",
+    eyebrow: "Title match",
     matchCount: 1,
     title: "Final",
   },
@@ -80,6 +80,18 @@ export default function BracketLoading() {
               </div>
             </section>
           ))}
+          <section className="bracket-champion">
+            <header className="bracket-round__heading">
+              <div>
+                <p className="utility-label">The trophy</p>
+                <h2>Champion</h2>
+              </div>
+            </header>
+            <div className="bracket-champion__panel">
+              <SkeletonBlock className="skeleton--title" width="60%" />
+              <SkeletonBlock className="skeleton--line" width="45%" />
+            </div>
+          </section>
         </div>
       </div>
     </>

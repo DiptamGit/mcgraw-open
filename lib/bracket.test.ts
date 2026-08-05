@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { DataIntegrityError } from "./data/errors";
-import type { TournamentMatch } from "./data/schema";
+import type { Team, TournamentMatch } from "./data/schema";
 import {
   BRACKET_MAPPING,
   BRACKET_ROUND_CODES,
+  computeChampionPath,
   getBracketSourceLabel,
   organizeKnockoutBracket,
   type KnockoutMatchCode,
@@ -112,5 +113,71 @@ describe("knockout bracket", () => {
     expect(() => getBracketSourceLabel("Round-1", "team1")).toThrow(
       DataIntegrityError,
     );
+  });
+});
+
+describe("computeChampionPath", () => {
+  const champion: Team = {
+    id: "a0000001-0000-4000-8000-000000000001",
+    name: "Net Results - Ranjit / Venu C",
+    group_label: "A",
+    final_rank: 1,
+  };
+
+  it("highlights nothing before the first knockout result", () => {
+    const rounds = organizeKnockoutBracket(seededKnockoutMatches());
+    const path = computeChampionPath(rounds);
+
+    expect(path.highlightedEdges).toEqual([]);
+    expect(path.ballRoute).toEqual([]);
+    expect(path.championName).toBeNull();
+  });
+
+  it("highlights only the connectors a recorded winner has advanced along", () => {
+    const matches = seededKnockoutMatches();
+    const qf1 = matches.findIndex((match) => match.code === "QF1");
+    matches[qf1] = knockoutMatch("QF1", qf1 + 1, {
+      status: "completed",
+      winner_id: champion.id,
+      winner: champion,
+    });
+
+    const path = computeChampionPath(organizeKnockoutBracket(matches));
+
+    expect(path.highlightedEdges).toEqual(["QF1-SF1"]);
+    expect(path.ballRoute).toEqual(["QF1-SF1"]);
+    expect(path.championName).toBeNull();
+  });
+
+  it("traces the full champion route once the final is complete", () => {
+    const decided = { status: "completed", winner_id: champion.id } as const;
+    const matches = seededKnockoutMatches().map((match, index) => {
+      if (match.code === "Final") {
+        return knockoutMatch("Final", index + 1, {
+          ...decided,
+          winner: champion,
+        });
+      }
+
+      if (match.code === "QF1" || match.code === "SF1") {
+        return knockoutMatch(match.code, index + 1, { ...decided });
+      }
+
+      return match;
+    });
+
+    const path = computeChampionPath(organizeKnockoutBracket(matches));
+
+    expect(path.highlightedEdges).toEqual([
+      "QF1-SF1",
+      "SF1-Final",
+      "Final-Champion",
+    ]);
+    expect(path.ballRoute).toEqual([
+      "QF1-SF1",
+      "SF1-Final",
+      "Final-Champion",
+    ]);
+    expect(path.championName).toBe(champion.name);
   });
 });

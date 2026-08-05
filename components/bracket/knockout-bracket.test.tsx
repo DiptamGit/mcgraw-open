@@ -102,7 +102,8 @@ describe("KnockoutBracket", () => {
     expect(markup.match(/class="match-summary"/g)).toHaveLength(7);
     expect(markup).toContain("Quarterfinals");
     expect(markup).toContain("Semifinals");
-    expect(markup).toContain("Championship match");
+    expect(markup).toContain("Championship");
+    expect(markup).toContain("Awaits the final");
     expect(markup.indexOf("QF1")).toBeLessThan(markup.indexOf("QF4"));
     expect(markup.indexOf("QF4")).toBeLessThan(markup.indexOf("SF1"));
     expect(markup.indexOf("SF2")).toBeLessThan(markup.indexOf("Final"));
@@ -157,5 +158,38 @@ describe("KnockoutBracket", () => {
     expect(organizerMarkup).toContain("Manage SF2 teams");
     expect(organizerMarkup).toContain("Manage Final teams");
     expect(organizerMarkup).not.toContain("Manage QF1 teams");
+  });
+
+  it("names the champion once the final is complete", () => {
+    const matches = [
+      ...BRACKET_ROUND_CODES.quarterfinals,
+      ...BRACKET_ROUND_CODES.semifinals,
+      ...BRACKET_ROUND_CODES.final,
+    ].map((code, index) => knockoutMatch(code, index + 1));
+    const finalIndex = matches.findIndex((match) => match.code === "Final");
+    matches[finalIndex] = knockoutMatch("Final", finalIndex + 1, {
+      team1_id: groupATeam.id,
+      team2_id: groupBTeam.id,
+      team1: groupATeam,
+      team2: groupBTeam,
+      status: "completed",
+      deciding_set_format: "full_set",
+      outcome_type: "normal",
+      sets: [
+        [6, 4],
+        [6, 3],
+      ],
+      winner_id: groupATeam.id,
+      winner: groupATeam,
+      played_at: "2026-09-28T20:30:00+00:00",
+      completed_at: "2026-09-28T22:00:00+00:00",
+    });
+    const markup = renderToStaticMarkup(
+      <KnockoutBracket rounds={organizeKnockoutBracket(matches)} />,
+    );
+
+    expect(markup).toContain("McGraw Open champion");
+    expect(markup).toContain("Net Results");
+    expect(markup).not.toContain("Awaits the final");
   });
 });
