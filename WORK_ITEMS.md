@@ -1615,3 +1615,28 @@ release, along with an explicit decision to cut over.
 **Timing:** Schedule the cutover outside an active match window so a scheduling
 or result entry is not interrupted, and confirm no organizer is mid-entry
 before deploying.
+
+**Implementation note (release):** Local hardening passed fully — Vitest (181),
+ESLint, `next build`, and the complete Playwright suite (88 passed across
+Android Chrome, iOS Safari, Desktop Chrome), plus static verification that no
+v1.0 token/font/component remains, no server-only secret enters the client
+bundle, every animation has a reduced-motion resting state, and no dependency
+is unused. A `0d1018c..HEAD` diff confirms the phase changed presentation only:
+no `lib/auth`, mutation, query, middleware, server-action, standings, scoring,
+or migration file changed, so authorization, validation, concurrency, locks,
+and audit behavior are unchanged and no migration was needed. The Night Match
+interface was released to production with `vercel --prod` (deployment
+`macgraw-open-website-ljn3g8vgv`); `https://mcgrawopen.com` serves it with all
+baseline security headers, and the prior production deployment remains a
+verified `vercel rollback` target. Two documented steps were deferred by
+explicit organizer decision and environment limits and remain the organizer's
+operational responsibility: (1) the pre/post-release Supabase schema and data
+exports were skipped because this release ships no migration and the production
+DB password was not available in the release environment; (2) the production
+smoke test covered every public route (Home, Groups, Matches, Bracket, unlock)
+directly, while the live organizer-mutation walkthrough (scheduling, scores,
+retirement, walkover, clearing, finalization safeguards, quarterfinal and
+semifinal/final assignment, upstream locks, eligible downstream clears) was not
+run against live tournament data because it requires the production PIN and
+would write production rows; those workflows are covered by the passing
+Playwright suite against the identical build.
