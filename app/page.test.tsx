@@ -76,8 +76,11 @@ describe("HomePage", () => {
 
     const markup = renderToStaticMarkup(await HomePage());
 
+    expect(markup).toContain("Nine to five.");
+    expect(markup).toContain("Then they ");
+    expect(markup).toContain('class="home-hero__accent">serve.</span>');
     expect(markup).toContain("Twelve doubles teams");
-    expect(markup).toContain("No matches are scheduled yet.");
+    expect(markup).toContain("No match is scheduled yet.");
     expect(markup.match(/No leader yet\./g)).toHaveLength(2);
     expect(markup).toContain('href="/matches"');
     expect(markup).toContain('href="/groups"');
@@ -113,7 +116,7 @@ describe("HomePage", () => {
     expect(markup.match(/No leader yet\./g)).toHaveLength(1);
   });
 
-  it("renders the next two active matches in match-page order and Central Time", async () => {
+  it("shows only the soonest scheduled match in the next-on-court card, in Central Time", async () => {
     const team1 = team(1);
     const team2 = team(2);
     const scheduled = [
@@ -138,9 +141,37 @@ describe("HomePage", () => {
 
     const markup = renderToStaticMarkup(await HomePage());
 
-    expect(markup.indexOf("GA-04")).toBeLessThan(markup.indexOf("GA-05"));
-    expect(markup).not.toContain("GA-03");
+    expect(markup).toContain("Next on court");
+    expect(markup).toContain("GA-04");
     expect(markup).toContain("Aug 3, 2026 · 2:00 PM CDT");
-    expect(markup).toContain("Aug 5, 2026 · 2:00 PM CDT");
+    expect(markup).not.toContain("GA-03");
+    expect(markup).not.toContain("GA-05");
+    expect(markup).not.toContain("No match is scheduled yet.");
+  });
+
+  it("derives the stat strip from live tournament data", async () => {
+    const teams = [
+      team(1, "A"),
+      team(2, "A"),
+      team(3, "A"),
+      team(4, "B"),
+      team(5, "B"),
+    ];
+    getTournamentData.mockResolvedValue({
+      teams,
+      matches: [match(1, teams[0], teams[1])],
+      state: tournamentState,
+    });
+
+    const markup = renderToStaticMarkup(await HomePage());
+
+    expect(markup).toContain("Teams");
+    expect(markup).toContain("Groups");
+    expect(markup).toContain("Matches");
+    expect(markup).toContain("Title");
+    // Five teams, two groups, one match: all derived from live data.
+    expect(markup).toContain(">5</span>");
+    expect(markup).toContain(">2</span>");
+    expect(markup).toContain(">1</span>");
   });
 });

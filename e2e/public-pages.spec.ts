@@ -13,29 +13,37 @@ import {
 const publicRoutes = ["/", "/groups", "/matches", "/bracket"];
 
 test.describe("public tournament pages", () => {
-  test("home shows the tournament, upcoming matches, and group leaders", async ({
+  test("home shows the hero, next-on-court card, and group leaders", async ({
     page,
   }) => {
+    await page.setViewportSize({ width: 320, height: 900 });
     await page.goto("/");
 
     await expect(
-      page.getByRole("heading", { level: 1, name: "McGraw Open" }),
+      page.getByRole("heading", {
+        level: 1,
+        name: "Nine to five. Then they serve.",
+      }),
     ).toBeVisible();
     await expect(
       page
         .getByRole("main")
-        .getByText("Twelve doubles teams play across two groups", {
+        .getByText("Twelve doubles teams. Two groups.", {
           exact: false,
         }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Upcoming matches" }),
+      page.getByRole("main").getByText("Next on court").first(),
     ).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Current leaders" }),
     ).toBeVisible();
     await expect(page.getByRole("heading", { name: "Group A" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Group B" })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "View the bracket", exact: true }),
+    ).toBeVisible();
+    await expectNoHorizontalPageOverflow(page);
   });
 
   test("groups shows both standings tables and the tiebreak guide", async ({
@@ -330,7 +338,9 @@ test.describe("public tournament pages", () => {
 
     await page.goto("/");
     await page.getByRole("navigation", { name: "Primary" }).first().waitFor();
-    await page.getByRole("link", { name: "View all matches" }).click();
+    await page
+      .getByRole("link", { name: "Full schedule", exact: true })
+      .click();
     await expect(page).toHaveURL(/\/matches$/);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Matches");
 
