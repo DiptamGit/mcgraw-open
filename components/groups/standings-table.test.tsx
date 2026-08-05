@@ -25,8 +25,8 @@ function row(
   return {
     rank: index,
     team: team(index),
-    played: 4,
-    wins: 5 - index,
+    played: 5,
+    wins: 6 - index,
     losses: index - 1,
     setsFor: 8,
     setsAgainst: index,
@@ -43,7 +43,7 @@ function standings(
 ): GroupStandings {
   return {
     groupLabel: "A",
-    rows: [1, 2, 3, 4, 5].map((index) => row(index)),
+    rows: [1, 2, 3, 4, 5, 6].map((index) => row(index)),
     provisional: false,
     unresolvedTies: [],
     ...overrides,
@@ -54,19 +54,19 @@ describe("StandingsTable", () => {
   it("renders a known live table with explicit advancement zones", () => {
     const markup = renderToStaticMarkup(
       <StandingsTable
-        completedMatches={10}
+        completedMatches={15}
         standings={standings()}
-        totalMatches={10}
+        totalMatches={15}
         tournamentStatus="open"
       />,
     );
 
-    expect(markup).toContain("<strong>10</strong> of 10 matches complete");
+    expect(markup).toContain("<strong>15</strong> of 15 matches complete");
     expect(markup).toContain("The current order includes all completed results");
     expect(markup).toContain("Team 1 / Partner 1");
     expect(markup).toContain(">+17<");
     expect(markup.match(/>Advancing</g)).toHaveLength(4);
-    expect(markup).toContain(">Outside top 4<");
+    expect(markup.match(/>Outside top 4</g)).toHaveLength(2);
     expect(markup).toContain('title="Set difference"');
   });
 
@@ -86,7 +86,7 @@ describe("StandingsTable", () => {
             },
           ],
         })}
-        totalMatches={10}
+        totalMatches={15}
         tournamentStatus="open"
       />,
     );
@@ -101,7 +101,7 @@ describe("StandingsTable", () => {
   });
 
   it("presents an unplayed group without choosing an arbitrary top four", () => {
-    const rows = [1, 2, 3, 4, 5].map((index) =>
+    const rows = [1, 2, 3, 4, 5, 6].map((index) =>
       row(index, {
         rank: 1,
         played: 0,
@@ -125,32 +125,32 @@ describe("StandingsTable", () => {
             { rank: 1, teamIds: rows.map((standing) => standing.team.id) },
           ],
         })}
-        totalMatches={10}
+        totalMatches={15}
         tournamentStatus="open"
       />,
     );
 
-    expect(markup.match(/>All tied</g)).toHaveLength(5);
+    expect(markup.match(/>All tied</g)).toHaveLength(6);
     expect(markup).not.toContain(">Advancing<");
     expect(markup).not.toContain(">Cut line tie<");
     expect(markup).toContain("All positions are currently tied");
   });
 
   it("uses locked final ranks and labels eliminated teams when finalized", () => {
-    const rows = [1, 2, 3, 4, 5].map((index) =>
-      row(index, { team: team(index, 6 - index) }),
+    const rows = [1, 2, 3, 4, 5, 6].map((index) =>
+      row(index, { team: team(index, 7 - index) }),
     );
     const markup = renderToStaticMarkup(
       <StandingsTable
-        completedMatches={10}
+        completedMatches={15}
         standings={standings({ rows })}
-        totalMatches={10}
+        totalMatches={15}
         tournamentStatus="finalized"
       />,
     );
 
     expect(markup).toContain(">Finalized<");
-    expect(markup.indexOf("Team 5 / Partner 5")).toBeLessThan(
+    expect(markup.indexOf("Team 6 / Partner 6")).toBeLessThan(
       markup.indexOf("Team 1 / Partner 1"),
     );
     expect(markup).toContain(">Eliminated<");
@@ -160,9 +160,9 @@ describe("StandingsTable", () => {
     expect(() =>
       renderToStaticMarkup(
         <StandingsTable
-          completedMatches={10}
+          completedMatches={15}
           standings={standings()}
-          totalMatches={10}
+          totalMatches={15}
           tournamentStatus="finalized"
         />,
       ),

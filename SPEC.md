@@ -7,8 +7,8 @@ gated behind a single shared PIN (no user accounts in year one).
 
 - Dates: Aug 1 – ~Sep 30, 2026 (matches scheduled ad hoc over the window)
 - Tournament timezone: America/Chicago (Central Time)
-- 11 doubles teams in two groups (A: 5 teams, B: 6 teams)
-- Group stage: full round robin within each group (A: 10 matches, B: 15 matches)
+- 12 doubles teams in two groups (A: 6 teams, B: 6 teams)
+- Group stage: full round robin within each group (A: 15 matches, B: 15 matches)
 - Top 4 per group advance to knockout
 - Quarterfinals (fixed): A1vB4, A2vB3, A3vB2, A4vB1 → Semifinals → Final
 
@@ -138,9 +138,9 @@ Notes:
   the illustrative checks shown above.
 
 ## Seed data (one-time script)
-1. Insert 11 teams with group labels (roster from the announcement).
+1. Insert 12 teams with group labels (roster from the announcement).
 2. Generate all round-robin group matches (every pair within a group),
-   stage='group', status='unscheduled'. 25 rows total.
+   stage='group', status='unscheduled'. 30 rows total.
 3. Insert 7 knockout matches with null teams:
    QF1–QF4 (labeled with fixed matchups), SF1, SF2, Final.
 
@@ -229,6 +229,9 @@ frontend implementation decisions are recorded in `TECHNICAL_DECISIONS.md`.
     result-entry timestamp.
 18. An unlocked result can be cleared, returning the match to scheduled when a
     schedule exists or unscheduled otherwise.
+19. The 2026 roster has six teams in each group. Group A's sixth team is
+    **Fault Tolerant - Shankar / Mohan**; the top four from each group still
+    advance through the existing quarterfinal mapping.
 
 ## Out of scope (year one)
 User accounts, live scoring, public historical-result browsing, automatic

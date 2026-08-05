@@ -69,14 +69,14 @@ select is(
   jsonb_array_length(
     public.get_tournament_snapshot() -> 'teams'
   ),
-  11,
+  12,
   'the atomic snapshot includes every team'
 );
 select is(
   jsonb_array_length(
     public.get_tournament_snapshot() -> 'matches'
   ),
-  32,
+  37,
   'the atomic snapshot includes every match'
 );
 
@@ -178,7 +178,7 @@ select is(
 );
 select is(
   (select count(*) from public.teams where final_rank is not null),
-  11::bigint,
+  12::bigint,
   'finalization snapshots every team rank'
 );
 select is(
@@ -348,7 +348,7 @@ select is(
 );
 select is(
   (select count(*) from public.teams where final_rank is not null),
-  11::bigint,
+  12::bigint,
   'blocked reopening preserves final ranks'
 );
 select ok(
