@@ -20,7 +20,11 @@ export default function FinalizeGroupsLoading() {
           {(["A", "B"] as const).map((groupLabel) => (
             <section className="final-rank-group" key={groupLabel}>
               <header>
-                <span className="group-shield">{groupLabel}</span>
+                <span
+                      className={`group-shield group-shield--${groupLabel.toLowerCase()}`}
+                    >
+                      {groupLabel}
+                    </span>
                 <div>
                   <p className="utility-label">Locked rank preview</p>
                   <h2>Group {groupLabel}</h2>

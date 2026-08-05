@@ -120,7 +120,10 @@ export function StandingsTable({
     >
       <header className="standings-group__header">
         <div className="standings-group__identity">
-          <span className="group-shield" aria-hidden="true">
+          <span
+            className={`group-shield group-shield--${groupLabel.toLowerCase()}`}
+            aria-hidden="true"
+          >
             {groupLabel}
           </span>
           <div>

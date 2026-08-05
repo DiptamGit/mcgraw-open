@@ -1,14 +1,10 @@
+import { CourtDevice } from "@/components/court-device";
 import { SkeletonBlock } from "./skeletons";
 
 export function PageIntroSkeleton() {
   return (
     <header className="page-intro" aria-hidden="true">
-      <div className="court-lines" aria-hidden="true">
-        <span className="court-lines__horizontal" />
-        <span className="court-lines__vertical" />
-        <span className="court-lines__service" />
-        <span className="court-lines__ball" />
-      </div>
+      <CourtDevice />
       <div className="page-frame page-intro__content">
         <div className="page-intro__label-row">
           <SkeletonBlock

@@ -39,7 +39,11 @@ export default function HomeLoading() {
               {(["A", "B"] as const).map((groupLabel) => (
                 <article className="home-leader" key={groupLabel}>
                   <header>
-                    <span className="group-shield">{groupLabel}</span>
+                    <span
+                      className={`group-shield group-shield--${groupLabel.toLowerCase()}`}
+                    >
+                      {groupLabel}
+                    </span>
                     <div>
                       <p className="utility-label">Round robin</p>
                       <h3>Group {groupLabel}</h3>

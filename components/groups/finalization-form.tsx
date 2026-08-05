@@ -165,7 +165,10 @@ export function FinalizationForm({
             aria-labelledby={`final-rank-group-${group.groupLabel}`}
           >
             <header>
-              <span className="group-shield" aria-hidden="true">
+              <span
+                className={`group-shield group-shield--${group.groupLabel.toLowerCase()}`}
+                aria-hidden="true"
+              >
                 {group.groupLabel}
               </span>
               <div>

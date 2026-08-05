@@ -32,7 +32,11 @@ export default function GroupsLoading() {
               >
                 <div className="standings-group__header">
                   <div className="standings-group__identity">
-                    <span className="group-shield">{groupLabel}</span>
+                    <span
+                      className={`group-shield group-shield--${groupLabel.toLowerCase()}`}
+                    >
+                      {groupLabel}
+                    </span>
                     <div>
                       <p className="utility-label">Round robin</p>
                       <h2>Group {groupLabel}</h2>

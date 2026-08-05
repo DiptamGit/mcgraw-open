@@ -1,20 +1,26 @@
 import type { Metadata } from "next";
-import { Barlow, Barlow_Condensed } from "next/font/google";
+import { Anton, Inter, Roboto_Mono } from "next/font/google";
 import { SiteShell } from "@/components/site-shell";
 import "./globals.css";
 
 const siteUrl = "https://mcgrawopen.com";
 
-const barlow = Barlow({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-barlow",
-  weight: ["400", "500", "600"],
+  variable: "--font-inter",
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const barlowCondensed = Barlow_Condensed({
+const anton = Anton({
   subsets: ["latin"],
-  variable: "--font-barlow-condensed",
-  weight: ["700", "800"],
+  variable: "--font-anton",
+  weight: ["400"],
+});
+
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  variable: "--font-roboto-mono",
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -58,8 +64,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${barlow.variable} ${barlowCondensed.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${anton.variable} ${robotoMono.variable}`}
+    >
+      <body>
         <SiteShell>{children}</SiteShell>
       </body>
     </html>
