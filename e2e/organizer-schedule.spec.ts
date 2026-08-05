@@ -14,7 +14,7 @@ const scheduleFixtures: Record<
   { lifecycle: string; validation: string; concurrent: string }
 > = {
   "android-chrome": {
-    lifecycle: "GB-01",
+    lifecycle: "GA-11",
     validation: "GB-04",
     concurrent: "GB-07",
   },
@@ -24,7 +24,7 @@ const scheduleFixtures: Record<
     concurrent: "GB-08",
   },
   "desktop-chrome": {
-    lifecycle: "GB-03",
+    lifecycle: "GA-12",
     validation: "GB-06",
     concurrent: "GB-09",
   },

@@ -7,13 +7,13 @@ select plan(19);
 
 select is(
   (select count(*) from public.teams),
-  11::bigint,
-  'the seed creates exactly 11 teams'
+  12::bigint,
+  'the ordered migrations create exactly 12 teams'
 );
 select is(
   (select count(*) from public.teams where group_label = 'A'),
-  5::bigint,
-  'Group A contains five teams'
+  6::bigint,
+  'Group A contains six teams'
 );
 select is(
   (select count(*) from public.teams where group_label = 'B'),
@@ -22,8 +22,8 @@ select is(
 );
 select is(
   (select count(*) from public.matches where stage = 'group'),
-  25::bigint,
-  'the seed creates 25 group matches'
+  30::bigint,
+  'the ordered migrations create 30 group matches'
 );
 select is(
   (
@@ -31,8 +31,8 @@ select is(
     from public.matches
     where stage = 'group' and group_label = 'A'
   ),
-  10::bigint,
-  'Group A contains ten round-robin matches'
+  15::bigint,
+  'Group A contains fifteen round-robin matches'
 );
 select is(
   (
@@ -60,8 +60,8 @@ select is(
 );
 select is(
   (select count(*) from public.matches),
-  32::bigint,
-  'the seed creates exactly 32 matches'
+  37::bigint,
+  'the ordered migrations create exactly 37 matches'
 );
 select is(
   (
@@ -102,11 +102,8 @@ select is(
           match.team1_id = team.id
           or match.team2_id = team.id
         )
-      group by team.id, team.group_label
-      having count(match.id) <> case team.group_label
-        when 'A' then 4
-        when 'B' then 5
-      end
+      group by team.id
+      having count(match.id) <> 5
     ) invalid_team_schedules
   ),
   0::bigint,

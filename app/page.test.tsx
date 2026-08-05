@@ -76,6 +76,7 @@ describe("HomePage", () => {
 
     const markup = renderToStaticMarkup(await HomePage());
 
+    expect(markup).toContain("Twelve doubles teams");
     expect(markup).toContain("No matches are scheduled yet.");
     expect(markup.match(/No leader yet\./g)).toHaveLength(2);
     expect(markup).toContain('href="/matches"');

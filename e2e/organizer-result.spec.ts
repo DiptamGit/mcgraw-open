@@ -13,9 +13,9 @@ const resultFixtures: Record<
   string,
   { normal: string; walkover: string; concurrent: string }
 > = {
-  "android-chrome": { normal: "GA-01", walkover: "GA-02", concurrent: "GA-07" },
+  "android-chrome": { normal: "GA-13", walkover: "GA-02", concurrent: "GA-07" },
   "ios-safari": { normal: "GA-03", walkover: "GA-04", concurrent: "GA-08" },
-  "desktop-chrome": { normal: "GA-05", walkover: "GA-06", concurrent: "GA-09" },
+  "desktop-chrome": { normal: "GA-14", walkover: "GA-06", concurrent: "GA-09" },
 };
 
 async function readCompletedGroupACount(page: Page): Promise<number> {

@@ -11,7 +11,7 @@ export default function HomeLoading() {
       <PageIntro
         eyebrow="August 1 - September 30, 2026"
         title="McGraw Open"
-        description="Eleven doubles teams play across two groups for one late-summer title."
+        description="Twelve doubles teams play across two groups for one late-summer title."
         hero
       />
 

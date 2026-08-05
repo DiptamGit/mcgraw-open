@@ -21,6 +21,7 @@ test.describe("public tournament pages", () => {
     await expect(
       page.getByRole("heading", { level: 1, name: "McGraw Open" }),
     ).toBeVisible();
+    await expect(page.getByText("Twelve doubles teams")).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Upcoming matches" }),
     ).toBeVisible();
@@ -36,8 +37,17 @@ test.describe("public tournament pages", () => {
   }) => {
     await page.goto("/groups");
 
+    const groupAStandings = page.getByRole("region", {
+      name: "Group A standings table",
+    });
+    await expect(groupAStandings).toBeVisible();
     await expect(
-      page.getByRole("region", { name: "Group A standings table" }),
+      groupAStandings.getByRole("row"),
+    ).toHaveCount(7);
+    await expect(
+      groupAStandings.getByText("Fault Tolerant - Shankar / Mohan", {
+        exact: true,
+      }),
     ).toBeVisible();
     await expect(
       page.getByRole("region", { name: "Group B standings table" }),
@@ -54,12 +64,15 @@ test.describe("public tournament pages", () => {
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Matches");
     await expect(page.locator(".matches-view__count")).toHaveText(
-      "32 matches",
+      "37 matches",
     );
 
     await page.getByRole("link", { name: "Group A" }).click();
     await expect(page).toHaveURL(/\?group=A$/);
-    await expect(page.locator(".matches-view__count")).toHaveText("10 matches");
+    await expect(page.locator(".matches-view__count")).toHaveText("15 matches");
+    await expect(
+      page.getByRole("article", { name: /^GA-15:/ }),
+    ).toContainText("Fault Tolerant - Shankar / Mohan");
     await settleAfterMutation(page);
 
     await page.getByRole("link", { name: "Quarterfinals" }).click();
@@ -76,7 +89,7 @@ test.describe("public tournament pages", () => {
       await expect(page).toHaveURL(/\/matches$/, { timeout: 4_000 });
     }).toPass({ timeout: 20_000 });
     await expect(page.locator(".matches-view__count")).toHaveText(
-      "32 matches",
+      "37 matches",
     );
   });
 
@@ -228,6 +241,40 @@ test.describe("public tournament pages", () => {
       await expectNoHorizontalPageOverflow(page);
     });
   }
+
+  test("expanded Group A remains usable at desktop and 200% zoom", async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === "ios-safari",
+      "The automated zoom simulation uses Chromium CSS zoom.",
+    );
+
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/groups");
+    await expectNoHorizontalPageOverflow(page);
+
+    const standingsRegion = page.getByRole("region", {
+      name: "Group A standings table",
+    });
+    await standingsRegion.focus();
+    await expect(standingsRegion).toBeFocused();
+
+    await page.evaluate(() => {
+      document.documentElement.style.zoom = "2";
+    });
+    await expectNoHorizontalPageOverflow(page);
+    await expect(standingsRegion.getByRole("row")).toHaveCount(7);
+
+    await page.goto("/matches?group=A");
+    await page.evaluate(() => {
+      document.documentElement.style.zoom = "2";
+    });
+    await expectNoHorizontalPageOverflow(page);
+    await expect(page.locator(".matches-view__count")).toHaveText("15 matches");
+    await page.getByRole("link", { name: "All groups" }).focus();
+    await expect(page.getByRole("link", { name: "All groups" })).toBeFocused();
+  });
 
   test("the skip link is the first keyboard stop and reaches main content", async ({
     page,

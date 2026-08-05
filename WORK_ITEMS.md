@@ -46,7 +46,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-020 | Assign finalized teams to quarterfinals | Done | MGO-015, MGO-019 |
 | MGO-021 | Administer semifinal and final assignments | Done | MGO-011, MGO-019, MGO-020 |
 | MGO-022 | Harden and release the knockout stage | Done | MGO-018, MGO-021 |
-| MGO-023 | Expand Group A roster and fixtures | Not started | MGO-022 |
+| MGO-023 | Expand Group A roster and fixtures | Done | MGO-022 |
 
 ## Phase 1 - Foundation
 

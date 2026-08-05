@@ -14,11 +14,11 @@ describe.skipIf(!hasPublicEnvironment)("seeded Supabase reads", () => {
     const { getTournamentData } = await import("./queries");
     const tournament = await getTournamentData();
 
-    expect(tournament.teams).toHaveLength(11);
-    expect(tournament.matches).toHaveLength(32);
+    expect(tournament.teams).toHaveLength(12);
+    expect(tournament.matches).toHaveLength(37);
     expect(
       tournament.matches.filter((match) => match.stage === "group"),
-    ).toHaveLength(25);
+    ).toHaveLength(30);
     expect(tournament.state).toMatchObject({
       id: 1,
       group_stage_status: "open",
