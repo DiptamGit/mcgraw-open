@@ -184,6 +184,43 @@ describe("MatchSummary", () => {
     expect(markup).not.toContain("<table>");
   });
 
+  it("splits a team name into a nickname and a player pair", () => {
+    const markup = renderToStaticMarkup(
+      <MatchSummary match={createMatch()} />,
+    );
+
+    expect(markup).toContain(
+      '<span class="team-name__nickname">Baseline Bandits</span>',
+    );
+    expect(markup).toContain(
+      '<span class="team-name__players">Player One / Player Two</span>',
+    );
+  });
+
+  it("marks the winner and dims the loser in the score table", () => {
+    const markup = renderToStaticMarkup(
+      <MatchSummary
+        match={createMatch({
+          status: "completed",
+          deciding_set_format: "full_set",
+          outcome_type: "normal",
+          sets: [
+            [6, 4],
+            [6, 3],
+          ],
+          winner_id: team1.id,
+          winner: team1,
+          played_at: "2026-08-02T00:30:00+00:00",
+          completed_at: "2026-08-02T02:00:00+00:00",
+        })}
+      />,
+    );
+
+    expect(markup).toContain('class="score-display__row is-winner"');
+    expect(markup).toContain('class="score-display__row is-loser"');
+    expect(markup.match(/winner-label/g)).toHaveLength(1);
+  });
+
   it("renders explicit knockout placeholders when teams are unassigned", () => {
     const markup = renderToStaticMarkup(
       <MatchSummary
@@ -201,6 +238,8 @@ describe("MatchSummary", () => {
 
     expect(markup).toContain("Winner SF1");
     expect(markup).toContain("Winner SF2");
+    // A name without a separator renders one label and no empty second line.
+    expect(markup).not.toContain("team-name__players");
   });
 
   it("keeps an assigned knockout team's source visible when requested", () => {

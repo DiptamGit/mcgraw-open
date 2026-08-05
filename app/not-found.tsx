@@ -31,7 +31,7 @@ export default function NotFound() {
             <Link className="group-action-link" href="/">
               Go to home
             </Link>
-            <Link className="match-filter-reset" href="/matches">
+            <Link className="btn btn--outline" href="/matches">
               See all matches
             </Link>
           </div>

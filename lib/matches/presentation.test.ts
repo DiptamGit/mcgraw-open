@@ -7,8 +7,11 @@ import {
   getMatchStageLabel,
   getOutcomeLabel,
   getTeamDisplayName,
+  buildMatchFilterHref,
+  describeActiveMatchFilters,
   organizeMatches,
   parseMatchFilters,
+  splitTeamName,
 } from "./presentation";
 
 const groupATeam: TournamentMatch["team1"] = {
@@ -303,5 +306,69 @@ describe("match presentation", () => {
         "team1",
       ),
     ).toThrow("Group match GA-01 is missing an assigned team.");
+  });
+});
+
+describe("splitTeamName", () => {
+  it("splits a stored name into its nickname and player pair", () => {
+    expect(splitTeamName("Net Results - Ranjit / Venu C")).toEqual({
+      nickname: "Net Results",
+      players: "Ranjit / Venu C",
+    });
+  });
+
+  it("returns the whole string as the nickname when there is no separator", () => {
+    expect(splitTeamName("Winner QF3")).toEqual({
+      nickname: "Winner QF3",
+      players: null,
+    });
+    expect(splitTeamName("A1")).toEqual({ nickname: "A1", players: null });
+  });
+
+  it("splits on the first separator only", () => {
+    expect(
+      splitTeamName("Cross - Court - Ana / Bo"),
+    ).toEqual({ nickname: "Cross", players: "Court - Ana / Bo" });
+  });
+
+  it("keeps a hyphenated nickname without spaces intact", () => {
+    expect(splitTeamName("Fault-Tolerant")).toEqual({
+      nickname: "Fault-Tolerant",
+      players: null,
+    });
+  });
+
+  it("never produces an empty secondary line", () => {
+    expect(splitTeamName("Spin Doctors - ")).toEqual({
+      nickname: "Spin Doctors -",
+      players: null,
+    });
+    expect(splitTeamName(" - Ana / Bo")).toEqual({
+      nickname: "- Ana / Bo",
+      players: null,
+    });
+  });
+});
+
+describe("match filter descriptions", () => {
+  it("names only the filters actually narrowing the list", () => {
+    expect(
+      describeActiveMatchFilters({ group: "all", stage: "all" }),
+    ).toEqual([]);
+    expect(
+      describeActiveMatchFilters({ group: "A", stage: "all" }),
+    ).toEqual(["Group A"]);
+    expect(
+      describeActiveMatchFilters({ group: "B", stage: "quarterfinal" }),
+    ).toEqual(["Group B", "Quarterfinals"]);
+  });
+
+  it("builds shareable filter links that drop default selections", () => {
+    expect(buildMatchFilterHref({ group: "all", stage: "all" })).toBe(
+      "/matches",
+    );
+    expect(buildMatchFilterHref({ group: "A", stage: "semifinal" })).toBe(
+      "/matches?group=A&stage=semifinal",
+    );
   });
 });

@@ -1,9 +1,11 @@
 import { Check } from "@phosphor-icons/react/dist/ssr";
 
-import type {
-  MatchFilterSelection,
-  MatchGroupFilter,
-  MatchStageFilter,
+import {
+  buildMatchFilterHref,
+  MATCH_GROUP_FILTER_OPTIONS,
+  MATCH_STAGE_FILTER_OPTIONS,
+  type MatchFilterOption,
+  type MatchFilterSelection,
 } from "../../lib/matches/presentation";
 
 type MatchFiltersProps = {
@@ -11,110 +13,69 @@ type MatchFiltersProps = {
   resultCount: number;
 };
 
-const groupOptions: ReadonlyArray<{
-  label: string;
-  value: MatchGroupFilter;
-}> = [
-  { label: "All groups", value: "all" },
-  { label: "Group A", value: "A" },
-  { label: "Group B", value: "B" },
-];
+function FilterChipSet<TValue extends string>({
+  legend,
+  options,
+  selected,
+  buildFilters,
+}: {
+  legend: string;
+  options: ReadonlyArray<MatchFilterOption<TValue>>;
+  selected: TValue;
+  buildFilters: (value: TValue) => MatchFilterSelection;
+}) {
+  return (
+    // The label is an attribute rather than a hidden element: an absolutely
+    // positioned `.sr-only` span inside this scroller would be laid out
+    // against the sticky bar and widen the page.
+    <div className="match-filters__set" role="group" aria-label={legend}>
+      {options.map((option) => {
+        const isSelected = selected === option.value;
 
-const stageOptions: ReadonlyArray<{
-  label: string;
-  value: MatchStageFilter;
-}> = [
-  { label: "All stages", value: "all" },
-  { label: "Group stage", value: "group" },
-  { label: "Quarterfinals", value: "quarterfinal" },
-  { label: "Semifinals", value: "semifinal" },
-  { label: "Final", value: "final" },
-];
-
-function getFilterHref(filters: MatchFilterSelection): string {
-  const searchParams = new URLSearchParams();
-
-  if (filters.group !== "all") {
-    searchParams.set("group", filters.group);
-  }
-
-  if (filters.stage !== "all") {
-    searchParams.set("stage", filters.stage);
-  }
-
-  const query = searchParams.toString();
-  return query ? `/matches?${query}` : "/matches";
+        return (
+          <a
+            key={option.value}
+            href={buildMatchFilterHref(buildFilters(option.value))}
+            className="chip"
+            aria-current={isSelected ? "true" : undefined}
+          >
+            {isSelected ? (
+              <Check size={14} weight="bold" aria-hidden="true" />
+            ) : null}
+            <span>{option.label}</span>
+          </a>
+        );
+      })}
+    </div>
+  );
 }
 
 export function MatchFilters({ filters, resultCount }: MatchFiltersProps) {
-  const resultLabel = `${resultCount} ${resultCount === 1 ? "match" : "matches"}`;
-
   return (
     <section className="match-filters" aria-labelledby="match-filters-title">
-      <div className="match-filters__heading">
-        <div>
-          <p className="utility-label">Narrow the draw</p>
-          <h2 id="match-filters-title">Filter matches</h2>
+      <h2 className="sr-only" id="match-filters-title">
+        Filter matches
+      </h2>
+      <div className="page-frame match-filters__inner">
+        <div className="match-filters__scroller">
+          <FilterChipSet
+            legend="Group"
+            options={MATCH_GROUP_FILTER_OPTIONS}
+            selected={filters.group}
+            buildFilters={(group) => ({ ...filters, group })}
+          />
+          <span className="match-filters__divider" aria-hidden="true" />
+          <FilterChipSet
+            legend="Stage"
+            options={MATCH_STAGE_FILTER_OPTIONS}
+            selected={filters.stage}
+            buildFilters={(stage) => ({ ...filters, stage })}
+          />
         </div>
         <p className="matches-view__count" aria-live="polite">
-          {resultLabel}
+          <strong className="figure">{resultCount}</strong>{" "}
+          {resultCount === 1 ? "match" : "matches"}
         </p>
-      </div>
-
-      <div className="match-filters__groups">
-        <div
-          className="match-filter-group"
-          role="group"
-          aria-labelledby="group-filter-label"
-        >
-          <p id="group-filter-label">Group</p>
-          <div className="match-filter-options">
-            {groupOptions.map((option) => {
-              const isSelected = filters.group === option.value;
-
-              return (
-                <a
-                  key={option.value}
-                  href={getFilterHref({ ...filters, group: option.value })}
-                  className="match-filter-option"
-                  aria-current={isSelected ? "true" : undefined}
-                >
-                  {isSelected ? (
-                    <Check size={16} weight="bold" aria-hidden="true" />
-                  ) : null}
-                  <span>{option.label}</span>
-                </a>
-              );
-            })}
-          </div>
-        </div>
-
-        <div
-          className="match-filter-group"
-          role="group"
-          aria-labelledby="stage-filter-label"
-        >
-          <p id="stage-filter-label">Stage</p>
-          <div className="match-filter-options">
-            {stageOptions.map((option) => {
-              const isSelected = filters.stage === option.value;
-
-              return (
-                <a
-                  key={option.value}
-                  href={getFilterHref({ ...filters, stage: option.value })}
-                  className="match-filter-option"
-                  aria-current={isSelected ? "true" : undefined}
-                >
-                  {isSelected ? (
-                    <Check size={16} weight="bold" aria-hidden="true" />
-                  ) : null}
-                  <span>{option.label}</span>
-                </a>
-              );
-            })}
-          </div>
-        </div>
       </div>
     </section>
   );

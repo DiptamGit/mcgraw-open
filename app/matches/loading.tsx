@@ -14,23 +14,27 @@ export default function MatchesLoading() {
         description="Find the next court time and every completed score."
       />
 
-      <div className="page-content">
-        <LoadingAnnouncement label="Loading tournament matches." />
-        <div className="matches-view">
-          <div className="skeleton-filters" aria-hidden="true">
-            <SkeletonBlock className="skeleton--control" width="100%" />
+      <div className="match-filters" aria-hidden="true">
+        <div className="page-frame match-filters__inner">
+          <div className="skeleton-filters">
+            <SkeletonBlock className="skeleton--chip" width="6.5rem" />
+            <SkeletonBlock className="skeleton--chip" width="6rem" />
+            <SkeletonBlock className="skeleton--chip" width="6rem" />
+            <SkeletonBlock className="skeleton--chip" width="7rem" />
           </div>
-
-          <section className="match-section" aria-hidden="true">
-            <div className="match-section__heading">
-              <div>
-                <p className="utility-label">Next on court</p>
-                <h2>Scheduled</h2>
-              </div>
-            </div>
-            <SkeletonMatchList count={4} />
-          </section>
         </div>
+      </div>
+
+      <div className="page-content matches-view">
+        <LoadingAnnouncement label="Loading tournament matches." />
+
+        <section className="match-section" aria-hidden="true">
+          <div className="match-section__heading">
+            <p className="utility-label">Next on court</p>
+            <h2 className="match-section__title">Scheduled</h2>
+          </div>
+          <SkeletonMatchList count={4} />
+        </section>
       </div>
     </>
   );

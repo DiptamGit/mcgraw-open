@@ -48,7 +48,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-022 | Harden and release the knockout stage | Done | MGO-018, MGO-021 |
 | MGO-023 | Expand Group A roster and fixtures | Done | MGO-022 |
 | MGO-024 | Rebuild the design foundation and app shell | Done | MGO-023 |
-| MGO-025 | Rebuild the matches list and shared match presentation | Not started | MGO-024 |
+| MGO-025 | Rebuild the matches list and shared match presentation | Done | MGO-024 |
 | MGO-026 | Rebuild the group standings page | Not started | MGO-024, MGO-025 |
 | MGO-027 | Rebuild the home page and cinematic hero | Not started | MGO-025, MGO-026 |
 | MGO-028 | Rebuild the knockout bracket signature | Not started | MGO-024, MGO-025 |
@@ -1138,6 +1138,15 @@ organizer mode is locked, since the banner owns the lock control once unlocked.
 **Goal:** Rebuild the Matches route and the shared match presentation used
 across the site to the approved mockup, without changing filtering, ordering,
 or result semantics.
+
+**Implementation note:** The filter bar's group and stage legends are
+`aria-label` attributes rather than hidden `.sr-only` spans. Inside the sticky,
+horizontally scrolling bar an absolutely positioned `.sr-only` element resolves
+its containing block against the sticky ancestor rather than the scroller, so
+it escaped the scroll clip and widened the page past 320px. The slice also
+repaired three rules left pointing at deleted v1.0 tokens (`.content-panel` /
+`.organizer-panel`, `.skeleton-match`, and `.skeleton-filters`), which had been
+rendering those surfaces borderless and transparent since MGO-024.
 
 **Scope:**
 

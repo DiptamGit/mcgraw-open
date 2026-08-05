@@ -22,6 +22,37 @@ const tournamentTimeFormatter = new Intl.DateTimeFormat("en-US", {
 
 export type MatchSide = "team1" | "team2";
 
+export type TeamNameParts = {
+  nickname: string;
+  players: string | null;
+};
+
+const TEAM_NAME_SEPARATOR = " - ";
+
+/**
+ * Presentation-only split of a stored team name into its nickname and player
+ * pair. The stored value never changes; a name without a usable separator
+ * renders as a single primary label with no secondary line.
+ */
+export function splitTeamName(name: string): TeamNameParts {
+  const separatorIndex = name.indexOf(TEAM_NAME_SEPARATOR);
+
+  if (separatorIndex === -1) {
+    return { nickname: name.trim(), players: null };
+  }
+
+  const nickname = name.slice(0, separatorIndex).trim();
+  const players = name
+    .slice(separatorIndex + TEAM_NAME_SEPARATOR.length)
+    .trim();
+
+  if (nickname.length === 0 || players.length === 0) {
+    return { nickname: name.trim(), players: null };
+  }
+
+  return { nickname, players };
+}
+
 export type MatchSections = {
   scheduled: TournamentMatch[];
   unscheduled: TournamentMatch[];
@@ -40,6 +71,29 @@ export type MatchSearchParams = Record<
   string,
   string | string[] | undefined
 >;
+
+export type MatchFilterOption<TValue> = {
+  label: string;
+  value: TValue;
+};
+
+export const MATCH_GROUP_FILTER_OPTIONS: ReadonlyArray<
+  MatchFilterOption<MatchGroupFilter>
+> = [
+  { label: "All groups", value: "all" },
+  { label: "Group A", value: "A" },
+  { label: "Group B", value: "B" },
+];
+
+export const MATCH_STAGE_FILTER_OPTIONS: ReadonlyArray<
+  MatchFilterOption<MatchStageFilter>
+> = [
+  { label: "All stages", value: "all" },
+  { label: "Group stage", value: "group" },
+  { label: "Quarterfinals", value: "quarterfinal" },
+  { label: "Semifinals", value: "semifinal" },
+  { label: "Final", value: "final" },
+];
 
 const stageOrder: Record<TournamentMatch["stage"], number> = {
   group: 0,
@@ -77,6 +131,47 @@ export function parseMatchFilters(
         ? stageParam
         : "all",
   };
+}
+
+export function buildMatchFilterHref(filters: MatchFilterSelection): string {
+  const searchParams = new URLSearchParams();
+
+  if (filters.group !== "all") {
+    searchParams.set("group", filters.group);
+  }
+
+  if (filters.stage !== "all") {
+    searchParams.set("stage", filters.stage);
+  }
+
+  const query = searchParams.toString();
+  return query ? `/matches?${query}` : "/matches";
+}
+
+/**
+ * The labels of the filters currently narrowing the list, so an empty state can
+ * name exactly what is hiding the fixtures.
+ */
+export function describeActiveMatchFilters(
+  filters: MatchFilterSelection,
+): string[] {
+  const labels: string[] = [];
+  const group = MATCH_GROUP_FILTER_OPTIONS.find(
+    (option) => option.value === filters.group && option.value !== "all",
+  );
+  const stage = MATCH_STAGE_FILTER_OPTIONS.find(
+    (option) => option.value === filters.stage && option.value !== "all",
+  );
+
+  if (group) {
+    labels.push(group.label);
+  }
+
+  if (stage) {
+    labels.push(stage.label);
+  }
+
+  return labels;
 }
 
 export function formatTournamentDateTime(timestamp: string): string {
