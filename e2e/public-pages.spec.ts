@@ -21,7 +21,13 @@ test.describe("public tournament pages", () => {
     await expect(
       page.getByRole("heading", { level: 1, name: "McGraw Open" }),
     ).toBeVisible();
-    await expect(page.getByText("Twelve doubles teams")).toBeVisible();
+    await expect(
+      page
+        .getByRole("main")
+        .getByText("Twelve doubles teams play across two groups", {
+          exact: false,
+        }),
+    ).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Upcoming matches" }),
     ).toBeVisible();
