@@ -16,9 +16,9 @@ This is the authoritative implementation tracker. Product rules live in
   pass, `npm run build` succeeds, and the working version is committed.
 - Deploy each completed slice when Vercel and Supabase access are available.
 - Show every database migration to the user before applying it.
-- Every UI or UX item from MGO-006 through MGO-022 must read and follow the
-  locked system in `DESIGN.md`. Foundational deviations require explicit user
-  approval and an update to `DESIGN.md` first.
+- Every UI or UX item must read and follow the locked system in `DESIGN.md`.
+  `DESIGN.md` v2.0 (Night Match) is the current locked system. Foundational
+  deviations require explicit user approval and an update to `DESIGN.md` first.
 
 ## Current queue
 
@@ -47,6 +47,13 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-021 | Administer semifinal and final assignments | Done | MGO-011, MGO-019, MGO-020 |
 | MGO-022 | Harden and release the knockout stage | Done | MGO-018, MGO-021 |
 | MGO-023 | Expand Group A roster and fixtures | Done | MGO-022 |
+| MGO-024 | Rebuild the design foundation and app shell | Not started | MGO-023 |
+| MGO-025 | Rebuild the matches list and shared match presentation | Not started | MGO-024 |
+| MGO-026 | Rebuild the group standings page | Not started | MGO-024, MGO-025 |
+| MGO-027 | Rebuild the home page and cinematic hero | Not started | MGO-025, MGO-026 |
+| MGO-028 | Rebuild the knockout bracket signature | Not started | MGO-024, MGO-025 |
+| MGO-029 | Rebuild the organizer forms and transition pages | Not started | MGO-024, MGO-025 |
+| MGO-030 | Harden and release the interface overhaul | Not started | MGO-027, MGO-028, MGO-029 |
 
 ## Phase 1 - Foundation
 
@@ -1016,3 +1023,541 @@ complete migration are required for staging and production release.
 
 **Timing:** Complete before the organizer PIN is distributed or any tournament
 match is scheduled or completed.
+
+## Phase 9 - Night Match interface overhaul
+
+Phase 9 rebuilds the entire interface on `DESIGN.md` v2.0 (Night Match) from
+the approved mockups. It changes presentation only. No slice in this phase may
+add, remove, or alter tournament behavior, database schema, seed data,
+migrations, server actions, authorization, validation, concurrency rules, or
+audit behavior.
+
+The phase releases as a single production cutover. Slices land on `main` and
+are validated through Vercel preview deployments. Production is updated only by
+MGO-030.
+
+Every slice in this phase inherits the `DESIGN.md` accessibility floor: WCAG AA
+contrast, 12px minimum real text, 44px minimum interactive targets, visible
+volt focus on every focusable element, no page-level horizontal overflow at
+320px or 200% zoom, no information conveyed by color alone, and a static,
+legible resting state under `prefers-reduced-motion: reduce`.
+
+### MGO-024 - Rebuild the design foundation and app shell
+
+**Goal:** Replace the v1.0 light design foundation with the Night Match token
+system, typefaces, primitives, and navigation shell while every existing route
+keeps working.
+
+**Scope:**
+
+- Read `DESIGN.md` v2.0 completely and treat it as the locked system.
+- Replace the design tokens in `app/globals.css` with the Night Match brand
+  accents, ink neutrals, semantic colors, and aliases as CSS custom properties,
+  exposed through Tailwind `@theme inline`. Add the spacing, radius, shadow,
+  glow, duration, and typography scale tokens. Remove the v1.0 Blue Court
+  tokens once nothing references them.
+- Replace Barlow and Barlow Condensed with Anton, Inter, and Roboto Mono loaded
+  through `next/font/google` in `app/layout.tsx`. Set tabular figures on the
+  mono face.
+- Set base document styling: `--bg-page` canvas, body type, display heading
+  treatment, uppercase display via CSS rather than capitalized content, link
+  styling, selection color, and a global visible focus ring.
+- Add a single reduced-motion block that neutralizes the four permitted
+  animations.
+- Build the shared primitives named in `DESIGN.md`: Button, Badge, Chip, Card,
+  GroupShield including the Group B hatch pattern, Eyebrow, Stat, PulseDot, and
+  the Input and Select control styling.
+- Add the reusable court-line SVG device and the court-glow background
+  treatment as `aria-hidden` presentation components.
+- Rebuild the app shell: sticky blurred header with the McGRAW OPEN wordmark,
+  desktop primary navigation with an outlined Organizer control at 900px and
+  above, and a fixed phone bottom tab bar for Home, Groups, Matches, and
+  Bracket. Reserve page bottom padding equal to the bar height. Do not
+  implement a hamburger menu.
+- Rebuild the organizer access strip as the `OrganizerBanner` described in
+  `DESIGN.md`, preserving the existing unlock and lock behavior and server-side
+  cookie validation exactly.
+- Retheme the remaining page-level styles onto the new tokens so Home, Groups,
+  Matches, Bracket, and every organizer route stay legible, usable, and free of
+  contrast failures on the dark base before later slices rebuild them. A route
+  may look transitional, but it may not look broken or become unreadable.
+- Convert the loading skeletons, `error.tsx`, `global-error.tsx`,
+  `not-found.tsx`, `app/icon.svg`, and `app/opengraph-image.tsx` to the Night
+  Match surfaces and wordmark.
+- Update automated tests that assert removed class names, token names, or shell
+  markup.
+- Do not change page content, data flow, routes, server actions, or component
+  APIs beyond what the shell itself requires. Do not add a component library,
+  an icon CDN, a CSS framework, or a new runtime dependency.
+
+**Acceptance criteria:**
+
+- Every existing route renders on the Night Match canvas with no unstyled,
+  invisible, or contrast-failing text, and no route regresses in function.
+- Design tokens exist only as CSS custom properties surfaced through Tailwind.
+  No component contains a raw hex value.
+- Anton, Inter, and Roboto Mono load through `next/font` with no runtime font
+  CDN request, and no v1.0 font remains referenced.
+- The header wordmark renders McGRAW in white and OPEN in volt and links home
+  with an accessible name.
+- All four primary routes are reachable from the phone bottom tab bar and the
+  desktop header, each target is at least 44px, and the active route is marked
+  with `aria-current="page"` plus a non-color marker.
+- Page content is never obscured by the fixed bottom bar at any width.
+- The organizer banner appears only with a valid organizer cookie, and unlock
+  and lock still validate on the server.
+- Every focusable element shows a visible volt focus ring.
+- No page scrolls horizontally at 320px or at 200% zoom.
+- `prefers-reduced-motion: reduce` leaves every screen static and fully
+  legible.
+
+**Validate:**
+
+- Run the existing Vitest suite and update assertions tied to the old shell.
+- Run `npm run test`.
+- Run `npm run lint`.
+- Run `npm run build`.
+- Run the existing Playwright suite and update selectors broken by the shell
+  change.
+- Review every route at 320px, 390px, tablet, and desktop widths, and at 200%
+  zoom.
+- Navigate the shell by keyboard only.
+- Verify the reduced-motion resting state in the browser.
+- Confirm no server-only value or secret entered the browser bundle.
+
+### MGO-025 - Rebuild the matches list and shared match presentation
+
+**Goal:** Rebuild the Matches route and the shared match presentation used
+across the site to the approved mockup, without changing filtering, ordering,
+or result semantics.
+
+**Scope:**
+
+- Read `DESIGN.md` v2.0, in particular the Matches specification, the team name
+  treatment, and the status vocabulary.
+- Add a pure presentation helper that splits a stored team name on the first
+  `" - "` into a nickname and a player pair, returning the whole string as the
+  nickname when no separator exists. Cover it with focused unit tests. Do not
+  change stored data, queries, or the database.
+- Rebuild the match card: context line with group and match code, status badge,
+  both teams using the nickname and player treatment with a display VS divider
+  on desktop and a stacked layout on phone, a meta row with Central Time and
+  venue, and a hairline-separated organizer action row.
+- Rebuild the completed-match presentation as a semantic two-row score table
+  with mono figures, the winner marked in white with a Winner badge and the
+  loser dimmed. Keep match tiebreak columns visually and textually distinct
+  from full-set columns, and state retirement and walkover outcomes in words.
+- Rebuild the filter bar as sticky blurred chips for group and stage with a
+  hairline divider and a live result count, horizontally scrollable within
+  itself on phone while the page does not overflow.
+- Rebuild the Scheduled, Unscheduled, and Completed section headers with
+  eyebrows and counts.
+- Rebuild the zero-result state to name the active filters and offer to clear
+  them.
+- Preserve the existing URL-shareable filter state, section ordering, scheduled
+  and completed sort order, `played_at`-based completed ordering, knockout
+  placeholder labels, and every existing data-integrity error path.
+- Do not change filter semantics, query logic, server actions, or routes.
+
+**Acceptance criteria:**
+
+- Every match state renders unambiguously: unscheduled, scheduled, completed,
+  match tiebreak, retirement, and walkover.
+- A team name stored as `"Nickname - Player One / Player Two"` renders the
+  nickname as the primary label and the players as secondary text, and a name
+  without a separator renders as a single primary label with no empty line.
+- Filters still isolate Group A, Group B, quarterfinals, semifinals, and the
+  final, and reloading or sharing a filtered URL preserves the view.
+- The result count reflects the filtered set from live data.
+- The filter bar stays visible while scrolling on phone and desktop, and its
+  chips are keyboard operable with visible focus.
+- Section order and sort order match `SPEC.md` exactly.
+- The zero-result state names the active filters and clears them in one action.
+- Score figures align in columns, and a match tiebreak is distinguishable
+  without relying on color.
+- Match cards remain usable at 320px with no page-level horizontal overflow.
+
+**Validate:**
+
+- Add focused unit tests for the team name split, including a name with no
+  separator and a name containing more than one separator.
+- Run the existing match presentation, filter, and page tests.
+- Run `npm run test`.
+- Run `npm run lint`.
+- Run `npm run build`.
+- Run the Playwright public pages suite and update selectors as needed.
+- Inspect a representative fixture in each of the six match states.
+- Review Matches at 320px, 390px, tablet, and desktop widths, and at 200% zoom.
+- Operate the filter bar by keyboard only.
+
+### MGO-026 - Rebuild the group standings page
+
+**Goal:** Rebuild the Groups route to the approved mockup, including the
+advancing rail, cut-line tie treatment, and organizer finalization panel, using
+only data the standings engine already computes.
+
+**Scope:**
+
+- Read `DESIGN.md` v2.0, in particular the Groups specification.
+- Rebuild the page intro with the round-robin eyebrow, display title, and a
+  "Live standings" marker driven by the existing `provisional` flag, with a
+  sentence explaining provisional ordering.
+- Rebuild both standings tables as semantic tables with captions and header
+  cells: rank, team, played, won, lost, set difference, and game difference on
+  desktop, reduced to rank, team, won, and set difference on phone.
+- Add the per-group header with the group shield, group name, an
+  "N of 15 complete" count derived from live data, and a state badge that shows
+  "Cut-line tie" in warning when the existing `unresolvedTies` output touches
+  the top four positions.
+- Add the advancing rail as an inset left rail on the top four rows, volt for
+  Group A, court blue for Group B, and warning for a row inside a cut-line tie,
+  with a faint volt wash on rank one. Pair every rail with an "Advancing" or
+  "Cut-line tie" text label so no meaning is color-only. Separate rank four
+  from rank five with a dashed divider.
+- Render figures in mono with team names in Inter, and keep the team nickname
+  and player treatment from MGO-025.
+- Present the finalized state with a "Locked" badge, the stored final ranks,
+  and any manual tie note, replacing the live marker.
+- On phone, switch between Group A and Group B with chips while keeping both
+  tables in the accessible DOM.
+- Rebuild the organizer finalization panel below the tables, and the reopen
+  affordance when groups are finalized, preserving every existing lock,
+  precondition, and blocked-state explanation.
+- If a table must scroll at a narrow width, scroll it inside its own focusable,
+  labelled container without letting the page overflow.
+- Do not change standings calculation, tiebreak rules, finalization behavior,
+  server actions, or authorization.
+
+**Acceptance criteria:**
+
+- Both groups render six rows each with correct ranks, records, and
+  differentials from the existing standings engine.
+- The top four rows in each group are marked as advancing by both a rail and a
+  text label, and rank five is separated by a visible divider.
+- Provisional standings show the "Live standings" marker and its explanation;
+  finalized standings show the "Locked" badge, stored ranks, and any manual tie
+  note.
+- An unresolved tie affecting the top four shows the cut-line treatment with
+  warning color, a text label, and an icon.
+- Removing color from the page still communicates who is advancing and which
+  rows are tied.
+- The phone group switch reaches both tables, and both remain available to
+  assistive technology.
+- The finalization and reopen controls appear only for an unlocked organizer,
+  still validate on the server, and still explain why they are blocked.
+- Tables use real `table`, `th`, and `caption` markup and remain readable at
+  320px and at 200% zoom without page-level horizontal overflow.
+
+**Validate:**
+
+- Run the existing standings, standings presentation, and groups page tests.
+- Exercise a provisional group, a group with a top-four tie, and a finalized
+  group.
+- Run `npm run test`.
+- Run `npm run lint`.
+- Run `npm run build`.
+- Run the Playwright group transition suite and update selectors as needed.
+- Review Groups at 320px, 390px, tablet, and desktop widths, and at 200% zoom.
+- Navigate the group switch and any scroll container by keyboard only.
+- Verify the page in grayscale to confirm no state is color-only.
+
+### MGO-027 - Rebuild the home page and cinematic hero
+
+**Goal:** Rebuild Home as the approved cinematic landing moment with the locked
+headline copy, live next-match card, real-data stat strip, group leaders, and
+bracket teaser.
+
+**Scope:**
+
+- Read `DESIGN.md` v2.0, in particular the Home specification and the locked
+  hero copy.
+- Build the hero on `--ink-950` with the `aria-hidden` court-line SVG and the
+  court-blue radial glow, a tournament-window pill eyebrow, the locked headline
+  "Nine to five. Then they serve." with the final word in volt, the locked
+  subhead, and the "View the bracket" and "Full schedule" actions.
+- Build the "Next on court" card with a pulse dot, eyebrow, schedule badge,
+  stage and venue line, and both teams with a display VS divider. Float it over
+  the hero at desktop widths and place it below the hero on phone. Give it a
+  specific empty state that points at the fixture list when nothing is
+  scheduled.
+- Build the stat strip as four hairline-divided cells with Anton numerals over
+  uppercase labels, arranged 2x2 on phone. Derive teams, groups, and match
+  counts from live tournament data; never hard-code a count. The mockup's "31
+  matches" is superseded by the live total.
+- Rebuild the group leader cards with the group shield, leading or joint
+  leading teams, wins and played, and the existing empty state before any
+  result exists.
+- Build the bracket teaser as a small self-drawing connector graphic linking to
+  Bracket, rendering drawn and static under reduced motion.
+- Preserve the existing upcoming-match selection, leader derivation, page
+  metadata, and Open Graph behavior.
+- Do not add tournament data, counters, or queries that do not already exist,
+  and do not introduce a third animation beyond the pulse dot and the teaser.
+
+**Acceptance criteria:**
+
+- The hero renders the locked headline and subhead exactly as written in
+  `DESIGN.md`, with the final headline word in volt.
+- The court-line device and glow are decorative, marked `aria-hidden`, and
+  never reduce the contrast of hero text below AA.
+- The "Next on court" card shows the soonest scheduled match in Central Time
+  and switches to its empty state when no match is scheduled.
+- Stat strip values match live tournament data and update without a code change
+  when fixtures change.
+- Group leader cards show joint leaders correctly and show the pre-result empty
+  state when a group has no completed match.
+- The bracket teaser links to Bracket and renders complete and static under
+  reduced motion.
+- Home is usable at 320px with no page-level horizontal overflow, and the hero
+  headline never clips or overlaps the next-match card at any width.
+- All hero and card actions are keyboard reachable with visible focus.
+
+**Validate:**
+
+- Update and run the existing home page and home presentation tests, including
+  the changed hero copy.
+- Run `npm run test`.
+- Run `npm run lint`.
+- Run `npm run build`.
+- Run the Playwright public pages suite and update selectors as needed.
+- Check Home with a scheduled match, with no scheduled match, with no completed
+  results, and with joint leaders.
+- Review Home at 320px, 390px, tablet, and desktop widths, and at 200% zoom.
+- Verify the reduced-motion resting state of the pulse dot and bracket teaser.
+
+### MGO-028 - Rebuild the knockout bracket signature
+
+**Goal:** Rebuild Bracket as the site's signature moment with self-drawing
+connectors and a responsive draw, while keeping every result and placeholder as
+accessible DOM content.
+
+**Scope:**
+
+- Read `DESIGN.md` v2.0, in particular the Bracket specification and the motion
+  budget.
+- Build the desktop layout at 900px and above as a four-column board —
+  Quarterfinals, Semifinals, Final, Champion — with round eyebrows and an
+  absolutely positioned `aria-hidden` SVG connector layer behind the cards.
+- Draw base connectors in `--border-subtle`. Draw the champion's path as a
+  volt stroke that animates in over roughly 2.4s ease-out, followed by a volt
+  ball travelling that path exactly once. Derive the highlighted path from
+  actual recorded results, and highlight nothing when no knockout result
+  exists.
+- Build the phone layout as the same rounds stacked QF to SF to Final with the
+  connector geometry redrawn for the vertical arrangement and full-width cards.
+- Render each knockout card with its code and source label, both teams using
+  the MGO-025 team treatment, and set scores when completed. Mark the advancing
+  team in volt and dim the eliminated team, always with a text cue as well.
+- Render unassigned slots with their placeholder label such as "Winner QF3" or
+  "A1" in dim text; never render an empty row.
+- Give the Final card the single elevated treatment: volt-tinted gradient, volt
+  border, `--glow-volt`, and a Championship eyebrow.
+- Build the Champion cell as a dashed volt-bordered panel with a trophy icon
+  reading "Awaits the final" until the final completes, then naming the winner.
+- Under `prefers-reduced-motion: reduce`, render the final drawn state
+  immediately with no ball and no transition.
+- Keep the existing organizer entry points to quarterfinal and knockout
+  assignment reachable from the board without changing their behavior.
+- Do not convert the bracket to canvas, do not add a graph or animation
+  library, and do not change bracket data, assignment logic, or locks.
+
+**Acceptance criteria:**
+
+- All seven knockout matches render with codes, source labels, teams or
+  placeholders, and scores where recorded.
+- The board is complete and readable before any animation runs, and no result
+  is conveyed only by a drawn line or by color.
+- The champion path highlights only positions supported by recorded results and
+  highlights nothing before the first knockout result.
+- The desktop board renders as four columns at 900px and above, and the phone
+  board stacks QF to SF to Final, with no page-level horizontal overflow at
+  320px.
+- The Final card is the only elevated card on the page.
+- The Champion cell reads "Awaits the final" until the final is complete, then
+  names the winner.
+- `prefers-reduced-motion: reduce` renders the drawn state instantly with no
+  ball and no motion.
+- Organizer assignment entry points appear only for an unlocked organizer and
+  still validate on the server.
+- All cards and links are keyboard reachable with visible focus.
+
+**Validate:**
+
+- Run the existing bracket, knockout assignment, and bracket page tests.
+- Run `npm run test`.
+- Run `npm run lint`.
+- Run `npm run build`.
+- Run the Playwright knockout progression and quarterfinal assignment suites
+  and update selectors as needed.
+- Check the bracket with no assignments, with partial assignments, with a
+  completed quarterfinal, and with a completed final.
+- Review Bracket at 320px, 390px, 900px, and desktop widths, and at 200% zoom.
+- Verify the reduced-motion resting state and confirm the animation runs once
+  and does not loop.
+
+### MGO-029 - Rebuild the organizer forms and transition pages
+
+**Goal:** Rebuild every organizer input surface on the Night Match focused-task
+shell without weakening validation, authorization, concurrency, or lock
+behavior.
+
+**Scope:**
+
+- Read `DESIGN.md` v2.0, in particular the schedule, result, and supporting
+  screen specifications.
+- Build the shared focused-task shell: organizer banner, back link, match code
+  eyebrow, display title, context subtitle, and a 640px desktop cap with full
+  width on phone.
+- Rebuild the schedule page with the read-only current-match card, the Central
+  Time eyebrow and explanation, 48px date, time, and venue controls in the
+  specified responsive arrangement, and a sticky bottom save bar on phone.
+- Rebuild the result page with the responsive score grid: four columns of team,
+  S1, S2, and MTB on desktop and three columns at 46px on phone, remaining
+  usable at 320px. Give the MTB column its distinct dashed and warning
+  treatment and enable it only for the match tiebreak deciding-set format.
+- Rebuild the winner radios as labelled volt-ring controls, the outcome and
+  deciding-set format selectors as chip groups, and the derived-outcome
+  callout that restates the result in words and updates as entry changes.
+- Position "Clear result" as a danger text button separated from the primary
+  action, and keep its existing confirmation and consequences.
+- Render locked results read-only with a "Locked" badge that names the action
+  required to unlock them.
+- Rebuild the organizer unlock page on the focused shell with a single PIN
+  field and a rate-limit message that never reveals whether an attempt was
+  close and never echoes the entered value.
+- Rebuild the finalize, reopen, quarterfinal assignment, and knockout
+  assignment pages on the same shell, showing what is about to be committed and
+  the downstream effects, including that reopening clears final ranks and
+  quarterfinal assignments.
+- Rebuild field-level validation errors, the summarized error region, pending
+  states that name what is happening, and the stale-write conflict message that
+  offers to reload. Preserve the existing resilient form action behavior that
+  keeps input after a failed request.
+- Rebuild the organizer loading skeletons to match the new form layouts.
+- Do not change server actions, Zod schemas, score validation, organizer cookie
+  validation, origin checks, rate limiting, optimistic concurrency, tournament
+  locks, audit writes, or route revalidation.
+
+**Acceptance criteria:**
+
+- Every organizer route renders on the focused shell and remains fully operable
+  at 320px, including the score grid.
+- Forms use real `form`, `label`, `fieldset`, and `legend` markup, and every
+  control has a programmatically associated label.
+- Validation errors appear next to the offending field and in a summary, and
+  are announced to assistive technology.
+- Submitting with an invalid, unauthorized, stale, or locked request produces
+  the correct existing server behavior and a clear message; no client-side
+  change can bypass a server check.
+- Failed requests preserve entered input and offer a retry.
+- The MTB column is available only for the match tiebreak format, and the
+  derived-outcome callout matches the entered score and outcome.
+- Locked results render read-only and name the action required to unlock them.
+- The unlock page never echoes the PIN and never reveals attempt proximity, and
+  the PIN does not reach browser storage, logs, or the audit record.
+- Reopen and assignment pages state their downstream effects before the action
+  is taken.
+- Every control is at least 44px, keyboard operable, and shows visible focus,
+  and the phone sticky save bar never covers a field.
+
+**Validate:**
+
+- Run the existing organizer action, route handler, form, session, rate limit,
+  and result tests.
+- Run `npm run test`.
+- Run `npm run lint`.
+- Run `npm run build`.
+- Run the Playwright unlock, schedule, result, resilience, group transition,
+  quarterfinal assignment, and knockout progression suites, updating selectors
+  as needed.
+- Exercise a normal score, a match tiebreak, a retirement, a walkover, clearing
+  a result, a locked result, a stale write, and an unauthorized write.
+- Review every organizer route at 320px, 390px, tablet, and desktop widths, and
+  at 200% zoom.
+- Complete a full schedule and a full result entry using only the keyboard.
+- Confirm no secret or server-only value entered the browser bundle.
+
+### MGO-030 - Harden and release the interface overhaul
+
+**Goal:** Verify the completed Night Match interface across accessibility,
+responsiveness, and tournament state, then release it to production in a single
+cutover without regressing live tournament data.
+
+**Scope:**
+
+- Complete a full pass over every route for keyboard operation, focus order,
+  screen-reader labelling, heading structure, 200% zoom, 320px width, grayscale
+  state legibility, and `prefers-reduced-motion` resting states.
+- Verify every shipped text and background pair against the `DESIGN.md`
+  contrast table, and confirm no real text renders below 12px and no
+  interactive target below 44px.
+- Confirm every route renders correctly in each tournament state: groups open,
+  groups finalized, no scheduled matches, no completed results, a top-four tie,
+  partial knockout assignment, and a completed final.
+- Confirm public users still cannot mutate data or read audit history, and that
+  organizer routes still enforce cookie validation, origin checks, rate
+  limiting, concurrency, and locks.
+- Reconcile the full Vitest and Playwright suites with the new interface, and
+  extend Playwright coverage where the overhaul changed a critical selector or
+  workflow entry point.
+- Verify no v1.0 token, font, class, or component remains in the codebase, and
+  that no unused CSS or dependency was left behind.
+- Confirm no server-only value, secret, or service-role credential entered the
+  browser bundle.
+- Review the deployed preview build on a real phone and a real desktop browser
+  before release.
+- Release with the documented production process: confirm the commit on `main`
+  with passing checks, verify production environment variables exist, take
+  readable schema and data backups, deploy with `vercel --prod`, confirm the
+  stable alias, and smoke-test every public route and organizer mutation.
+- No database migration is expected. If one becomes necessary, stop and obtain
+  explicit approval before applying it.
+- Do not add features, change tournament rules, or alter the design system
+  during this slice.
+
+**Acceptance criteria:**
+
+- Every route meets the `DESIGN.md` accessibility floor, verified rather than
+  assumed.
+- The complete Vitest and Playwright suites pass, and Playwright covers the
+  critical public and organizer workflows on the new interface.
+- No route overflows horizontally at 320px or at 200% zoom, and no state is
+  conveyed by color alone.
+- Every tournament state listed in scope renders correctly on every route.
+- No v1.0 design token, font, or component remains referenced.
+- Authorization, validation, concurrency, lock, audit, and revalidation
+  behavior is unchanged from before the overhaul.
+- Production serves the Night Match interface at `https://mcgrawopen.com`, the
+  stable alias points at the released deployment, and production tournament
+  data is unchanged by the release.
+- A production smoke test passes for Home, Groups, Matches, Bracket, organizer
+  unlock, scheduling, normal scores, retirement, walkover, clearing a result,
+  finalization safeguards, quarterfinal assignment, semifinal and final
+  assignment, upstream locks, and eligible downstream clears, with any fixture
+  changed solely for the smoke test restored afterward.
+- A verified rollback path exists using `vercel rollback`.
+
+**Validate:**
+
+- Run `npm run test`.
+- Run `npm run lint`.
+- Run `npm run build`.
+- Run `npm run test:e2e`.
+- Audit contrast, text size, and target size against the `DESIGN.md` table.
+- Complete a keyboard-only and screen-reader pass over every route.
+- Review every route at 320px, 390px, tablet, and desktop widths, at 200% zoom,
+  and in grayscale.
+- Verify reduced-motion behavior on every animated surface.
+- Validate the Vercel preview deployment on a real phone before release.
+- Take readable production schema and data exports and confirm both are
+  non-empty.
+- Deploy with `npx vercel@latest --prod`, confirm the stable alias, and run the
+  full production smoke test.
+- Take a post-release export and confirm production counts are unchanged.
+
+**External input:** Vercel and Supabase production access are required for the
+release, along with an explicit decision to cut over.
+
+**Timing:** Schedule the cutover outside an active match window so a scheduling
+or result entry is not interrupted, and confirm no organizer is mid-entry
+before deploying.

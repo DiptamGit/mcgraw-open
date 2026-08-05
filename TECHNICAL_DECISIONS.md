@@ -120,6 +120,11 @@ Additional rules:
 - Use separate schema and data dumps as the plan-independent production backup
   floor. Store verified exports outside the repository before migrations and
   at the initial tournament baseline.
+- The MGO-024 through MGO-030 interface overhaul releases as a **single
+  production cutover**. Its slices land on `main` and are validated through
+  Vercel preview deployments; production is not updated until MGO-030 runs the
+  documented release. This is safe because production deployment is already a
+  deliberate `vercel --prod` step and is never triggered by a push.
 
 ## Test strategy
 
@@ -136,8 +141,9 @@ Additional rules:
 ## Frontend and design implementation
 
 - The approved visual and interaction system is locked in `DESIGN.md`. Every
-  UI or UX session from MGO-006 through MGO-022 must read and follow it before
-  changing the interface.
+  UI or UX session must read and follow it before changing the interface.
+  `DESIGN.md` v2.0 (**Night Match**) replaced the v1.0 light system on
+  August 5, 2026 and governs MGO-024 onward.
 - Use the installed frontend-design and UI/UX Pro Max guidance to implement the
   locked direction or fill a documented component-level gap, not to generate a
   replacement direction. Foundational changes require explicit user approval
@@ -149,12 +155,27 @@ Additional rules:
 - Do not add a full component library by default. Prefer semantic HTML, native
   controls, and small accessible headless primitives only where they solve a
   real interaction problem.
+- Use `@phosphor-icons/react` as the project icon set, importing icons
+  individually. Do not load icons from a CDN, do not add a second icon library,
+  and do not ship emoji or unicode-glyph icons. The Lucide-CDN reference in the
+  portable design-system draft was rejected because it would require a Content
+  Security Policy exception and a runtime third-party request.
 - Target current iOS Safari and Android Chrome first, followed by current
   desktop Safari, Chrome, Firefox, and Edge.
 - Meet WCAG AA contrast, provide visible keyboard focus, respect reduced
   motion, and target at least 44px touch controls for court-side phone use.
-- Optimize for bright outdoor conditions: strong contrast, restrained motion,
-  concise screens, and no information conveyed by color alone.
+  Real text is never smaller than 12px.
+- Optimize for court-side phone use: a dark-first surface with strong
+  foreground contrast, restrained motion, concise screens, and no information
+  conveyed by color alone. `DESIGN.md` v2.0 replaced the light canvas with the
+  dark Night Match direction; legibility is guaranteed by the verified contrast
+  table and the 12px text floor in `DESIGN.md` rather than by a light
+  background.
+- Animation is budgeted, not incidental. `DESIGN.md` permits exactly four
+  animations, including the self-drawing knockout bracket as the site's single
+  signature moment. Every one of them must have a static, fully legible resting
+  state under `prefers-reduced-motion: reduce`, and no animation may gate
+  content or delay first paint of readable data.
 - Render standings and brackets as accessible DOM content, not canvas-only
   graphics. A table may scroll inside its own labeled container, but the page
   itself must not overflow horizontally.
