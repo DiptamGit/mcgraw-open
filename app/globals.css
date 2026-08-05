@@ -726,6 +726,23 @@ textarea:focus-visible,
   color: var(--warning);
 }
 
+.status-badge--locked {
+  border-color: var(--border-strong);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+/* A static success dot marking a live, provisional standings state. It is
+   deliberately not animated: the motion budget in DESIGN.md is fully spent. */
+.status-badge__dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--success);
+}
+
 /* Button */
 .btn {
   display: inline-flex;
@@ -891,6 +908,13 @@ textarea:focus-visible,
     transparent 6px 12px
   );
   color: var(--white);
+}
+
+.group-shield--sm {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.9375rem;
 }
 
 /* Stat */
@@ -1269,7 +1293,7 @@ textarea:focus-visible,
   gap: 2rem;
 }
 
-.standings-overview,
+.standings-tie-note,
 .standings-tiebreak-guide {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-panel);
@@ -1277,11 +1301,15 @@ textarea:focus-visible,
   background: var(--bg-surface-alt);
 }
 
-.standings-overview {
-  border-left: 0.375rem solid var(--accent-secondary);
+.standings-tie-note {
+  border-left: 0.375rem solid var(--warning);
 }
 
-.standings-overview h2,
+.standings-tiebreak-guide {
+  border-top: 0.375rem solid var(--border-strong);
+}
+
+.standings-tie-note h2,
 .standings-tiebreak-guide h2,
 .standings-group h2,
 .standings-empty h3,
@@ -1293,26 +1321,48 @@ textarea:focus-visible,
   text-transform: uppercase;
 }
 
-.standings-overview h2,
+.standings-tie-note h2,
 .standings-tiebreak-guide h2 {
   margin: 0.5rem 0 0;
   color: var(--text-primary);
   font-size: clamp(1.875rem, 7vw, 2.5rem);
 }
 
-.standings-overview > p:last-child,
+.standings-tie-note > p:last-child,
 .standings-tiebreak-guide > p:not(.utility-label) {
   max-width: 44rem;
   margin: 1rem 0 0;
   color: var(--text-muted);
 }
 
-.standings-grid {
+/* Group switch and twin panels */
+.standings-board {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.standings-board__switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.standings-board__switch .chip {
+  padding-left: 0.5rem;
+}
+
+.standings-board__panels {
   display: grid;
   gap: 1.5rem;
   min-width: 0;
 }
 
+.standings-board__panel {
+  min-width: 0;
+}
+
+/* Group table shell */
 .standings-group {
   min-width: 0;
   overflow: hidden;
@@ -1321,34 +1371,21 @@ textarea:focus-visible,
   background: var(--bg-surface-alt);
 }
 
-.standings-group--b {
-  position: relative;
-}
-
-.standings-group--b::after {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 2rem;
-  height: 5.5rem;
-  background: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 4px,
-    rgb(52 87 234 / 32%) 4px,
-    rgb(52 87 234 / 32%) 6px
-  );
-  content: "";
-  pointer-events: none;
-}
-
 .standings-group__header {
   position: relative;
   display: grid;
   gap: 1rem;
-  border-top: 0.375rem solid var(--accent-secondary);
   border-bottom: 1px solid var(--border-subtle);
   padding: 1rem;
+  background: var(--bg-elevated);
+}
+
+.standings-group--a .standings-group__header {
+  border-top: 0.25rem solid var(--accent-primary);
+}
+
+.standings-group--b .standings-group__header {
+  border-top: 0.25rem solid var(--accent-secondary);
 }
 
 .standings-group__identity {
@@ -1364,10 +1401,17 @@ textarea:focus-visible,
   font-size: 1.875rem;
 }
 
+.standings-group__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.875rem;
+}
+
 .standings-group__progress {
   margin: 0;
   color: var(--text-muted);
-  font-size: 0.875rem;
+  font-size: var(--body-sm);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1375,58 +1419,7 @@ textarea:focus-visible,
   color: var(--text-primary);
 }
 
-.standings-state {
-  display: grid;
-  gap: 0.5rem;
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 0.875rem 1rem;
-  background: var(--bg-elevated);
-}
-
-.standings-state--provisional,
-.standings-state--unresolved {
-  background: var(--warning-surface);
-}
-
-.standings-state--finalized {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-}
-
-.standings-state__label {
-  width: fit-content;
-  border: 1px solid var(--accent-secondary);
-  border-radius: var(--radius-control);
-  padding: 0.25rem 0.5rem;
-  color: var(--accent-info-text);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: 1.2;
-  text-transform: uppercase;
-}
-
-.standings-state--provisional .standings-state__label,
-.standings-state--unresolved .standings-state__label {
-  border-color: var(--warning);
-  color: var(--warning);
-}
-
-.standings-state--finalized .standings-state__label {
-  border-color: var(--border-strong);
-  color: var(--text-primary);
-}
-
-.standings-state p {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 0.875rem;
-}
-
-.standings-state--finalized p {
-  color: rgb(255 255 255 / 82%);
-}
-
+/* Scroll container: a dense table may scroll here without the page overflowing. */
 .standings-table-region {
   max-width: 100%;
   overflow-x: auto;
@@ -1435,35 +1428,33 @@ textarea:focus-visible,
 }
 
 .standings-table-region:focus-visible {
-  outline: 3px solid var(--accent-secondary);
-  outline-offset: -3px;
+  outline: 2px solid var(--accent-primary);
+  outline-offset: -2px;
+  box-shadow: var(--glow-volt);
 }
 
 .standings-table {
-  --rank-column-width: 3.75rem;
   width: 100%;
-  min-width: 34rem;
   border-spacing: 0;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
-  table-layout: fixed;
 }
 
 .standings-table th,
 .standings-table td {
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 0.75rem 0.625rem;
+  border-bottom: 1px solid var(--border-hairline);
+  padding: 0.75rem 0.5rem;
   background: var(--standing-row-surface, var(--bg-surface-alt));
   text-align: center;
   vertical-align: middle;
 }
 
 .standings-table thead th {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-  font-size: 0.75rem;
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: var(--caption);
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--tracking-wide);
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -1474,95 +1465,119 @@ textarea:focus-visible,
 
 .standings-table th:first-child,
 .standings-table td:first-child {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  width: var(--rank-column-width);
+  width: 3rem;
+  padding-left: 0.75rem;
 }
 
 .standings-table th:nth-child(2),
 .standings-table td:nth-child(2) {
-  position: sticky;
-  left: var(--rank-column-width);
-  z-index: 2;
-  width: 10.5rem;
-  border-right: 1px solid var(--border-subtle);
   text-align: left;
 }
 
-.standings-table thead th:first-child,
-.standings-table thead th:nth-child(2) {
-  z-index: 3;
-}
-
-.standings-table tbody td:first-child {
-  border-left: 0.25rem solid var(--border-strong);
+.standings-table__rank {
   font-family: var(--font-display);
-  font-size: 1.375rem;
+  font-size: 1.25rem;
   font-weight: 400;
+  line-height: 1;
 }
 
-.standings-row--advancing {
-  --standing-row-surface: var(--bg-elevated);
+/* The advancing rail is an inset left rail carried by the rank cell. */
+.standings-row td:first-child {
+  border-left: 3px solid transparent;
 }
 
-.standings-row--advancing > td:first-child {
+.standings-group--a .standings-row--advancing td:first-child,
+.standings-group--a .standings-row--leader td:first-child {
+  border-left-color: var(--accent-primary);
+}
+
+.standings-group--b .standings-row--advancing td:first-child,
+.standings-group--b .standings-row--leader td:first-child {
   border-left-color: var(--accent-secondary);
 }
 
-.standings-row--cut-line {
-  --standing-row-surface: var(--warning-surface);
-}
-
-.standings-row--cut-line > td:first-child {
+.standings-row--cut-line td:first-child {
   border-left-color: var(--warning);
 }
 
-.standings-row--outside > td:first-child {
+.standings-row--outside td:first-child,
+.standings-row--unplayed td:first-child {
   border-left-style: dashed;
+  border-left-color: var(--border-strong);
 }
 
-.standings-row--unplayed > td:first-child {
-  border-left-style: dashed;
+.standings-row--advancing td,
+.standings-row--advancing th {
+  --standing-row-surface: var(--bg-elevated);
 }
 
-.standings-table__team-name {
-  display: block;
+/* Faint volt wash on rank one. */
+.standings-row--leader td,
+.standings-row--leader th {
+  --standing-row-surface: var(--volt-surface);
+}
+
+.standings-row--cut-line td,
+.standings-row--cut-line th {
+  --standing-row-surface: var(--warning-surface);
+}
+
+/* A dashed divider separates rank four from rank five. */
+.standings-row--cut td,
+.standings-row--cut th {
+  border-top: 2px dashed var(--border-strong);
+}
+
+.standings-table__team {
   min-width: 0;
-  font-weight: 600;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
 }
 
 .standings-table__zone {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   margin-top: 0.25rem;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: var(--caption);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
   line-height: 1.2;
   text-transform: uppercase;
 }
 
-.standings-row--advancing .standings-table__zone {
+.standings-table__zone--in {
   color: var(--accent-info-text);
 }
 
-.standings-row--cut-line .standings-table__zone {
+.standings-group--a .standings-table__zone--in {
+  color: var(--accent-primary);
+}
+
+.standings-table__zone--tie {
   color: var(--warning);
 }
 
+.standings-table__zone--out {
+  color: var(--text-dim);
+}
+
 .standings-ties {
-  border-top: 1px solid var(--warning);
+  border-top: 1px solid var(--warning-border);
   padding: 1rem;
   background: var(--warning-surface);
 }
 
 .standings-ties h3,
 .standings-empty h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
   margin: 0;
   color: var(--text-primary);
-  font-size: 1.375rem;
+  font-size: var(--heading-sm);
+}
+
+.standings-ties h3 svg {
+  color: var(--warning);
 }
 
 .standings-ties ul {
@@ -1579,10 +1594,6 @@ textarea:focus-visible,
 
 .standings-empty {
   padding: 1.25rem 1rem;
-}
-
-.standings-tiebreak-guide {
-  border-top: 0.375rem solid var(--border-strong);
 }
 
 .group-organizer-actions,
@@ -3221,7 +3232,7 @@ textarea:focus-visible,
     gap: 3rem;
   }
 
-  .standings-overview,
+  .standings-tie-note,
   .standings-tiebreak-guide {
     padding: 1.5rem;
   }
@@ -3232,9 +3243,10 @@ textarea:focus-visible,
     padding: 1.25rem;
   }
 
-  .standings-group__progress {
-    padding-right: 1rem;
-    text-align: right;
+  .standings-group__meta {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
   }
 
   .group-organizer-actions,
@@ -3308,13 +3320,6 @@ textarea:focus-visible,
 
   .reopen-rank-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .standings-state {
-    grid-template-columns: auto minmax(0, 1fr);
-    align-items: center;
-    gap: 0.75rem;
-    padding-inline: 1.25rem;
   }
 
   .matches-view {
@@ -3572,9 +3577,37 @@ textarea:focus-visible,
   }
 }
 
-@media (min-width: 80rem) {
-  .standings-grid {
+/* Phone reduces the standings columns and shows one group at a time. Both
+   panels stay in the DOM so they remain available to assistive technology. */
+@media (max-width: 56.24rem) {
+  .standings-table__col--wide {
+    display: none;
+  }
+
+  .standings-board__panel[data-active="false"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* At 900px and above both group tables sit side by side and the chip switch
+   is no longer needed. */
+@media (min-width: 56.25rem) {
+  .standings-board__switch {
+    display: none;
+  }
+
+  .standings-board__panels {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
   }
 }
 

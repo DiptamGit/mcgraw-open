@@ -5,6 +5,8 @@ type PageIntroProps = {
   title: string;
   description: string;
   badge?: string;
+  badgeTone?: "live" | "locked" | "warning";
+  badgeDot?: boolean;
   hero?: boolean;
 };
 
@@ -13,6 +15,8 @@ export function PageIntro({
   title,
   description,
   badge,
+  badgeTone,
+  badgeDot = false,
   hero = false,
 }: PageIntroProps) {
   return (
@@ -21,7 +25,18 @@ export function PageIntro({
       <div className="page-frame page-intro__content">
         <div className="page-intro__label-row">
           <p className="utility-label utility-label--inverse">{eyebrow}</p>
-          {badge ? <span className="status-badge">{badge}</span> : null}
+          {badge ? (
+            <span
+              className={`status-badge${
+                badgeTone ? ` status-badge--${badgeTone}` : ""
+              }`}
+            >
+              {badgeDot ? (
+                <span className="status-badge__dot" aria-hidden="true" />
+              ) : null}
+              {badge}
+            </span>
+          ) : null}
         </div>
         <h1>{title}</h1>
         <p className="page-intro__description">{description}</p>

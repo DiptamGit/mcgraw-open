@@ -58,7 +58,7 @@ test("finalizes and reopens the completed group stage", async ({ page }) => {
     await expect(page.locator(".form-feedback--success")).toContainText(
       "Groups finalized.",
     );
-    await expect(page.getByText("Finalized", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Locked", { exact: true }).first()).toBeVisible();
 
     await page.goto("/groups/reopen");
     await expect(
