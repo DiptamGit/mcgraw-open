@@ -1,10 +1,11 @@
+import { Lock } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { MatchSummary } from "@/components/matches/match-summary";
+import { FocusedTaskShell } from "@/components/organizer/focused-task-shell";
 import { ResultForm } from "@/components/organizer/result-form";
-import { PageIntro } from "@/components/page-intro";
 import { hasOrganizerSession } from "@/lib/auth/session";
 import { getTournamentData } from "@/lib/data/queries";
 import {
@@ -53,57 +54,67 @@ export default async function ResultMatchPage({
   const team1Name = getTeamDisplayName(match, "team1");
   const team2Name = getTeamDisplayName(match, "team2");
 
+  const unlockAction =
+    match.stage === "group"
+      ? { href: "/groups/reopen", label: "Reopen the group stage" }
+      : { href: "/bracket", label: "Clear the downstream assignment" };
+
   return (
-    <>
-      <PageIntro
-        eyebrow={`${match.code} · Match result`}
-        title={match.status === "completed" ? "Edit result" : "Record result"}
-        description={`${team1Name} versus ${team2Name}.`}
-      />
+    <FocusedTaskShell
+      eyebrow={`${match.code} · Match result`}
+      title={match.status === "completed" ? "Edit result" : "Record result"}
+      subtitle={`${team1Name} versus ${team2Name}.`}
+      backHref="/matches"
+      backLabel="Back to matches"
+    >
+      <section
+        className="task-panel task-panel--readonly"
+        aria-labelledby="result-match-context-title"
+      >
+        <p className="utility-label">Current match</p>
+        <h2 id="result-match-context-title">Review before updating</h2>
+        <MatchSummary match={match} />
+      </section>
 
-      <div className="page-content schedule-page">
-        <Link className="schedule-back-link" href="/matches">
-          Back to matches
-        </Link>
-
+      {!editability.editable ? (
         <section
-          className="schedule-match-context"
-          aria-labelledby="result-match-context-title"
+          className="form-feedback form-feedback--error"
+          aria-labelledby="result-locked-title"
         >
-          <p className="utility-label">Current match</p>
-          <h2 id="result-match-context-title">Review before updating</h2>
-          <MatchSummary match={match} />
+          <span className="status-badge status-badge--locked">
+            <Lock size={14} weight="fill" aria-hidden="true" />
+            Locked
+          </span>
+          <h2 id="result-locked-title">Result locked</h2>
+          <p>{editability.reason}</p>
+          <p>
+            To edit it,{" "}
+            <Link className="schedule-reload" href={unlockAction.href}>
+              {unlockAction.label}
+            </Link>{" "}
+            first, then return here.
+          </p>
         </section>
-
-        {!editability.editable ? (
-          <section
-            className="form-feedback form-feedback--error"
-            aria-labelledby="result-locked-title"
-          >
-            <h2 id="result-locked-title">Result locked</h2>
-            <p>{editability.reason}</p>
-          </section>
-        ) : (
-          <section
-            className="schedule-form-panel result-form-panel"
-            aria-labelledby="result-form-title"
-          >
-            <p className="utility-label">Best of three</p>
-            <h2 id="result-form-title">
-              {match.status === "completed"
-                ? "Correct the match result"
-                : "Enter the match result"}
-            </h2>
-            <p className="supporting-copy">
-              Record a normal result, retirement, or walkover.
-            </p>
-            <ResultForm
-              initialState={createResultFormState(match)}
-              match={match}
-            />
-          </section>
-        )}
-      </div>
-    </>
+      ) : (
+        <section
+          className="task-form-section"
+          aria-labelledby="result-form-title"
+        >
+          <p className="utility-label utility-label--inverse">Best of three</p>
+          <h2 id="result-form-title">
+            {match.status === "completed"
+              ? "Correct the match result"
+              : "Enter the match result"}
+          </h2>
+          <p className="supporting-copy">
+            Record a normal result, retirement, or walkover.
+          </p>
+          <ResultForm
+            initialState={createResultFormState(match)}
+            match={match}
+          />
+        </section>
+      )}
+    </FocusedTaskShell>
   );
 }

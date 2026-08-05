@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { FinalizationForm } from "@/components/groups/finalization-form";
-import { PageIntro } from "@/components/page-intro";
+import { FocusedTaskShell } from "@/components/organizer/focused-task-shell";
 import { hasOrganizerSession } from "@/lib/auth/session";
 import { getTournamentData } from "@/lib/data/queries";
 import {
@@ -36,61 +36,55 @@ export default async function FinalizeGroupsPage() {
   const preview = createFinalizationPreview(tournament);
 
   return (
-    <>
-      <PageIntro
-        eyebrow="Organizer · Group stage"
-        title="Finalize groups"
-        description="Review every rank before locking the group stage."
-        badge="Locking action"
-      />
+    <FocusedTaskShell
+      eyebrow="Organizer · Group stage"
+      title="Finalize groups"
+      subtitle="Review every rank before locking the group stage."
+      backHref="/groups"
+      backLabel="Back to groups"
+      badge="Locking action"
+    >
+      <section
+        className="group-transition-intro"
+        aria-labelledby="finalization-readiness"
+      >
+        <p className="utility-label">Finalization readiness</p>
+        <h2 id="finalization-readiness">
+          {preview.allMatchesComplete
+            ? "Every group result is recorded."
+            : "Group play is not complete."}
+        </h2>
+        <p>
+          <strong>{preview.completedMatches}</strong> of{" "}
+          {preview.totalMatches} group matches complete.
+        </p>
+        <p>
+          Finalization snapshots both groups and locks every group result
+          until an organizer deliberately reopens the stage.
+        </p>
+      </section>
 
-      <div className="page-content group-transition-page">
-        <Link className="schedule-back-link" href="/groups">
-          Back to groups
-        </Link>
-
+      {!preview.allMatchesComplete ? (
         <section
-          className="group-transition-intro"
-          aria-labelledby="finalization-readiness"
+          className="form-feedback form-feedback--error"
+          aria-labelledby="finalization-blocked"
         >
-          <p className="utility-label">Finalization readiness</p>
-          <h2 id="finalization-readiness">
-            {preview.allMatchesComplete
-              ? "Every group result is recorded."
-              : "Group play is not complete."}
-          </h2>
+          <h2 id="finalization-blocked">Finalization blocked</h2>
           <p>
-            <strong>{preview.completedMatches}</strong> of{" "}
-            {preview.totalMatches} group matches complete.
+            Record every remaining group result, then return to review the
+            complete rank preview.
           </p>
-          <p>
-            Finalization snapshots both groups and locks every group result
-            until an organizer deliberately reopens the stage.
-          </p>
+          <Link className="schedule-reload" href="/matches">
+            View remaining matches
+          </Link>
         </section>
-
-        {!preview.allMatchesComplete ? (
-          <section
-            className="form-feedback form-feedback--error"
-            aria-labelledby="finalization-blocked"
-          >
-            <h2 id="finalization-blocked">Finalization blocked</h2>
-            <p>
-              Record every remaining group result, then return to review the
-              complete rank preview.
-            </p>
-            <Link className="schedule-reload" href="/matches">
-              View remaining matches
-            </Link>
-          </section>
-        ) : (
-          <FinalizationForm
-            expectedStateUpdatedAt={tournament.state.updated_at}
-            initialState={createFinalizationFormState(preview)}
-            preview={preview}
-          />
-        )}
-      </div>
-    </>
+      ) : (
+        <FinalizationForm
+          expectedStateUpdatedAt={tournament.state.updated_at}
+          initialState={createFinalizationFormState(preview)}
+          preview={preview}
+        />
+      )}
+    </FocusedTaskShell>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { updateMatchSchedule } from "@/app/matches/[code]/schedule/actions";
+import { FormErrorSummary } from "@/components/forms/form-error-summary";
 import {
   NETWORK_FAILURE_MESSAGE,
   useResilientFormAction,
@@ -54,6 +55,16 @@ export function ScheduleForm({
   const clearButtonRef = useRef<HTMLButtonElement>(null);
   const keepScheduleButtonRef = useRef<HTMLButtonElement>(null);
   const canClear = Boolean(state.values.date && state.values.time);
+  const errorSummary = (
+    [
+      ["date", "schedule-date"],
+      ["time", "schedule-time"],
+      ["venue", "schedule-venue"],
+    ] as const
+  ).flatMap(([field, targetId]) => {
+    const message = state.fieldErrors[field];
+    return message ? [{ targetId, message }] : [];
+  });
 
   useEffect(() => {
     if (confirmingClear) {
@@ -86,6 +97,7 @@ export function ScheduleForm({
           aria-live="polite"
         >
           <p>{state.message}</p>
+          <FormErrorSummary errors={errorSummary} />
           {state.status === "conflict" ? (
             <button
               className="schedule-reload"
@@ -156,7 +168,7 @@ export function ScheduleForm({
         </div>
       </div>
 
-      <div className="form-field">
+      <div className="schedule-form__venue-field form-field">
         <label htmlFor="schedule-venue">Court or venue (required)</label>
         <p id="schedule-venue-help" className="form-help">
           Include a court number when it helps players find the match.
@@ -184,16 +196,6 @@ export function ScheduleForm({
             {state.fieldErrors.venue}
           </p>
         ) : null}
-      </div>
-
-      <div className="schedule-form__actions">
-        <ScheduleSubmitButton
-          intent="save"
-          pendingLabel="Saving schedule…"
-          variant="primary"
-        >
-          Save schedule
-        </ScheduleSubmitButton>
       </div>
 
       {canClear ? (
@@ -237,6 +239,16 @@ export function ScheduleForm({
           )}
         </div>
       ) : null}
+
+      <div className="schedule-save-bar">
+        <ScheduleSubmitButton
+          intent="save"
+          pendingLabel="Saving schedule…"
+          variant="primary"
+        >
+          Save schedule
+        </ScheduleSubmitButton>
+      </div>
     </form>
   );
 }

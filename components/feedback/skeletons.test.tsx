@@ -38,7 +38,7 @@ describe("loading placeholders", () => {
       <OrganizerFormLoading fields={3} label="Loading the schedule form." />,
     );
 
-    expect(markup).toContain("page-content schedule-page");
+    expect(markup).toContain("focused-task");
     expect(markup).toContain("Loading the schedule form.");
   });
 });

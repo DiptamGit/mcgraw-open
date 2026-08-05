@@ -1,9 +1,5 @@
-import { PageIntroSkeleton } from "./page-intro-skeleton";
-import {
-  LoadingAnnouncement,
-  SkeletonBlock,
-  SkeletonFormPanel,
-} from "./skeletons";
+import { FocusedTaskLoading } from "./focused-task-loading";
+import { SkeletonBlock, SkeletonFormPanel } from "./skeletons";
 
 export function OrganizerFormLoading({
   fields,
@@ -13,20 +9,15 @@ export function OrganizerFormLoading({
   label: string;
 }) {
   return (
-    <>
-      <PageIntroSkeleton />
-
-      <div className="page-content schedule-page">
-        <LoadingAnnouncement label={label} />
-        <div className="schedule-match-context" aria-hidden="true">
-          <p className="utility-label">Current match</p>
-          <SkeletonBlock className="skeleton--title" width="60%" />
-          <SkeletonBlock className="skeleton--line" width="80%" />
-        </div>
-        <div className="schedule-form-panel" aria-hidden="true">
-          <SkeletonFormPanel fields={fields} />
-        </div>
+    <FocusedTaskLoading label={label}>
+      <div className="task-panel task-panel--readonly" aria-hidden="true">
+        <p className="utility-label">Current match</p>
+        <SkeletonBlock className="skeleton--title" width="60%" />
+        <SkeletonBlock className="skeleton--line" width="80%" />
       </div>
-    </>
+      <div className="task-form-section" aria-hidden="true">
+        <SkeletonFormPanel fields={fields} />
+      </div>
+    </FocusedTaskLoading>
   );
 }

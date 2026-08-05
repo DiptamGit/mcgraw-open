@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ReopenGroupsForm } from "@/components/groups/reopen-groups-form";
-import { PageIntro } from "@/components/page-intro";
+import { FocusedTaskShell } from "@/components/organizer/focused-task-shell";
 import { hasOrganizerSession } from "@/lib/auth/session";
 import {
   getTournamentData,
@@ -54,65 +53,60 @@ export default async function ReopenGroupsPage() {
   });
 
   return (
-    <>
-      <PageIntro
-        eyebrow="Organizer · Group stage"
-        title="Reopen groups"
-        description="Review what will be cleared before unlocking corrections."
-        badge="Destructive action"
-      />
+    <FocusedTaskShell
+      eyebrow="Organizer · Group stage"
+      title="Reopen groups"
+      subtitle="Review what will be cleared before unlocking corrections."
+      backHref="/groups"
+      backLabel="Back to groups"
+      badge="Destructive action"
+      badgeTone="warning"
+    >
+      <section
+        className="group-transition-intro"
+        aria-labelledby="current-final-ranks"
+      >
+        <p className="utility-label">Current snapshot</p>
+        <h2 id="current-final-ranks">Final group ranks</h2>
+        <div className="reopen-rank-grid">
+          {(["A", "B"] as const).map((groupLabel) => (
+            <div key={groupLabel}>
+              <h3>Group {groupLabel}</h3>
+              <ol>
+                {finalizedTeams
+                  .filter((team) => team.group_label === groupLabel)
+                  .map((team) => (
+                    <li key={team.id}>
+                      <span>{team.final_rank}</span>
+                      {team.name}
+                    </li>
+                  ))}
+              </ol>
+            </div>
+          ))}
+        </div>
+      </section>
 
-      <div className="page-content group-transition-page">
-        <Link className="schedule-back-link" href="/groups">
-          Back to groups
-        </Link>
-
+      {activeQuarterfinal || hasQuarterfinalHistory ? (
         <section
-          className="group-transition-intro"
-          aria-labelledby="current-final-ranks"
+          className="form-feedback form-feedback--error"
+          aria-labelledby="reopen-blocked"
         >
-          <p className="utility-label">Current snapshot</p>
-          <h2 id="current-final-ranks">Final group ranks</h2>
-          <div className="reopen-rank-grid">
-            {(["A", "B"] as const).map((groupLabel) => (
-              <div key={groupLabel}>
-                <h3>Group {groupLabel}</h3>
-                <ol>
-                  {finalizedTeams
-                    .filter((team) => team.group_label === groupLabel)
-                    .map((team) => (
-                      <li key={team.id}>
-                        <span>{team.final_rank}</span>
-                        {team.name}
-                      </li>
-                    ))}
-                </ol>
-              </div>
-            ))}
-          </div>
+          <h2 id="reopen-blocked">Reopening blocked</h2>
+          <p>
+            {activeQuarterfinal
+              ? `${activeQuarterfinal.code} is ${activeQuarterfinal.status}. `
+              : "A quarterfinal was previously scheduled or completed. "}
+            Groups cannot be reopened after quarterfinal activity begins.
+          </p>
         </section>
-
-        {activeQuarterfinal || hasQuarterfinalHistory ? (
-          <section
-            className="form-feedback form-feedback--error"
-            aria-labelledby="reopen-blocked"
-          >
-            <h2 id="reopen-blocked">Reopening blocked</h2>
-            <p>
-              {activeQuarterfinal
-                ? `${activeQuarterfinal.code} is ${activeQuarterfinal.status}. `
-                : "A quarterfinal was previously scheduled or completed. "}
-              Groups cannot be reopened after quarterfinal activity begins.
-            </p>
-          </section>
-        ) : (
-          <ReopenGroupsForm
-            assignedQuarterfinals={assignedQuarterfinals}
-            expectedStateUpdatedAt={tournament.state.updated_at}
-            initialState={{ status: "idle", message: null }}
-          />
-        )}
-      </div>
-    </>
+      ) : (
+        <ReopenGroupsForm
+          assignedQuarterfinals={assignedQuarterfinals}
+          expectedStateUpdatedAt={tournament.state.updated_at}
+          initialState={{ status: "idle", message: null }}
+        />
+      )}
+    </FocusedTaskShell>
   );
 }

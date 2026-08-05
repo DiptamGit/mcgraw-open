@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { MatchSummary } from "@/components/matches/match-summary";
+import { FocusedTaskShell } from "@/components/organizer/focused-task-shell";
 import { ScheduleForm } from "@/components/organizer/schedule-form";
-import { PageIntro } from "@/components/page-intro";
 import { hasOrganizerSession } from "@/lib/auth/session";
 import { getMatchByCode } from "@/lib/data/queries";
 import { createScheduleFormState } from "@/lib/matches/schedule";
@@ -45,56 +44,50 @@ export default async function ScheduleMatchPage({
   const isCompleted = match.status === "completed";
 
   return (
-    <>
-      <PageIntro
-        eyebrow={`${match.code} · Match schedule`}
-        title={match.status === "scheduled" ? "Reschedule match" : "Schedule match"}
-        description={`${team1Name} versus ${team2Name}.`}
-      />
+    <FocusedTaskShell
+      eyebrow={`${match.code} · Match schedule`}
+      title={match.status === "scheduled" ? "Reschedule match" : "Schedule match"}
+      subtitle={`${team1Name} versus ${team2Name}.`}
+      backHref="/matches"
+      backLabel="Back to matches"
+    >
+      <section
+        className="task-panel task-panel--readonly"
+        aria-labelledby="schedule-match-context-title"
+      >
+        <p className="utility-label">Current match</p>
+        <h2 id="schedule-match-context-title">Review before updating</h2>
+        <MatchSummary match={match} />
+      </section>
 
-      <div className="page-content schedule-page">
-        <Link className="schedule-back-link" href="/matches">
-          Back to matches
-        </Link>
-
+      {isCompleted ? (
         <section
-          className="schedule-match-context"
-          aria-labelledby="schedule-match-context-title"
+          className="form-feedback form-feedback--error"
+          aria-labelledby="completed-match-schedule"
         >
-          <p className="utility-label">Current match</p>
-          <h2 id="schedule-match-context-title">Review before updating</h2>
-          <MatchSummary match={match} />
+          <h2 id="completed-match-schedule">Schedule locked</h2>
+          <p>Completed matches cannot be scheduled or rescheduled.</p>
         </section>
-
-        {isCompleted ? (
-          <section
-            className="form-feedback form-feedback--error"
-            aria-labelledby="completed-match-schedule"
-          >
-            <h2 id="completed-match-schedule">Schedule locked</h2>
-            <p>Completed matches cannot be scheduled or rescheduled.</p>
-          </section>
-        ) : (
-          <section
-            className="schedule-form-panel"
-            aria-labelledby="schedule-form-title"
-          >
-            <p className="utility-label">Central Time</p>
-            <h2 id="schedule-form-title">
-              {match.status === "scheduled"
-                ? "Update when and where"
-                : "Set when and where"}
-            </h2>
-            <p className="supporting-copy">
-              Players will see this schedule immediately after it is saved.
-            </p>
-            <ScheduleForm
-              initialState={createScheduleFormState(match)}
-              matchId={match.id}
-            />
-          </section>
-        )}
-      </div>
-    </>
+      ) : (
+        <section
+          className="task-form-section"
+          aria-labelledby="schedule-form-title"
+        >
+          <p className="utility-label utility-label--inverse">Central Time</p>
+          <h2 id="schedule-form-title">
+            {match.status === "scheduled"
+              ? "Update when and where"
+              : "Set when and where"}
+          </h2>
+          <p className="supporting-copy">
+            Players will see this schedule immediately after it is saved.
+          </p>
+          <ScheduleForm
+            initialState={createScheduleFormState(match)}
+            matchId={match.id}
+          />
+        </section>
+      )}
+    </FocusedTaskShell>
   );
 }
