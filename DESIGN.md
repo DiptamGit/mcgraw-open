@@ -293,6 +293,7 @@ problem, and record it here.
 | `StandingsTable` | Semantic table with an advancing rail, cut-line divider, and mono figures |
 | `BracketBoard` | The knockout draw and its self-drawing connectors |
 | `OrganizerBanner` | Full-width volt-tinted strip marking organizer mode |
+| `Accordion` | Native `<details>/<summary>` disclosure group on a `--bg-surface-alt` card: hairline-divided rows, a ≥44px summary, a Phosphor caret that indicates open/closed state, and an instant, non-animated toggle so it stays within the motion budget |
 
 ### Team name treatment
 
@@ -376,6 +377,16 @@ both required. Data shown is illustrative; every value comes from live data.
   team or joint leaders, and wins/played. Empty until a first result exists.
 - **Bracket teaser**, a small self-drawing connector graphic linking to the
   bracket. Under reduced motion it renders drawn and static.
+- **Rules & format** section, anchored below the bracket teaser with a stable
+  `id` so it can be linked. An `--ink-400` eyebrow and a display heading over a
+  single `Accordion` on a `--bg-surface-alt` card. Each category — Tournament
+  format, Match rules, Starting the match — is one `<details>` disclosure with
+  the first open, followed by a quiet closing line. Content is static repository
+  copy, never a query, and has no empty, loading, or error state. Figures such
+  as scores and change-end games use `--font-mono`. The disclosure toggles
+  instantly with no height or opacity animation, so it adds nothing to the
+  motion budget; the caret is a static open/closed indicator that is fully
+  legible under `prefers-reduced-motion`.
 
 ### 2. Groups
 

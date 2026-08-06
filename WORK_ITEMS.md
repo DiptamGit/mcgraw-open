@@ -54,6 +54,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-028 | Rebuild the knockout bracket signature | Done | MGO-024, MGO-025 |
 | MGO-029 | Rebuild the organizer forms and transition pages | Done | MGO-024, MGO-025 |
 | MGO-030 | Harden and release the interface overhaul | Done | MGO-027, MGO-028, MGO-029 |
+| MGO-031 | Add the Home rules & format section | Not started | MGO-027, MGO-030 |
 
 ## Phase 1 - Foundation
 
@@ -1640,3 +1641,101 @@ semifinal/final assignment, upstream locks, eligible downstream clears) was not
 run against live tournament data because it requires the production PIN and
 would write production rows; those workflows are covered by the passing
 Playwright suite against the identical build.
+
+## Phase 10 - Home content
+
+### MGO-031 - Add the Home rules & format section
+
+**Goal:** Add a static, accessible "Rules & format" section to the Home page,
+below the bracket teaser, presenting the tournament's rules as a collapsible
+accordion in the locked Night Match style.
+
+**Scope:**
+
+- Read `DESIGN.md` v2.0, in particular the Home specification's "Rules &
+  format" entry and the `Accordion` component, before changing the interface.
+- Add the section to `app/page.tsx` below the existing bracket teaser, inside
+  the home content flow, with a stable `id` (for example `rules`) so it can be
+  linked, an `--ink-400` eyebrow, and a display heading. Do not change the
+  locked hero copy, hero actions, stat strip, group leaders, or bracket teaser.
+- Store the rules copy as static repository content (a typed module or
+  constant), never as tournament data, a query, or an editable record. There is
+  no database, server action, organizer editing, dedicated route, or nav/tab
+  entry for this section.
+- Render the copy verbatim as three `<details>` disclosures inside one
+  `Accordion` on a `--bg-surface-alt` card, with **Tournament format** open by
+  default, then **Match rules**, then **Starting the match**, followed by the
+  quiet closing line "Play hard. Have fun. Questions? Contact Srini or Shishir."
+  The exact category copy is:
+  - **Tournament format:** Twelve teams, two groups of six. Every team plays
+    every other in its group once — a full round robin. The top four from each
+    group reach the quarterfinals: A1 vs B4, A2 vs B3, A3 vs B2, A4 vs B1.
+    Quarterfinal winners are drawn into the semifinals by lottery.
+  - **Match rules:** Every match is best of three sets. The first two sets use a
+    standard 7-point tiebreak at 6–6. The deciding set is a full set or a
+    10-point match tiebreak — the two teams agree on match day — and either way
+    it counts as one set. Receiving position is fixed for a set: whoever
+    receives in the deuce (right) court takes every deuce-court return that set,
+    switching only at the start of a new set. Change ends after every odd game;
+    between sets, stay on the same side when the previous set ended on an even
+    game total (6–4, 6–2, 7–5); in a match tiebreak, change ends at 1, 5, 9,
+    13…
+  - **Starting the match:** Before the warm-up, spin a racquet or toss a coin.
+    The winner picks one — serve or receive, which end to start on, or defer the
+    choice to the opponent, who can't defer back. The other team takes whatever
+    choice is left.
+- Build the accordion on native `<details>/<summary>` so it is keyboard and
+  screen-reader operable without a client component or third-party library.
+  Each summary is a single interactive target of at least 44px with a visible
+  volt focus ring and a Phosphor caret that is `aria-hidden` and paired with
+  the category text; the caret indicates open/closed state only.
+- Add no animation. The disclosure toggles instantly with no height or opacity
+  transition so the locked four-animation motion budget is unchanged, and the
+  resting state is fully legible under `prefers-reduced-motion`.
+- Use `--font-mono` with tabular figures for numeric detail (scores such as
+  6–4, 7–5 and the change-end games 1, 5, 9, 13), Inter for prose, volt only as
+  the single per-region accent, and court blue for any informational marker.
+  Never introduce a third accent.
+- Keep heading order correct: a section `h2` under the existing home sections,
+  with each category summary carrying an appropriately levelled heading.
+- Do not add tournament data, counters, target dates, a semifinal-lottery
+  system behavior, a `/rules` route, or organizer editing. This slice is
+  presentation of fixed copy only.
+
+**Acceptance criteria:**
+
+- Home renders the "Rules & format" section directly below the bracket teaser,
+  showing the three categories and the closing contact line with wording
+  exactly as written in scope.
+- The accordion is built on native `<details>/<summary>`, opens with
+  **Tournament format** expanded, and every disclosure can be opened and closed
+  with the keyboard alone, with a visible volt focus ring and a summary target
+  of at least 44px.
+- No timed disclosure animation is added, and the section is complete and
+  legible under `prefers-reduced-motion` and in grayscale, with no state or
+  meaning conveyed by color alone.
+- Home has no page-level horizontal overflow at 320px or at 200% zoom with the
+  section present, and numeric figures render in mono with tabular alignment.
+- Heading order remains valid, every icon is `aria-hidden` and accompanied by
+  text, and all shipped text and background pairs meet the `DESIGN.md` contrast
+  table with no real text below 12px.
+- The section is static content only: it performs no query, has no empty,
+  loading, error, or conflict state, and introduces no server, database, or
+  organizer-editing surface.
+
+**Validate:**
+
+- Update and run the existing Home page tests (`app/page.test.tsx`) to cover the
+  new section, its category copy, and the default-open disclosure.
+- Run `npm run test`.
+- Run `npm run lint`.
+- Run `npm run build`.
+- Run the Playwright public pages suite and update selectors if the Home
+  structure changed.
+- Review Home at 320px, 390px, tablet, and desktop widths and at 200% zoom, and
+  confirm the section does not push the hero, next-match card, or teaser out of
+  place.
+- Toggle each disclosure by keyboard, confirm the visible focus ring, and verify
+  the reduced-motion resting state.
+
+**External input:** None. The rules copy is finalized in this item's scope.
