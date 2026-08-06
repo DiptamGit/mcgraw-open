@@ -116,6 +116,47 @@ describe("HomePage", () => {
     expect(markup.match(/No leader yet\./g)).toHaveLength(1);
   });
 
+  it("renders the static rules & format accordion with the first category open", async () => {
+    getTournamentData.mockResolvedValue({
+      teams: [],
+      matches: [],
+      state: tournamentState,
+    });
+
+    const markup = renderToStaticMarkup(await HomePage());
+
+    // Section anchor and heading.
+    expect(markup).toContain('id="rules"');
+    expect(markup).toContain("Rules &amp; format");
+
+    // All three categories in order, Tournament format open by default.
+    const formatIndex = markup.indexOf("Tournament format");
+    const matchIndex = markup.indexOf("Match rules");
+    const startIndex = markup.indexOf("Starting the match");
+    expect(formatIndex).toBeGreaterThan(-1);
+    expect(matchIndex).toBeGreaterThan(formatIndex);
+    expect(startIndex).toBeGreaterThan(matchIndex);
+    expect(markup).toContain("<details");
+    expect(markup).toMatch(/<details[^>]*\sopen[^>]*>\s*<summary[^>]*>\s*<h3[^>]*>Tournament format/);
+
+    // Verbatim category copy.
+    expect(markup).toContain(
+      "Twelve teams, two groups of six. Every team plays every other in its group once",
+    );
+    expect(markup).toContain("A1 vs B4, A2 vs B3, A3 vs B2, A4 vs B1");
+    expect(markup).toContain("Every match is best of three sets.");
+    expect(markup).toContain("Before the warm-up, spin a racquet or toss a coin.");
+
+    // Numeric figures rendered in the mono figure span.
+    expect(markup).toContain('class="rules-figure">6–6</span>');
+    expect(markup).toContain('class="rules-figure">1, 5, 9, 13</span>');
+
+    // Closing contact line.
+    expect(markup).toContain(
+      "Play hard. Have fun. Questions? Contact Srini or Shishir.",
+    );
+  });
+
   it("shows only the soonest scheduled match in the next-on-court card, in Central Time", async () => {
     const team1 = team(1);
     const team2 = team(2);
