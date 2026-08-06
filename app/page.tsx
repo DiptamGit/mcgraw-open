@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CourtDevice } from "@/components/court-device";
 import { BracketTeaser } from "@/components/home/bracket-teaser";
 import { NextOnCourt } from "@/components/home/next-on-court";
+import { RulesFormat } from "@/components/home/rules-format";
 import { getTournamentData } from "@/lib/data/queries";
 import { getUpcomingMatches } from "@/lib/home/presentation";
 import { createPublicPageMetadata } from "@/lib/site-metadata";
@@ -173,6 +174,8 @@ export default async function HomePage() {
           </section>
 
           <BracketTeaser />
+
+          <RulesFormat />
         </div>
       </div>
     </>

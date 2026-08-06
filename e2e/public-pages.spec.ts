@@ -43,6 +43,34 @@ test.describe("public tournament pages", () => {
     await expect(
       page.getByRole("link", { name: "View the bracket", exact: true }),
     ).toBeVisible();
+
+    const rules = page.locator("#rules");
+    await expect(
+      rules.getByRole("heading", { level: 2, name: "Rules & format" }),
+    ).toBeVisible();
+    const formatDisclosure = rules.getByRole("group").filter({
+      has: page.getByRole("heading", { name: "Tournament format" }),
+    });
+    await expect(formatDisclosure).toBeVisible();
+    const formatSummary = formatDisclosure.locator("summary");
+    // Tournament format is open by default.
+    await expect(
+      rules.getByText("a full round robin", { exact: false }),
+    ).toBeVisible();
+    // Keyboard operable: close then reopen the first disclosure.
+    await formatSummary.focus();
+    await page.keyboard.press("Enter");
+    await expect(
+      rules.getByText("a full round robin", { exact: false }),
+    ).toBeHidden();
+    await page.keyboard.press("Enter");
+    await expect(
+      rules.getByText("a full round robin", { exact: false }),
+    ).toBeVisible();
+    await expect(
+      rules.getByText("Play hard. Have fun. Questions? Contact Srini or Shishir."),
+    ).toBeVisible();
+
     await expectNoHorizontalPageOverflow(page);
   });
 
