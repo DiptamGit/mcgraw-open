@@ -146,7 +146,10 @@ Notes:
 
 ## Pages
 1. **Home** — tournament name/dates, links, at-a-glance: next scheduled
-   matches + current group leaders.
+   matches + current group leaders. Also includes a static rules & format
+   section (tournament format, match rules, starting the match) presented as a
+   collapsible accordion; the content is fixed repository copy, not editable
+   data.
 2. **Groups** — standings table per group (P / W / L / sets diff / games diff),
    computed live from completed matches. Advancing zone (top 4) visually marked.
 3. **Matches** — all matches, filterable by group/stage, grouped by status:
