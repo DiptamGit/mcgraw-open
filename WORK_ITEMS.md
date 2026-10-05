@@ -55,7 +55,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-029 | Rebuild the organizer forms and transition pages | Done | MGO-024, MGO-025 |
 | MGO-030 | Harden and release the interface overhaul | Done | MGO-027, MGO-028, MGO-029 |
 | MGO-031 | Add the Home rules & format section | Done | MGO-027, MGO-030 |
-| MGO-032 | Withdraw Smash Potatoes and update Deuce Detectives | In progress | MGO-031 |
+| MGO-032 | Withdraw Smash Potatoes and update Deuce Detectives | Done | MGO-031 |
 
 ## Phase 1 - Foundation
 
@@ -1805,3 +1805,10 @@ identity.
 
 **External input:** Explicit approval of the complete migration plus Supabase
 and Vercel access are required for staging and production release.
+
+**Implementation note:** Released October 4, 2026. The reviewed migration
+updated only the two stable team names. Staging and production pre/post
+fingerprints confirmed all 37 match rows and tournament state were unchanged;
+the existing audit trigger recorded exactly two team updates and no match
+update. Production was backed up before and after the migration, and the public
+routes were smoke-tested on `https://mcgrawopen.com`.
