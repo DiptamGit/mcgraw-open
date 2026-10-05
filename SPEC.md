@@ -235,6 +235,13 @@ frontend implementation decisions are recorded in `TECHNICAL_DECISIONS.md`.
 19. The 2026 roster has six teams in each group. Group A's sixth team is
     **Fault Tolerant - Shankar / Mohan**; the top four from each group still
     advance through the existing quarterfinal mapping.
+20. Smash Potatoes withdrew after completing a 0-5 Group A record. Keep its
+    stable team and match identities, preserve the played scores in GA-04 and
+    GA-09 and the walkovers in GA-07, GA-10, and GA-15, and display the team as
+    **Smash Potatoes - Withdrawn**. Deuce Detectives keeps its stable identity
+    and displays **Anindya / Damodhar** after Anindya replaced Shishir. This
+    roster update does not alter standings, tiebreaks, or historical audit
+    data.
 
 ## Out of scope (year one)
 User accounts, live scoring, public historical-result browsing, automatic

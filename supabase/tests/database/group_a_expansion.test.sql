@@ -400,6 +400,17 @@ delete from public.matches
 where code in ('GA-11', 'GA-12', 'GA-13', 'GA-14', 'GA-15');
 delete from public.teams
 where id = 'a0000006-0000-4000-8000-000000000006';
+update public.teams
+set name = case id
+  when 'a0000003-0000-4000-8000-000000000003'::uuid
+    then 'Deuce Detectives - Shishir / Damodhar'
+  when 'a0000005-0000-4000-8000-000000000005'::uuid
+    then 'Smash Potatoes - Ariya / Anindya'
+end
+where id in (
+  'a0000003-0000-4000-8000-000000000003'::uuid,
+  'a0000005-0000-4000-8000-000000000005'::uuid
+);
 alter table public.teams drop constraint teams_final_rank_valid;
 alter table public.teams
   add constraint teams_final_rank_valid check (
