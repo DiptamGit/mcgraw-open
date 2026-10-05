@@ -55,6 +55,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-029 | Rebuild the organizer forms and transition pages | Done | MGO-024, MGO-025 |
 | MGO-030 | Harden and release the interface overhaul | Done | MGO-027, MGO-028, MGO-029 |
 | MGO-031 | Add the Home rules & format section | Done | MGO-027, MGO-030 |
+| MGO-032 | Withdraw Smash Potatoes and update Deuce Detectives | In progress | MGO-031 |
 
 ## Phase 1 - Foundation
 
@@ -1739,3 +1740,68 @@ accordion in the locked Night Match style.
   the reduced-motion resting state.
 
 **External input:** None. The rules copy is finalized in this item's scope.
+
+## Phase 11 - Tournament roster maintenance
+
+### MGO-032 - Withdraw Smash Potatoes and update Deuce Detectives
+
+**Goal:** Record Smash Potatoes' withdrawal and Anindya's move to Deuce
+Detectives without changing any completed match, score, standing, or stable
+identity.
+
+**Scope:**
+
+- Keep the stable Smash Potatoes team and all five Group A fixtures. Rename it
+  to `Smash Potatoes - Withdrawn`.
+- Rename the stable Deuce Detectives team to
+  `Deuce Detectives - Anindya / Damodhar`.
+- Preserve the normal scores in `GA-04` and `GA-09` and the existing walkovers
+  in `GA-07`, `GA-10`, and `GA-15`. Do not rewrite, delete, or regenerate any
+  match.
+- Introduce the two name changes through a guarded, transactional, versioned
+  Supabase migration. Verify the expected stable IDs and tournament shape,
+  compare the complete match snapshot before and after, and rely on the
+  existing row-level trigger for audit entries.
+- Keep Shishir in the Home rules contact copy. Preserve historical migrations
+  and audit before-data rather than rewriting tournament history.
+- Do not add roster-management UI, player tables, new standings behavior,
+  authentication changes, or schema changes.
+- Validate locally, release to staging, then take verified production backups
+  and apply the reviewed migration as a deliberate production release.
+
+**Acceptance criteria:**
+
+- The two stable Group A team IDs remain unchanged and expose the selected new
+  names.
+- All 12 teams, 30 group matches, 15 Group A matches, seven knockout matches,
+  and 37 total matches remain present.
+- Every match row is unchanged. In particular, `GA-04` and `GA-09` retain their
+  normal scores, while `GA-07`, `GA-10`, and `GA-15` retain their walkover
+  outcomes, winners, and timestamps.
+- Numeric standings, rank order, tiebreak behavior, finalization behavior, and
+  knockout mappings are unchanged; only current team display names differ.
+- Exactly two team update audit entries are created by the migration, with no
+  migration-time match update.
+- Public Groups and Matches show the new roster names. Home continues to show
+  Srini and Shishir as contacts.
+- Staging and production pass the pre/post fingerprint, count, audit, and
+  public-route checks.
+
+**Validate:**
+
+- Show the complete migration and explain its effect before applying it.
+- Run a clean local Supabase reset and the complete pgTAP database suite,
+  including focused roster-preservation coverage.
+- Run the focused standings regression, `npm run test`, `npm run lint`, and
+  `npm run build`.
+- Run focused public-page coverage for the new names, unchanged counts/results,
+  and unchanged Home contact copy.
+- Dry-run and verify the migration on staging.
+- Before production, export readable schema and data backups outside the
+  repository and capture match and standings fingerprints.
+- Apply the reviewed migration, deploy the reviewed Vercel commit, compare all
+  post-release fingerprints, smoke-test public and organizer entry points, and
+  take readable post-release exports.
+
+**External input:** Explicit approval of the complete migration plus Supabase
+and Vercel access are required for staging and production release.

@@ -90,6 +90,16 @@ test.describe("public tournament pages", () => {
       groupAStandings.getByText("Fault Tolerant", { exact: true }),
     ).toBeVisible();
     await expect(
+      groupAStandings.getByRole("row", {
+        name: /Deuce Detectives Anindya \/ Damodhar/,
+      }),
+    ).toBeVisible();
+    await expect(
+      groupAStandings.getByRole("row", {
+        name: /Smash Potatoes Withdrawn/,
+      }),
+    ).toBeVisible();
+    await expect(
       page.getByRole("region", { name: "Group B standings table" }),
     ).toBeAttached();
     await expect(
@@ -113,6 +123,12 @@ test.describe("public tournament pages", () => {
     await expect(
       page.getByRole("article", { name: /^GA-15:/ }),
     ).toContainText("Fault Tolerant - Shankar / Mohan");
+    await expect(
+      page.getByRole("article", { name: /^GA-09:/ }),
+    ).toContainText("Deuce Detectives - Anindya / Damodhar");
+    await expect(
+      page.getByRole("article", { name: /^GA-15:/ }),
+    ).toContainText("Smash Potatoes - Withdrawn");
     await settleAfterMutation(page);
 
     await page.getByRole("link", { name: "Quarterfinals" }).click();

@@ -193,6 +193,87 @@ describe("standings totals", () => {
       gamesAgainst: 0,
     });
   });
+
+  it("preserves numeric standings when current team names change", () => {
+    const netResults = team(1, "Net Results");
+    const volleyLlamas = team(2, "Volley Llamas");
+    const deuceDetectives = team(3, "Deuce Detectives - Shishir / Damodhar");
+    const lobStars = team(4, "Lob Stars");
+    const smashPotatoes = team(5, "Smash Potatoes - Ariya / Anindya");
+    const faultTolerant = team(6, "Fault Tolerant");
+    const teams = [
+      netResults,
+      volleyLlamas,
+      deuceDetectives,
+      lobStars,
+      smashPotatoes,
+      faultTolerant,
+    ];
+    const matches = [
+      completedMatch(4, netResults, smashPotatoes, netResults, [
+        [7, 5],
+        [6, 2],
+      ]),
+      completedMatch(7, volleyLlamas, smashPotatoes, volleyLlamas, null, {
+        outcomeType: "walkover",
+      }),
+      completedMatch(
+        9,
+        deuceDetectives,
+        smashPotatoes,
+        deuceDetectives,
+        [
+          [6, 1],
+          [6, 0],
+        ],
+      ),
+      completedMatch(10, lobStars, smashPotatoes, lobStars, null, {
+        outcomeType: "walkover",
+      }),
+      completedMatch(15, smashPotatoes, faultTolerant, faultTolerant, null, {
+        outcomeType: "walkover",
+      }),
+    ];
+    const before = calculateGroupStandings(teams, matches, "A");
+    const after = calculateGroupStandings(
+      teams.map((currentTeam) => {
+        if (currentTeam.id === deuceDetectives.id) {
+          return {
+            ...currentTeam,
+            name: "Deuce Detectives - Anindya / Damodhar",
+          };
+        }
+        if (currentTeam.id === smashPotatoes.id) {
+          return { ...currentTeam, name: "Smash Potatoes - Withdrawn" };
+        }
+        return currentTeam;
+      }),
+      matches,
+      "A",
+    );
+    const numericRows = (standings: typeof before) =>
+      standings.rows.map(({ team: currentTeam, ...row }) => ({
+        teamId: currentTeam.id,
+        ...row,
+      }));
+
+    expect(numericRows(after)).toEqual(numericRows(before));
+    expect(rowFor(after, smashPotatoes)).toMatchObject({
+      played: 5,
+      wins: 0,
+      losses: 5,
+      setsFor: 0,
+      setsAgainst: 4,
+      gamesFor: 8,
+      gamesAgainst: 25,
+    });
+    expect(
+      after.rows.find((row) => row.team.id === deuceDetectives.id)?.team.name,
+    ).toBe("Deuce Detectives - Anindya / Damodhar");
+    expect(
+      after.rows.find((row) => row.team.id === smashPotatoes.id)?.team.name,
+    ).toBe("Smash Potatoes - Withdrawn");
+  });
 });
 
 describe("two-team ties", () => {
