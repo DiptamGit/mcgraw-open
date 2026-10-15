@@ -1,18 +1,18 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import type { TournamentMatch } from "../../lib/data/schema";
+import type { Team, TournamentMatch } from "../../lib/data/schema";
 import type { ResultEditability } from "../../lib/matches/result";
 import { MatchSummary } from "./match-summary";
 
-const team1: TournamentMatch["team1"] = {
+const team1: Team = {
   id: "a0000001-0000-4000-8000-000000000001",
   name: "Baseline Bandits - Player One / Player Two",
   group_label: "A",
   final_rank: null,
 };
 
-const team2: TournamentMatch["team2"] = {
+const team2: Team = {
   id: "a0000002-0000-4000-8000-000000000002",
   name: "Volley Llamas - Player Three / Player Four",
   group_label: "A",

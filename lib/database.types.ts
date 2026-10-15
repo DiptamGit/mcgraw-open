@@ -260,6 +260,10 @@ export type Database = {
         }
       }
       get_tournament_snapshot: { Args: never; Returns: Json }
+      reconcile_2026_knockout: {
+        Args: { p_expected_snapshot: Json }
+        Returns: Json
+      }
       record_organizer_unlock_attempt: {
         Args: { p_client_key: string; p_was_successful: boolean }
         Returns: {

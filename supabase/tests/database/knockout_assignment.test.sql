@@ -44,7 +44,7 @@ set
   team2_id = (
     select id from public.teams order by id limit 1 offset 1
   )
-where code = 'QF1';
+where code = 'QF4';
 
 update public.matches
 set
@@ -54,7 +54,7 @@ set
   team2_id = (
     select id from public.teams order by id limit 1 offset 3
   )
-where code = 'QF2';
+where code = 'QF1';
 
 update public.matches
 set
@@ -74,17 +74,17 @@ set
   team2_id = (
     select id from public.teams order by id limit 1 offset 7
   )
-where code = 'QF4';
+where code = 'QF2';
 
 select throws_ok(
   $$
     select public.update_knockout_assignment(
       'assign',
-      'QF1',
+      'QF4',
       'team1_id',
-      (select updated_at from public.matches where code = 'QF1'),
-      (select updated_at from public.matches where code = 'QF1'),
-      (select team1_id from public.matches where code = 'QF1')
+      (select updated_at from public.matches where code = 'QF4'),
+      (select updated_at from public.matches where code = 'QF4'),
+      (select team1_id from public.matches where code = 'QF4')
     )
   $$,
   'P0001',
@@ -98,8 +98,8 @@ select throws_ok(
       'SF1',
       'team1_id',
       (select updated_at from public.matches where code = 'SF1'),
-      (select updated_at from public.matches where code = 'QF1'),
-      (select team1_id from public.matches where code = 'QF1')
+      (select updated_at from public.matches where code = 'QF4'),
+      (select team1_id from public.matches where code = 'QF4')
     )
   $$,
   'P0001',
@@ -125,8 +125,8 @@ select throws_ok(
       'SF1',
       'team1_id',
       (select updated_at from public.matches where code = 'SF1'),
-      (select updated_at from public.matches where code = 'QF1'),
-      (select team2_id from public.matches where code = 'QF1')
+      (select updated_at from public.matches where code = 'QF4'),
+      (select team2_id from public.matches where code = 'QF4')
     )
   $$,
   'P0001',
@@ -141,7 +141,7 @@ select throws_ok(
       'team1_id',
       (select updated_at from public.matches where code = 'SF1'),
       '2026-01-01T00:00:00Z'::timestamptz,
-      (select winner_id from public.matches where code = 'QF1')
+      (select winner_id from public.matches where code = 'QF4')
     )
   $$,
   'P0001',
@@ -155,11 +155,11 @@ select lives_ok(
       'SF1',
       'team1_id',
       (select updated_at from public.matches where code = 'SF1'),
-      (select updated_at from public.matches where code = 'QF1'),
-      (select winner_id from public.matches where code = 'QF1')
+      (select updated_at from public.matches where code = 'QF4'),
+      (select winner_id from public.matches where code = 'QF4')
     )
   $$,
-  'QF1 winner advances to SF1'
+  'QF4 winner advances to SF1'
 );
 select ok(
   (
@@ -167,9 +167,9 @@ select ok(
     from public.matches as semifinal
     cross join public.matches as quarterfinal
     where semifinal.code = 'SF1'
-      and quarterfinal.code = 'QF1'
+      and quarterfinal.code = 'QF4'
   ),
-  'SF1 team 1 matches the QF1 winner'
+  'SF1 team 1 matches the QF4 winner'
 );
 select throws_ok(
   $$
@@ -178,8 +178,8 @@ select throws_ok(
       'SF1',
       'team1_id',
       (select updated_at from public.matches where code = 'SF1'),
-      (select updated_at from public.matches where code = 'QF1'),
-      (select winner_id from public.matches where code = 'QF1')
+      (select updated_at from public.matches where code = 'QF4'),
+      (select winner_id from public.matches where code = 'QF4')
     )
   $$,
   'P0001',
@@ -193,8 +193,8 @@ select throws_ok(
       'SF1',
       'team2_id',
       (select updated_at from public.matches where code = 'SF1'),
-      (select updated_at from public.matches where code = 'QF2'),
-      (select winner_id from public.matches where code = 'QF1')
+      (select updated_at from public.matches where code = 'QF1'),
+      (select winner_id from public.matches where code = 'QF4')
     )
   $$,
   'P0001',
@@ -208,11 +208,11 @@ select lives_ok(
       'SF1',
       'team2_id',
       (select updated_at from public.matches where code = 'SF1'),
-      (select updated_at from public.matches where code = 'QF2'),
-      (select winner_id from public.matches where code = 'QF2')
+      (select updated_at from public.matches where code = 'QF1'),
+      (select winner_id from public.matches where code = 'QF1')
     )
   $$,
-  'QF2 winner advances to SF1'
+  'QF1 winner advances to SF1'
 );
 select lives_ok(
   $$
@@ -234,17 +234,17 @@ select lives_ok(
       'SF2',
       'team2_id',
       (select updated_at from public.matches where code = 'SF2'),
-      (select updated_at from public.matches where code = 'QF4'),
-      (select winner_id from public.matches where code = 'QF4')
+      (select updated_at from public.matches where code = 'QF2'),
+      (select winner_id from public.matches where code = 'QF2')
     )
   $$,
-  'QF4 winner advances to SF2'
+  'QF2 winner advances to SF2'
 );
 select throws_ok(
   $$
     update public.matches
     set sets = '[[6, 3], [6, 3]]'::jsonb
-    where code = 'QF1'
+    where code = 'QF4'
   $$,
   'P0001',
   'UPSTREAM_RESULT_LOCKED',
@@ -257,8 +257,8 @@ select lives_ok(
       'SF1',
       'team1_id',
       (select updated_at from public.matches where code = 'SF1'),
-      (select updated_at from public.matches where code = 'QF1'),
-      (select winner_id from public.matches where code = 'QF1')
+      (select updated_at from public.matches where code = 'QF4'),
+      (select winner_id from public.matches where code = 'QF4')
     )
   $$,
   'an unscheduled semifinal assignment can be cleared'
@@ -272,7 +272,7 @@ select lives_ok(
   $$
     update public.matches
     set sets = '[[6, 3], [6, 3]]'::jsonb
-    where code = 'QF1'
+    where code = 'QF4'
   $$,
   'clearing the assignment unlocks the source result'
 );
@@ -283,11 +283,11 @@ select lives_ok(
       'SF1',
       'team1_id',
       (select updated_at from public.matches where code = 'SF1'),
-      (select updated_at from public.matches where code = 'QF1'),
-      (select winner_id from public.matches where code = 'QF1')
+      (select updated_at from public.matches where code = 'QF4'),
+      (select winner_id from public.matches where code = 'QF4')
     )
   $$,
-  'the corrected QF1 winner can be reassigned'
+  'the corrected QF4 winner can be reassigned'
 );
 select is(
   (

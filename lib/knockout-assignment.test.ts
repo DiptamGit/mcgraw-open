@@ -16,13 +16,13 @@ const timestamp = "2026-08-04T17:00:00Z";
 const teams: Team[] = [
   {
     id: "a0000001-0000-4000-8000-000000000001",
-    name: "QF1 winner",
+    name: "QF4 winner",
     group_label: "A",
     final_rank: 1,
   },
   {
     id: "a0000002-0000-4000-8000-000000000002",
-    name: "QF2 winner",
+    name: "QF1 winner",
     group_label: "A",
     final_rank: 2,
   },
@@ -34,7 +34,7 @@ const teams: Team[] = [
   },
   {
     id: "b0000002-0000-4000-8000-000000000002",
-    name: "QF4 winner",
+    name: "QF2 winner",
     group_label: "B",
     final_rank: 2,
   },
@@ -111,7 +111,7 @@ function knockoutMatches(
 describe("knockout assignment preview", () => {
   it("makes only completed source winners ready", () => {
     const matches = knockoutMatches({
-      QF1: completedMatch("QF1", 1, teams[0]),
+      QF4: completedMatch("QF4", 1, teams[0]),
     });
 
     const preview = createKnockoutAssignmentPreview(matches, "SF1");
@@ -121,17 +121,17 @@ describe("knockout assignment preview", () => {
       "ready",
       "waiting",
     ]);
-    expect(preview.slots[0].sourceLabel).toBe("Winner QF1");
+    expect(preview.slots[0].sourceLabel).toBe("Winner QF4");
     expect(preview.slots[0].eligibleWinner).toBe(teams[0]);
   });
 
   it("distinguishes matching and conflicting stored assignments", () => {
-    const qf1 = completedMatch("QF1", 1, teams[0]);
-    const qf2 = completedMatch("QF2", 2, teams[1]);
+    const qf1 = completedMatch("QF4", 1, teams[0]);
+    const qf2 = completedMatch("QF1", 2, teams[1]);
     const assigned = createKnockoutAssignmentPreview(
       knockoutMatches({
-        QF1: qf1,
-        QF2: qf2,
+        QF4: qf1,
+        QF1: qf2,
         SF1: knockoutMatch("SF1", 5, {
           team1_id: teams[0].id,
           team1: teams[0],
@@ -141,8 +141,8 @@ describe("knockout assignment preview", () => {
     );
     const conflict = createKnockoutAssignmentPreview(
       knockoutMatches({
-        QF1: qf1,
-        QF2: qf2,
+        QF4: qf1,
+        QF1: qf2,
         SF1: knockoutMatch("SF1", 5, {
           team1_id: teams[2].id,
           team1: teams[2],
@@ -161,8 +161,8 @@ describe("knockout assignment preview", () => {
   it("protects scheduled and completed downstream matches", () => {
     const preview = createKnockoutAssignmentPreview(
       knockoutMatches({
-        QF1: completedMatch("QF1", 1, teams[0]),
-        QF2: completedMatch("QF2", 2, teams[1]),
+        QF4: completedMatch("QF4", 1, teams[0]),
+        QF1: completedMatch("QF1", 2, teams[1]),
         SF1: knockoutMatch("SF1", 5, {
           team1_id: teams[0].id,
           team2_id: teams[1].id,
@@ -184,8 +184,8 @@ describe("knockout assignment preview", () => {
   it("flags duplicate source winners as conflicts", () => {
     const preview = createKnockoutAssignmentPreview(
       knockoutMatches({
-        QF1: completedMatch("QF1", 1, teams[0]),
-        QF2: completedMatch("QF2", 2, teams[0]),
+        QF4: completedMatch("QF4", 1, teams[0]),
+        QF1: completedMatch("QF1", 2, teams[0]),
       }),
       "SF1",
     );
@@ -224,7 +224,7 @@ describe("knockout assignment submission", () => {
     expect(
       knockoutAssignmentSubmissionSchema.safeParse({
         intent: "assign",
-        downstreamCode: "QF1",
+        downstreamCode: "QF4",
         teamSlot: "winner_id",
         teamId: teams[0].id,
         expectedDownstreamUpdatedAt: timestamp,

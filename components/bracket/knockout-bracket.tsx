@@ -2,6 +2,7 @@ import { Trophy } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import {
+  BRACKET_MAPPING,
   computeChampionPath,
   type KnockoutBracketRounds,
 } from "@/lib/bracket";
@@ -101,10 +102,19 @@ export function KnockoutBracket({
   isOrganizer = false,
   rounds,
 }: KnockoutBracketProps) {
-  const quarterfinalPairs = [
-    rounds.quarterfinals.slice(0, 2),
-    rounds.quarterfinals.slice(2, 4),
-  ];
+  const quarterfinalPairs = (["SF1", "SF2"] as const).map((code) =>
+    [BRACKET_MAPPING[code].team1Source, BRACKET_MAPPING[code].team2Source].map(
+      (source) => {
+        const match = rounds.quarterfinals.find(
+          (candidate) => candidate.code === source.matchCode,
+        );
+        if (!match) {
+          throw new Error(`Bracket is missing source match ${source.matchCode}.`);
+        }
+        return match;
+      },
+    ),
+  );
   const championPath = computeChampionPath(rounds);
 
   return (

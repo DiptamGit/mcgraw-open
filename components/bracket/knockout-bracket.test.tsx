@@ -104,8 +104,15 @@ describe("KnockoutBracket", () => {
     expect(markup).toContain("Semifinals");
     expect(markup).toContain("Championship");
     expect(markup).toContain("Awaits the final");
-    expect(markup.indexOf("QF1")).toBeLessThan(markup.indexOf("QF4"));
-    expect(markup.indexOf("QF4")).toBeLessThan(markup.indexOf("SF1"));
+    expect(markup.indexOf('data-bracket-node="QF4"')).toBeLessThan(
+      markup.indexOf('data-bracket-node="QF1"'),
+    );
+    expect(markup.indexOf('data-bracket-node="QF1"')).toBeLessThan(
+      markup.indexOf('data-bracket-node="QF3"'),
+    );
+    expect(markup.indexOf('data-bracket-node="QF2"')).toBeLessThan(
+      markup.indexOf('data-bracket-node="SF1"'),
+    );
     expect(markup.indexOf("SF2")).toBeLessThan(markup.indexOf("Final"));
 
     expect(markup).toContain(groupATeam.name);

@@ -56,6 +56,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-030 | Harden and release the interface overhaul | Done | MGO-027, MGO-028, MGO-029 |
 | MGO-031 | Add the Home rules & format section | Done | MGO-027, MGO-030 |
 | MGO-032 | Withdraw Smash Potatoes and update Deuce Detectives | Done | MGO-031 |
+| MGO-033 | Reconcile official knockout results and semifinal seeding | In progress | MGO-032 |
 
 ## Phase 1 - Foundation
 
@@ -1812,3 +1813,66 @@ fingerprints confirmed all 37 match rows and tournament state were unchanged;
 the existing audit trigger recorded exactly two team updates and no match
 update. Production was backed up before and after the migration, and the public
 routes were smoke-tested on `https://mcgrawopen.com`.
+
+## Phase 12 - Official knockout reconciliation
+
+### MGO-033 - Reconcile official knockout results and semifinal seeding
+
+**Goal:** Preserve group history while recording the organizer-approved group
+order, withdrawals, four played quarterfinals, and evidence-based semifinals.
+
+**Scope:**
+
+- Preserve all 30 completed group matches and every stable team/match identity.
+- Mark Rally Rascals and Racquet Scientists withdrawn; retain historical wins.
+- Lock the organizer-approved complete group ranks as an explicit ruling,
+  rather than misrepresenting them as automatic tiebreak results.
+- Record the four confirmed QF results, dates, BHS venue, and score evidence.
+- Seed semifinalists by QF set-win percentage, then game-win percentage:
+  Drop Shot Society, Net Results, Baseline Bandits, Court Jesters.
+- Assign SF1 as Winner QF4 versus Winner QF1 and SF2 as Winner QF3 versus
+  Winner QF2; leave semifinals unscheduled and Final untouched.
+- Align SQL source/lock checks, application sources, connectors, and copy.
+- Apply data only through a same-origin, signed-organizer-cookie-authorized
+  backend transaction with reviewed baseline checks and server-only auditing.
+- Publish the short seeding explanation without new score fields or a redesign.
+
+**Acceptance criteria:**
+
+- Exactly 12 teams, 30 group matches, seven knockout matches, and one state
+  remain; all group rows and the Final row are unchanged.
+- Official ranks, two withdrawal names, QF score orientation, timestamps,
+  BHS venue, and both semifinal assignments match the approved evidence.
+- The operation rejects unauthorized, stale, incomplete, repeated, or active
+  downstream requests atomically; constraints, RLS, and audit triggers remain.
+- Assignment, downstream clears, upstream locks, labels, and connectors agree.
+- Home rules and the written note describe the approved policy, not a lottery.
+- Local validation, staging rehearsal, verified backups, and deliberate
+  production release and read-only post-release verification are complete.
+
+**Validate:**
+
+- Show and obtain approval for the complete migration before applying it.
+- Run a clean local Supabase reset and pgTAP preservation/guard/grant checks.
+- Run relevant Vitest and Playwright suites, `npm test`, `npm run lint`,
+  and `npm run build`; inspect the bracket at mobile and desktop widths,
+  200% zoom, keyboard-only, and reduced motion.
+- Rehearse with deliberate non-production staging fixtures.
+- Review the exact production preview, take verified schema/data backups,
+  apply once through an authorized organizer session, and compare snapshots.
+
+**External input:** Migration approval, running Docker, verified backup
+access, valid environment-specific organizer sessions, and production apply
+approval are required. Planning approval alone does not authorize live writes.
+
+**Implementation note:** The backend transaction, source/lock mapping,
+preview/apply route, truthful rules copy, and seeding note are implemented.
+The reviewed migration has been applied only to the isolated local stack.
+Local validation passed: 243 pgTAP assertions, 198 unit tests (four opt-in
+integration tests skipped), lint, production build, and 94 Playwright tests
+(two existing browser-specific skips), including concurrent apply attempts,
+late-failure rollback, exact group-row preservation, and source-lock behavior.
+Staging migration, preview deployment, and backed-up rehearsal are approved;
+verified staging schema/data exports are stored outside the repository.
+The rehearsal still requires authorized organizer-session access. Production
+backups/application and release verification remain separately gated.
