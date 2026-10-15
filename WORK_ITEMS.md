@@ -56,7 +56,7 @@ This is the authoritative implementation tracker. Product rules live in
 | MGO-030 | Harden and release the interface overhaul | Done | MGO-027, MGO-028, MGO-029 |
 | MGO-031 | Add the Home rules & format section | Done | MGO-027, MGO-030 |
 | MGO-032 | Withdraw Smash Potatoes and update Deuce Detectives | Done | MGO-031 |
-| MGO-033 | Reconcile official knockout results and semifinal seeding | In progress | MGO-032 |
+| MGO-033 | Reconcile official knockout results and semifinal seeding | Done | MGO-032 |
 
 ## Phase 1 - Foundation
 
@@ -1872,7 +1872,20 @@ Local validation passed: 243 pgTAP assertions, 198 unit tests (four opt-in
 integration tests skipped), lint, production build, and 94 Playwright tests
 (two existing browser-specific skips), including concurrent apply attempts,
 late-failure rollback, exact group-row preservation, and source-lock behavior.
-Staging migration, preview deployment, and backed-up rehearsal are approved;
-verified staging schema/data exports are stored outside the repository.
-The rehearsal still requires authorized organizer-session access. Production
-backups/application and release verification remain separately gated.
+The backed-up staging rehearsal passed through the normal organizer unlock
+and server-action flows using explicitly synthetic group fixtures. Both the
+feature PR and merged main commit passed all CI jobs.
+
+Released through separately approved production migration, deployment, and
+signed-cookie-authorized apply from main commit `af863c6` (#19), at production
+deployment `macgraw-open-website-2bl4tcqiy` on `https://mcgrawopen.com`.
+Verified readable, restricted schema/data exports before and after both cloud
+releases are stored outside the repository. Production snapshot and raw backup
+COPY comparisons confirmed that all 30 historical group rows and the Final
+row are unchanged; 12 teams and 37 matches remain. The official ranks,
+withdrawal names, four QF results/BHS times, and two unscheduled semifinals
+match the approved evidence. Exactly one reconciliation audit and two team
+name-change audits were recorded, with no group-match update. Read-only
+production checks passed for all four public routes and all four upstream QF
+result locks. The requested explanation is in
+`docs/2026-semifinal-seeding.md`.

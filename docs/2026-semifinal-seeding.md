@@ -43,5 +43,6 @@ unequal group histories, withdrawals, and walkovers. These are fixed approved
   than the existing automatic tiebreak calculation. The ruling is audited
   separately from automatic ties; the general standings rules are unchanged.
 
-This note documents the approved reconciliation. Application and release status
-are tracked under MGO-033 in `WORK_ITEMS.md`.
+Applied to staging and production through the reviewed, organizer-authorized
+MGO-033 reconciliation. All 30 historical production group rows and the Final
+were preserved. Release details are tracked in `WORK_ITEMS.md`.
