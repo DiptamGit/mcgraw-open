@@ -144,6 +144,9 @@ describe("HomePage", () => {
       "Twelve teams, two groups of six. Every team plays every other in its group once",
     );
     expect(markup).toContain("A1 vs B4, A2 vs B3, A3 vs B2, A4 vs B1");
+    expect(markup).toContain("quarterfinal set-win percentage, then game-win percentage");
+    expect(markup).toContain("Seed 1 faces seed 4, and seed 2 faces seed 3.");
+    expect(markup).not.toContain("by lottery");
     expect(markup).toContain("Every match is best of three sets.");
     expect(markup).toContain("Before the warm-up, spin a racquet or toss a coin.");
 

@@ -349,7 +349,8 @@ describe("result timing and locks", () => {
       code: "SF1",
       stage: "semifinal",
       group_label: null,
-      team1_id: team1Id,
+      team1_id: null,
+      team2_id: team1Id,
     });
 
     expect(

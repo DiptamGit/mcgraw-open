@@ -21,7 +21,7 @@ set
   team2_id = (
     select id from public.teams order by id limit 1 offset 1
   )
-where code = 'QF1';
+where code = 'QF4';
 
 update public.matches
 set
@@ -31,7 +31,7 @@ set
   team2_id = (
     select id from public.teams order by id limit 1 offset 3
   )
-where code = 'QF2';
+where code = 'QF1';
 
 update public.matches
 set
@@ -42,7 +42,7 @@ set
   winner_id = team1_id,
   played_at = statement_timestamp() - interval '1 day',
   completed_at = statement_timestamp()
-where code in ('QF1', 'QF2');
+where code in ('QF4', 'QF1');
 
 commit;
 `;
@@ -66,7 +66,7 @@ test("assigns, locks, and clears a semifinal progression path", async (
       page.getByRole("heading", { name: "Manage SF1 teams" }),
     ).toBeVisible();
     const qf1Path = page.getByRole("region", {
-      name: "Winner QF1 → SF1",
+      name: "Winner QF4 → SF1",
     });
     await expect(qf1Path).toContainText("Ready to assign");
     await expect(qf1Path.getByRole("radio")).toBeChecked();
@@ -113,11 +113,11 @@ test("assigns, locks, and clears a semifinal progression path", async (
         select sf.team1_id = qf.winner_id
         from public.matches as sf
         cross join public.matches as qf
-        where sf.code = 'SF1' and qf.code = 'QF1';
+        where sf.code = 'SF1' and qf.code = 'QF4';
       `),
     ).toBe("t");
 
-    await page.goto("/matches/QF1/result");
+    await page.goto("/matches/QF4/result");
     await expect(
       page.getByRole("heading", { name: "Result locked" }),
     ).toBeVisible();
@@ -125,7 +125,7 @@ test("assigns, locks, and clears a semifinal progression path", async (
 
     await page.goto("/bracket/SF1/assignment");
     const assignedQf1Path = page.getByRole("region", {
-      name: "Winner QF1 → SF1",
+      name: "Winner QF4 → SF1",
     });
     await expect(assignedQf1Path).toContainText("Assigned");
     await assignedQf1Path
@@ -172,7 +172,7 @@ test("assigns, locks, and clears a semifinal progression path", async (
       `),
     ).toBe("2");
 
-    await page.goto("/matches/QF1/result");
+    await page.goto("/matches/QF4/result");
     await expect(
       page.getByRole("heading", { name: "Correct the match result" }),
     ).toBeVisible();
@@ -201,7 +201,7 @@ test("rejects a stale downstream assignment without advancing a team", async (
     `);
 
     const qf1Path = page.getByRole("region", {
-      name: "Winner QF1 → SF1",
+      name: "Winner QF4 → SF1",
     });
     await qf1Path
       .getByRole("button", { name: "Review assignment" })

@@ -176,6 +176,11 @@ Notes:
   quarterfinal team assignments.
 - Quarterfinal teams are assigned from the locked final ranks; knockout
   progression remains manual in year one.
+- For the approved 2026 reconciliation, semifinal seeds use quarterfinal-only
+  set-win percentage, then game-win percentage. Seed 1 faces seed 4 and seed 2
+  faces seed 3; an exact tie requires an organizer decision. This replaces the
+  previously published lottery. The approved sources are QF4/QF1 for SF1 and
+  QF3/QF2 for SF2, not automatic reseeding after later score corrections.
 - Once a knockout winner has been assigned into the next round, the upstream
   result is locked until that downstream assignment is explicitly cleared.
 
@@ -242,6 +247,19 @@ frontend implementation decisions are recorded in `TECHNICAL_DECISIONS.md`.
     and displays **Anindya / Damodhar** after Anindya replaced Shishir. This
     roster update does not alter standings, tiebreaks, or historical audit
     data.
+21. Rally Rascals and Racquet Scientists withdrew before the knockout stage.
+    Preserve their stable identities and all completed group results, including
+    wins, while displaying both teams as withdrawn. MGO-033 records the
+    organizer's official final group order as a bounded eligibility/order
+    ruling, not as an automatic standings calculation: Group A is Fault
+    Tolerant, Deuce Detectives, Net Results, Lob Stars, Volley Llamas, Smash
+    Potatoes; Group B is Drop Shot Society, Spin Doctors, Baseline Bandits,
+    Court Jesters, Rally Rascals, Racquet Scientists. This does not change the
+    general standings calculator or rewrite historical match/audit data.
+22. The four confirmed quarterfinal results seed Drop Shot Society first,
+    Net Results second, Baseline Bandits third, and Court Jesters fourth.
+    Ordinary set tiebreak points are evidence, not additional games; rally
+    point totals are not inferable from set scores.
 
 ## Out of scope (year one)
 User accounts, live scoring, public historical-result browsing, automatic

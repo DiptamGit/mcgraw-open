@@ -447,8 +447,8 @@ both required. Data shown is illustrative; every value comes from live data.
 - **Phone:** the same rounds stacked vertically, QF → SF → Final, with the
   connector SVG redrawn for the vertical layout. Cards are full width.
 - Each match card shows its code and source label (`QF1 · A1 vs B4`,
-  `SF1 · W-QF1 vs W-QF2`), both teams, and set scores when completed. The
-  advancing team is volt; the eliminated team is dim.
+  `SF1 · W-QF4 vs W-QF1` for the approved 2026 seeding), both teams, and set
+  scores when completed. The advancing team is volt; the eliminated team is dim.
 - Unassigned slots show their placeholder label — "Winner QF3", "A1" — in dim
   text, never an empty row.
 - The Final card is the one elevated moment: a volt-tinted gradient, a volt
@@ -457,6 +457,9 @@ both required. Data shown is illustrative; every value comes from live data.
   reads "Awaits the final" until the final is complete, then names the winner.
 - The whole board is accessible DOM content. The SVG is decorative and
   `aria-hidden`; no result is conveyed only by a drawn line.
+- Quarterfinal cards are grouped by their declared semifinal sources, not by
+  numeric match-code adjacency. Labels and connectors follow that same mapping;
+  reseeding does not introduce a new visual pattern or animation.
 
 ### 5. Schedule a match (organizer)
 

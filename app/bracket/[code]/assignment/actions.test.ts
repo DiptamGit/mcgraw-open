@@ -45,13 +45,13 @@ const timestamp = "2026-08-04T17:00:00Z";
 const teams: Team[] = [
   {
     id: "a0000001-0000-4000-8000-000000000001",
-    name: "QF1 winner",
+    name: "QF4 winner",
     group_label: "A",
     final_rank: 1,
   },
   {
     id: "a0000002-0000-4000-8000-000000000002",
-    name: "QF2 winner",
+    name: "QF1 winner",
     group_label: "A",
     final_rank: 2,
   },
@@ -63,7 +63,7 @@ const teams: Team[] = [
   },
   {
     id: "b0000002-0000-4000-8000-000000000002",
-    name: "QF4 winner",
+    name: "QF2 winner",
     group_label: "B",
     final_rank: 2,
   },
@@ -224,13 +224,13 @@ describe("updateKnockoutAssignment", () => {
       submission(data, "assign", "SF1", "team1_id", teams[0].id),
     );
 
-    expect(premature.message).toContain("Complete QF1");
+    expect(premature.message).toContain("Complete QF4");
     expect(mocks.persistKnockoutAssignment).not.toHaveBeenCalled();
   });
 
   it("assigns the eligible winner and refreshes tournament routes", async () => {
     const data = tournament({
-      QF1: completedMatch("QF1", 1, teams[0], teams[1]),
+      QF4: completedMatch("QF4", 1, teams[0], teams[1]),
     });
     mocks.getTournamentData.mockResolvedValue(data);
     const formData = submission(
@@ -262,8 +262,8 @@ describe("updateKnockoutAssignment", () => {
   });
 
   it("rejects invalid, repeated, and stale choices", async () => {
-    const qf1 = completedMatch("QF1", 1, teams[0], teams[1]);
-    const ready = tournament({ QF1: qf1 });
+    const qf1 = completedMatch("QF4", 1, teams[0], teams[1]);
+    const ready = tournament({ QF4: qf1 });
     mocks.getTournamentData.mockResolvedValueOnce(ready);
     const { updateKnockoutAssignment } = await import("./actions");
 
@@ -281,7 +281,7 @@ describe("updateKnockoutAssignment", () => {
     expect(invalid.message).toContain("does not match");
 
     const assigned = tournament({
-      QF1: qf1,
+      QF4: qf1,
       SF1: knockoutMatch("SF1", 5, {
         team1_id: teams[0].id,
         team1: teams[0],
@@ -322,12 +322,12 @@ describe("updateKnockoutAssignment", () => {
   });
 
   it("clears an unscheduled assignment but protects scheduled matches", async () => {
-    const qf1 = completedMatch("QF1", 1, teams[0], teams[1]);
+    const qf1 = completedMatch("QF4", 1, teams[0], teams[1]);
     const assignedSf1 = knockoutMatch("SF1", 5, {
       team1_id: teams[0].id,
       team1: teams[0],
     });
-    const clearable = tournament({ QF1: qf1, SF1: assignedSf1 });
+    const clearable = tournament({ QF4: qf1, SF1: assignedSf1 });
     mocks.getTournamentData.mockResolvedValueOnce(clearable);
     const { updateKnockoutAssignment } = await import("./actions");
 
@@ -350,8 +350,8 @@ describe("updateKnockoutAssignment", () => {
     );
 
     const protectedData = tournament({
-      QF1: qf1,
-      QF2: completedMatch("QF2", 2, teams[1], teams[0]),
+      QF4: qf1,
+      QF1: completedMatch("QF1", 2, teams[1], teams[0]),
       SF1: knockoutMatch("SF1", 5, {
         team1_id: teams[0].id,
         team2_id: teams[1].id,
@@ -378,7 +378,7 @@ describe("updateKnockoutAssignment", () => {
 
   it("surfaces transactional conflicts without successful revalidation", async () => {
     const data = tournament({
-      QF1: completedMatch("QF1", 1, teams[0], teams[1]),
+      QF4: completedMatch("QF4", 1, teams[0], teams[1]),
     });
     mocks.getTournamentData.mockResolvedValue(data);
     mocks.persistKnockoutAssignment.mockRejectedValue(

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { DataIntegrityError } from "../data/errors";
-import type { TournamentMatch } from "../data/schema";
+import type { Team, TournamentMatch } from "../data/schema";
 import {
   formatTournamentDateTime,
   getMatchStageLabel,
@@ -14,14 +14,14 @@ import {
   splitTeamName,
 } from "./presentation";
 
-const groupATeam: TournamentMatch["team1"] = {
+const groupATeam: Team = {
   id: "a0000001-0000-4000-8000-000000000001",
   name: "Baseline Bandits - Player One / Player Two",
   group_label: "A",
   final_rank: null,
 };
 
-const groupBTeam: TournamentMatch["team2"] = {
+const groupBTeam: Team = {
   id: "b0000001-0000-4000-8000-000000000001",
   name: "Volley Llamas - Player Three / Player Four",
   group_label: "B",
@@ -100,7 +100,7 @@ describe("match presentation", () => {
     expect(getTeamDisplayName(quarterfinal, "team1")).toBe("A1");
     expect(getTeamDisplayName(quarterfinal, "team2")).toBe("B4");
     expect(getTeamDisplayName(semifinal, "team1")).toBe("Winner QF3");
-    expect(getTeamDisplayName(semifinal, "team2")).toBe("Winner QF4");
+    expect(getTeamDisplayName(semifinal, "team2")).toBe("Winner QF2");
   });
 
   it("labels only exceptional outcomes", () => {

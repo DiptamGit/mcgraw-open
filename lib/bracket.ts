@@ -69,15 +69,15 @@ export const BRACKET_MAPPING = {
   },
   SF1: {
     stage: "semifinal",
-    label: "SF1: Winner QF1 vs Winner QF2",
-    team1Source: { type: "match-winner", matchCode: "QF1" },
-    team2Source: { type: "match-winner", matchCode: "QF2" },
+    label: "SF1: Winner QF4 vs Winner QF1",
+    team1Source: { type: "match-winner", matchCode: "QF4" },
+    team2Source: { type: "match-winner", matchCode: "QF1" },
   },
   SF2: {
     stage: "semifinal",
-    label: "SF2: Winner QF3 vs Winner QF4",
+    label: "SF2: Winner QF3 vs Winner QF2",
     team1Source: { type: "match-winner", matchCode: "QF3" },
-    team2Source: { type: "match-winner", matchCode: "QF4" },
+    team2Source: { type: "match-winner", matchCode: "QF2" },
   },
   Final: {
     stage: "final",
@@ -182,10 +182,10 @@ type BracketEdge = {
  * along.
  */
 export const BRACKET_EDGES = [
+  { id: "QF4-SF1", from: "QF4", to: "SF1" },
   { id: "QF1-SF1", from: "QF1", to: "SF1" },
-  { id: "QF2-SF1", from: "QF2", to: "SF1" },
   { id: "QF3-SF2", from: "QF3", to: "SF2" },
-  { id: "QF4-SF2", from: "QF4", to: "SF2" },
+  { id: "QF2-SF2", from: "QF2", to: "SF2" },
   { id: "SF1-Final", from: "SF1", to: "Final" },
   { id: "SF2-Final", from: "SF2", to: "Final" },
   { id: "Final-Champion", from: "Final", to: "Champion" },
@@ -194,8 +194,14 @@ export const BRACKET_EDGES = [
 export type BracketEdgeId = (typeof BRACKET_EDGES)[number]["id"];
 
 const SEMIFINAL_FEEDERS = {
-  SF1: ["QF1", "QF2"],
-  SF2: ["QF3", "QF4"],
+  SF1: [
+    BRACKET_MAPPING.SF1.team1Source.matchCode,
+    BRACKET_MAPPING.SF1.team2Source.matchCode,
+  ],
+  SF2: [
+    BRACKET_MAPPING.SF2.team1Source.matchCode,
+    BRACKET_MAPPING.SF2.team2Source.matchCode,
+  ],
 } as const satisfies Record<
   "SF1" | "SF2",
   readonly [KnockoutMatchCode, KnockoutMatchCode]
@@ -325,10 +331,10 @@ function computeBallRoute(
 }
 
 export const DOWNSTREAM_ASSIGNMENTS = {
-  QF1: { matchCode: "SF1", teamField: "team1_id" },
-  QF2: { matchCode: "SF1", teamField: "team2_id" },
+  QF4: { matchCode: "SF1", teamField: "team1_id" },
+  QF1: { matchCode: "SF1", teamField: "team2_id" },
   QF3: { matchCode: "SF2", teamField: "team1_id" },
-  QF4: { matchCode: "SF2", teamField: "team2_id" },
+  QF2: { matchCode: "SF2", teamField: "team2_id" },
   SF1: { matchCode: "Final", teamField: "team1_id" },
   SF2: { matchCode: "Final", teamField: "team2_id" },
 } as const satisfies Partial<

@@ -74,8 +74,9 @@ describe("knockout bracket", () => {
     expect(getBracketSourceLabel("QF1", "team2")).toBe("B4");
     expect(getBracketSourceLabel("QF4", "team1")).toBe("A4");
     expect(getBracketSourceLabel("QF4", "team2")).toBe("B1");
-    expect(getBracketSourceLabel("SF1", "team1")).toBe("Winner QF1");
-    expect(getBracketSourceLabel("SF2", "team2")).toBe("Winner QF4");
+    expect(getBracketSourceLabel("SF1", "team1")).toBe("Winner QF4");
+    expect(getBracketSourceLabel("SF1", "team2")).toBe("Winner QF1");
+    expect(getBracketSourceLabel("SF2", "team2")).toBe("Winner QF2");
     expect(getBracketSourceLabel("Final", "team1")).toBe("Winner SF1");
     expect(getBracketSourceLabel("Final", "team2")).toBe("Winner SF2");
   });

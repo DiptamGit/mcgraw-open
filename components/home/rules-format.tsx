@@ -22,7 +22,7 @@ const RULES_CATEGORIES: readonly RulesCategory[] = [
     defaultOpen: true,
     paragraphs: [
       [
-        "Twelve teams, two groups of six. Every team plays every other in its group once — a full round robin. The top four from each group reach the quarterfinals: A1 vs B4, A2 vs B3, A3 vs B2, A4 vs B1. Quarterfinal winners are drawn into the semifinals by lottery.",
+        "Twelve teams, two groups of six. Every team plays every other in its group once — a full round robin. The top four from each group reach the quarterfinals: A1 vs B4, A2 vs B3, A3 vs B2, A4 vs B1. Quarterfinal winners are seeded by quarterfinal set-win percentage, then game-win percentage. Seed 1 faces seed 4, and seed 2 faces seed 3. An exact tie requires an organizer decision.",
       ],
     ],
   },

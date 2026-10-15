@@ -55,7 +55,7 @@ describe("KnockoutAssignmentForm", () => {
         downstreamMatch={knockoutMatch("SF1", 5)}
         initialState={{ status: "idle", message: null }}
         intent="assign"
-        sourceMatch={knockoutMatch("QF1", 1)}
+        sourceMatch={knockoutMatch("QF4", 4)}
         team={team}
         teamSlot="team1_id"
       />,

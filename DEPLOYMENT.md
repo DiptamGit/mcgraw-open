@@ -105,3 +105,60 @@ the verified backup deliberately through Supabase.
 
 Never commit `.env` files, Vercel project metadata, database dumps, or
 credential values.
+
+### Apply the reviewed MGO-033 reconciliation
+
+This is a fixed 2026 maintenance operation, not an arbitrary-data API. Its
+migration installs the approved QF-to-SF source mapping and a service-role-only
+RPC; it does not run the data reconciliation. Review the complete migration,
+verify schema/data backups, deploy the matching application in a coordinated
+no-organizer-edit release window, and obtain separate apply approval first.
+Do not roll back to an old application mapping while retaining the new data.
+
+Use the normal unlock flow on the intended environment. From that same
+origin's browser console, request the read-only preview; the HttpOnly organizer
+cookie is sent automatically and must never be copied, printed, or stored:
+
+```js
+const endpoint = "/organizer/reconcile-2026-knockout";
+const previewResponse = await fetch(endpoint, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ intent: "preview" }),
+});
+if (!previewResponse.ok) throw new Error(await previewResponse.text());
+const preview = await previewResponse.json();
+```
+
+Review the complete `preview`: official order and withdrawal ruling, all QF
+sides/scores/times, semifinal seeds/pairings, qualifications, and the exact
+`expectedSnapshot`. After explicit approval, apply that reviewed snapshot:
+
+```js
+const applyResponse = await fetch(endpoint, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    intent: "apply",
+    reconciliationId: preview.reconciliationId,
+    confirmation: "Apply the reviewed MGO-033 reconciliation",
+    expectedSnapshot: preview.expectedSnapshot,
+  }),
+});
+if (!applyResponse.ok) throw new Error(await applyResponse.text());
+const applied = await applyResponse.json();
+```
+
+The transaction checks the full baseline again under locks. Changed,
+incomplete, already-applied, or active-knockout states are rejected without
+partial changes. A failed response is not permission to force a retry: inspect
+the recorded state and request a fresh preview. After success, compare all
+30 full group rows and the Final row to the backups, verify the official
+ranks/four QFs/two unscheduled SFs and server-only audit entries, and take
+post-release exports. The concise rationale is in
+`docs/2026-semifinal-seeding.md`; release status is in `WORK_ITEMS.md`.
+
+Staging currently has unplayed baseline fixtures. Rehearsal requires a backed
+up, deliberately prepared non-production completed-group fixture set through
+authorized server-side flows. Never weaken production preconditions to fit
+staging, copy production secrets into it, or test mutations against production.

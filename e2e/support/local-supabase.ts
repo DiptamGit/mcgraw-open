@@ -89,6 +89,17 @@ update public.teams
 set final_rank = null
 where final_rank is not null;
 
+update public.teams
+set name = case id
+  when 'b0000005-0000-4000-8000-000000000005'::uuid
+    then 'Rally Rascals - Arup / Diptam'
+  else 'Racquet Scientists - Venkat Goli / Bhavanth'
+end
+where id in (
+  'b0000005-0000-4000-8000-000000000005',
+  'b0000006-0000-4000-8000-000000000006'
+);
+
 delete from public.organizer_unlock_limits;
 delete from public.audit_log;
 
